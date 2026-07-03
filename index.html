@@ -505,6 +505,12 @@ const SEED = [
   { id:12, cat:'jasa', emoji:'📱', g:'g-1', name:'Desain UI/UX Aplikasi (per screen)', price:100000, stock:99, cond:'baru',
     seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'2 hari lalu', likes:87, loc:'Online', dist:0, cod:false,
     desc:'Mockup high-fidelity di Figma + prototype interaktif. Clean, konsisten, developer-friendly.' },
+  { id:13, cat:'ikan', emoji:'🐟', g:'g-3', name:'Channa Maru Yellow Sentarum', price:450000, stock:2, cond:'baru',
+    seller:'Borneo Fish Farm', ava:'🎣', ac:'#d9f8ea', verified:true, time:'4 jam lalu', likes:301, loc:'Pontianak, Kalbar', dist:730, cod:false, freeship:true,
+    desc:'Channa maru asli Sentarum 18-20 cm, warna kuning keluar. Kirim antar pulau aman: packing oksigen + styrofoam + garansi hidup. GRATIS ONGKIR ditanggung toko!' },
+  { id:14, cat:'fashion', emoji:'👜', g:'g-6', name:'Tas Rotan Handmade Bali', price:135000, stock:5, cond:'baru',
+    seller:'Bali Craft', ava:'🌺', ac:'#fff3c4', verified:false, time:'8 jam lalu', likes:144, loc:'Gianyar, Bali', dist:960, cod:false,
+    desc:'Tas rotan anyaman tangan pengrajin Gianyar. Belanja min Rp100rb otomatis dapat voucher gratis ongkir s.d. Rp20rb!' },
 ];
 
 const PAY_METHODS = [
@@ -531,6 +537,19 @@ const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
 const uid = () => 'INV-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
 const km = d => d === 0 ? 'Online' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
 const driverFee = d => Math.max(10000, Math.round(d * 3000 / 1000) * 1000);
+
+/* Ongkir bertingkat: sekitar kota → antar kota → antar pulau */
+const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
+/* Strategi "gratis ongkir": (1) ditanggung penjual via program (+komisi),
+   (2) voucher subsidi platform dengan syarat min. belanja & plafon */
+const FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
+function shipBreakdown(p, mode){
+  if (mode === 'driver') return { base: driverFee(p.dist), seller: 0, subsidy: 0 };
+  const base = shipCost(p);
+  if (p.freeship) return { base, seller: base, subsidy: 0 };
+  const subsidy = p.price >= FREESHIP_MIN ? Math.min(FREESHIP_CAP, base) : 0;
+  return { base, seller: 0, subsidy };
+}
 
 function toast(msg){
   const t = document.createElement('div');
@@ -573,10 +592,13 @@ function renderStories(){
 /* ---------- FEED ---------- */
 function perks(p){
   const out = [];
+  if (p.freeship) out.push('<span class="perk pk-cod">🚚 GRATIS ONGKIR</span>');
+  else if (p.dist > 0 && p.price >= FREESHIP_MIN) out.push('<span class="perk pk-driver">🎟️ Voucher ongkir s.d. ' + rupiah(FREESHIP_CAP) + '</span>');
   if (p.cod && p.dist <= COD_MAX_KM) out.push('<span class="perk pk-cod">🤝 Bisa COD</span>');
   out.push('<span class="perk pk-rekber">🛡️ Rekber</span>');
   if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">🛵 Driver instan</span>');
-  if (p.dist > COD_MAX_KM) out.push('<span class="perk pk-far">📦 Kirim ekspedisi saja</span>');
+  if (p.dist > 100) out.push('<span class="perk pk-far">🚢 Antar pulau/kota — ekspedisi</span>');
+  else if (p.dist > COD_MAX_KM) out.push('<span class="perk pk-far">📦 Kirim ekspedisi saja</span>');
   return out.join('');
 }
 
@@ -748,9 +770,10 @@ function renderBuy(){
       <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="buyNext()">Pilih pembayaran →</button>`;
   }
   else {
-    const ship = buy.mode === 'driver' ? driverFee(p.dist) : (isJasa ? 0 : 12000);
+    const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
+    const shipPaid = Math.max(0, bd.base - bd.seller - bd.subsidy);
     const m = PAY_METHODS.find(x => x.id === buy.pay);
-    const fee = m ? m.fee(p.price + ship) : 0;
+    const fee = m ? m.fee(p.price + shipPaid) : 0;
     body = `${stepDots}
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
       ${PAY_METHODS.map(pm => `
@@ -761,10 +784,13 @@ function renderBuy(){
         </div>`).join('')}
       <div style="background:#fff;border:2px dashed var(--ink);border-radius:16px;padding:14px 18px;margin-top:16px">
         <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
-        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos driver instan':isJasa?'Ongkir':'Ongkir ekspedisi'}</span><span>${rupiah(ship)}</span></div>
+        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos driver instan':isJasa?'Ongkir':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
+        ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>🚚 Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
+        ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>🎟️ Voucher gratis ongkir (min. belanja ${rupiah(FREESHIP_MIN)})</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya layanan${m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
-        <div class="sum-row total"><span>Total ke rekber</span><span>${rupiah(p.price + ship + fee)}</span></div>
+        <div class="sum-row total"><span>Total ke rekber</span><span>${rupiah(p.price + shipPaid + fee)}</span></div>
       </div>
+      ${!isJasa && !bd.seller && !bd.subsidy && bd.base > 0 && p.price < FREESHIP_MIN ? `<div class="warn-note">🎟️ Psst — belanja min. ${rupiah(FREESHIP_MIN)} otomatis dapat voucher gratis ongkir s.d. ${rupiah(FREESHIP_CAP)}!</div>` : ''}
       <div class="safe-note">🛡️ Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai. Kalau bermasalah, dana bisa dikembalikan.</div>
       <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">🔒 Bayar ke Rekber</button>`;
   }
@@ -831,7 +857,8 @@ function placeCod(){
 function placeRekber(){
   const p = products.find(x => x.id === buy.pid);
   const isJasa = p.dist === 0;
-  const ship = buy.mode === 'driver' ? driverFee(p.dist) : (isJasa ? 0 : 12000);
+  const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
+  const ship = Math.max(0, bd.base - bd.seller - bd.subsidy);
   const m = PAY_METHODS.find(x => x.id === buy.pay);
   const fee = m.fee(p.price + ship);
   const o = baseOrder(p, {
@@ -986,6 +1013,7 @@ function openSell(){
         <label class="f">Deskripsi (untuk barang bekas: jujur soal minus ya!)</label>
         <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
         <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">🤝 Buka COD ketemuan (radius ${COD_MAX_KM} km)</label></div>
+        <div class="check-row"><input type="checkbox" id="sFreeship"><label for="sFreeship">🚚 Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge & prioritas di feed (di versi live: +4% komisi)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">🚀 Posting Sekarang</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Di versi live: upload foto asli, verifikasi KTP penjual & rekening pencairan rekber.</p>
       </div>
@@ -1002,10 +1030,11 @@ function submitSell(){
   const cond  = document.getElementById('sCond').value;
   const loc   = document.getElementById('sLoc').value.trim() || 'Tebet, Jaksel';
   const cod   = document.getElementById('sCod').checked;
+  const freeship = document.getElementById('sFreeship').checked;
   if (!name || !price || price < 1000 || !stock) { toast('Lengkapi nama, harga (min Rp1.000) & stok ya 🙏'); return; }
   const p = {
     id: Date.now(), cat, emoji, g: 'g-' + (Math.floor(Math.random()*6)+1),
-    name, price, stock, cond, loc, dist: 0.5, cod,
+    name, price, stock, cond, loc, dist: 0.5, cod, freeship,
     seller: 'Toko Kamu', ava: '🙋', ac: '#fff3c4',
     verified: false, time: 'baru saja', likes: 0, desc: desc || 'Tanpa deskripsi.',
   };

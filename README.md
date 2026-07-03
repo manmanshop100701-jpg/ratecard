@@ -18,6 +18,12 @@ Marketplace bergaya **media sosial**: feed-nya seperti Instagram, tapi semua pos
 2. **🛵 Rekber + Antar Driver Instan** — untuk penjual ≤15 km; barang diantar hari itu juga (ongkos ±Rp3.000/km, min Rp10.000), dana tetap lewat rekber.
 3. **🤝 COD Ketemuan** — untuk penjual ≤25 km yang membuka COD; pilih titik temu aman (minimarket, kantor polisi, mall) + waktu janjian, bayar di tempat setelah cek barang. Gratis biaya.
 
+### Strategi "Gratis Ongkir" (antar kota/pulau)
+- **Ongkir bertingkat** berdasarkan jarak: sekitar kota Rp12rb → antar kota Rp18rb → antar pulau Rp38rb (simulasi)
+- **Program Gratis Ongkir penjual** — penjual opt-in saat posting (di versi live: +4% komisi); ongkir ditanggung toko, produk dapat badge 🚚 GRATIS ONGKIR di feed
+- **Voucher subsidi platform** — belanja min. Rp100rb otomatis dapat potongan ongkir s.d. Rp20rb; sisanya dibayar pembeli (model plafon ala Shopee/Tokopedia)
+- Rincian di checkout selalu transparan: ongkir asli, siapa yang menanggung, dan sisa yang dibayar
+
 ### Otomatisasi
 - Alur payment gateway: invoice → QRIS/VA → **webhook** → status "Dana Ditahan (Rekber)" otomatis
 - Timeline status per moda: ekspedisi (Dikirim → Tiba), driver (Menjemput → Diantar → Tiba), jasa (Dikerjakan → Hasil dikirim)
