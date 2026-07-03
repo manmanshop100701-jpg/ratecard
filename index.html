@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MONGG Market — Sosmed Khusus Jualan</title>
-<meta name="description" content="Marketplace bergaya media sosial: barang baru & bekas, rekber aman, COD radius terdekat, dan antar driver instan.">
+<title>Lebak.market — Sosmed Jualan & Kuliner Lebak</title>
+<meta name="description" content="Marketplace lokal Lebak, Banten: jual-beli aman rekber, COD terdekat, driver instan, chat penjual, dan direktori kuliner lengkap dengan menu.">
 <style>
 /* ============ RESET & TOKENS ============ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -67,7 +67,7 @@ body::before{
   border:1.5px solid var(--ink);border-radius:999px;padding:3px 12px;
 }
 .b-jasa{background:#ffe0ec}.b-makanan{background:#fff3c4}.b-elektronik{background:#d8f3ff}
-.b-ikan{background:#d9f8ea}.b-fashion{background:#ece7ff}
+.b-ikan{background:#d9f8ea}.b-fashion{background:#ece7ff}.b-kriya{background:#ffe8d9}
 .b-bekas{background:#ffe8d9}.b-baru{background:#d9f8ea}
 .hidden{display:none!important}
 
@@ -77,11 +77,11 @@ header{
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   border-bottom:2.5px solid var(--ink);
 }
-.head-inner{display:flex;align-items:center;gap:16px;height:70px}
+.head-inner{display:flex;align-items:center;gap:14px;height:70px}
 .logo{font-weight:800;font-size:19px;display:flex;align-items:center;gap:9px;flex:none}
 .logo .mark{
   width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:18px;
-  background:linear-gradient(135deg,var(--yellow),var(--coral));border:2px solid var(--ink);
+  background:linear-gradient(135deg,var(--mint),var(--yellow));border:2px solid var(--ink);
 }
 .logo .word em{font-style:normal;color:var(--coral)}
 .search{
@@ -89,7 +89,7 @@ header{
   border-radius:999px;padding:9px 18px;box-shadow:0 3px 0 rgba(43,36,64,.12);min-width:0;
 }
 .search input{border:none;outline:none;flex:1;font-family:inherit;font-size:14px;background:transparent;color:var(--ink);min-width:0}
-.head-actions{display:flex;gap:10px;flex:none}
+.head-actions{display:flex;gap:9px;flex:none;align-items:center}
 .icon-btn{
   position:relative;width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);
   background:#fff;display:grid;place-items:center;font-size:18px;
@@ -101,10 +101,21 @@ header{
   background:var(--coral);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;
   border:2px solid var(--ink);padding:0 4px;
 }
-@media(max-width:640px){.logo .word{display:none}}
+.ava-btn{
+  width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);font-weight:800;font-size:16px;
+  background:linear-gradient(135deg,var(--yellow),var(--peach));box-shadow:0 3px 0 rgba(43,36,64,.15);
+  display:grid;place-items:center;transition:transform .15s;
+}
+.ava-btn:hover{transform:translateY(-2px)}
+.login-btn{
+  padding:10px 22px;border-radius:999px;border:2px solid var(--ink);background:var(--ink);color:#fff;
+  font-weight:800;font-size:13.5px;box-shadow:0 3px 0 rgba(43,36,64,.3);transition:all .15s;
+}
+.login-btn:hover{background:var(--coral)}
+@media(max-width:680px){.logo .word{display:none}}
 
 /* ============ HERO STRIP ============ */
-.hero-strip{padding:34px 0 8px}
+.hero-strip{padding:32px 0 8px}
 .hero-strip h1{font-size:clamp(22px,3.6vw,32px)}
 .hero-strip .hl{position:relative;display:inline-block;z-index:1;white-space:nowrap}
 .hero-strip .hl::after{
@@ -112,7 +123,8 @@ header{
   background:var(--yellow);border-radius:6px;transform:rotate(-1deg);
 }
 .hero-strip p{color:var(--muted);font-size:14.5px;margin-top:4px}
-.stories{display:flex;gap:18px;overflow-x:auto;padding:22px 4px 10px;scrollbar-width:none}
+.quick-row{display:flex;gap:11px;flex-wrap:wrap;margin-top:16px}
+.stories{display:flex;gap:18px;overflow-x:auto;padding:20px 4px 10px;scrollbar-width:none}
 .stories::-webkit-scrollbar{display:none}
 .story{flex:none;text-align:center;width:74px}
 .story .ring{
@@ -149,6 +161,11 @@ header{
   background:#fff;border:2.5px solid var(--ink);border-radius:24px;overflow:hidden;
   box-shadow:0 6px 0 rgba(43,36,64,.12);
 }
+.post.lokal{box-shadow:0 6px 0 rgba(34,197,94,.35)}
+.lokal-strip{
+  background:linear-gradient(90deg,#6ee7b7,#ffd93d);border-bottom:2.5px solid var(--ink);
+  font-size:12px;font-weight:800;padding:6px 18px;letter-spacing:.6px;
+}
 .post-head{display:flex;align-items:center;gap:12px;padding:15px 18px}
 .post-head .ava{
   width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);
@@ -167,10 +184,7 @@ header{
   border-radius:999px;padding:7px 18px;font-weight:800;font-size:15px;
   box-shadow:0 4px 0 rgba(43,36,64,.2);transform:rotate(-2deg);
 }
-.post-media .cond-tag{
-  position:absolute;left:16px;top:14px;border:2px solid var(--ink);
-  border-radius:999px;padding:5px 14px;font-weight:800;font-size:12px;background:#fff;
-}
+.post-media .cond-tag{position:absolute;left:16px;top:14px;border-width:2px;background:#fff}
 .post-media .dist-tag{
   position:absolute;right:16px;bottom:14px;background:var(--ink);color:#fff;border:2px solid #fff;
   border-radius:999px;padding:5px 14px;font-weight:800;font-size:12px;
@@ -196,14 +210,14 @@ header{
   display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;
   border:1.5px solid var(--ink);border-radius:999px;padding:4px 12px;
 }
-.pk-cod{background:#d9f8ea}.pk-rekber{background:#fff3c4}.pk-driver{background:#d8f3ff}.pk-far{background:#f1ede4;color:var(--muted);border-color:rgba(43,36,64,.35)}
+.pk-cod{background:#d9f8ea}.pk-rekber{background:#fff3c4}.pk-driver{background:#d8f3ff}
+.pk-far{background:#f1ede4;color:var(--muted);border-color:rgba(43,36,64,.35)}.pk-lokal{background:linear-gradient(90deg,#6ee7b7,#ffd93d)}
 .post-cta{display:flex;gap:10px;flex-wrap:wrap}
-.post-cta .btn{flex:1;min-width:130px}
+.post-cta .btn{flex:1;min-width:110px}
 .fav-btn.on{background:#ffe0ec;transform:rotate(-1.5deg)}
 .empty-feed{text-align:center;background:#fff;border:2.5px dashed var(--ink);border-radius:24px;padding:60px 24px}
 .empty-feed .big{font-size:56px;display:block;margin-bottom:12px}
 
-/* media gradients */
 .g-1{background:linear-gradient(135deg,#ffd93d,#ffc09f)}
 .g-2{background:linear-gradient(135deg,#ff8fab,#c4b5fd)}
 .g-3{background:linear-gradient(135deg,#7dd3fc,#6ee7b7)}
@@ -256,7 +270,7 @@ header{
 .modal-body{padding:22px 24px 26px}
 .x-btn{
   width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);background:#fff;
-  display:grid;place-items:center;font-size:15px;font-weight:800;box-shadow:0 3px 0 rgba(43,36,64,.15);
+  display:grid;place-items:center;font-size:15px;font-weight:800;box-shadow:0 3px 0 rgba(43,36,64,.15);flex:none;
 }
 .drawer{
   position:fixed;top:0;right:0;bottom:0;width:min(400px,94vw);z-index:110;background:var(--bg);
@@ -264,13 +278,29 @@ header{
   display:flex;flex-direction:column;animation:slide .25s ease;
 }
 @keyframes slide{from{transform:translateX(100%)}to{transform:none}}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:2.5px solid var(--ink)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:2.5px solid var(--ink);gap:10px}
 .drawer-body{flex:1;overflow-y:auto;padding:18px 22px}
+.drawer-foot{padding:14px 18px;border-top:2.5px solid var(--ink);background:#fff}
 .fav-row{display:flex;gap:12px;align-items:center;background:#fff;border:2px solid var(--ink);border-radius:16px;padding:12px;margin-bottom:12px;box-shadow:0 3px 0 rgba(43,36,64,.1)}
 .fav-row .em{width:52px;height:52px;border-radius:12px;border:2px solid var(--ink);display:grid;place-items:center;font-size:24px;flex:none}
 .fav-row .inf{flex:1;min-width:0}
 .fav-row .inf b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fav-row .inf span{font-size:12px;color:var(--muted);font-weight:700}
+
+/* ============ AUTH ============ */
+.auth-tabs{display:flex;gap:10px;margin-bottom:20px}
+.auth-tabs .chip{flex:1;justify-content:center}
+.auth-hero{
+  text-align:center;background:linear-gradient(135deg,#d9f8ea,#fff3c4);border:2px solid var(--ink);
+  border-radius:18px;padding:18px;margin-bottom:18px;
+}
+.auth-hero .big{font-size:38px;display:block}
+.auth-hero b{font-size:15px}
+.auth-hero p{font-size:12.5px;color:#5d5470;margin-top:4px}
+.dual-badge{
+  display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--ink);
+  border-radius:999px;padding:6px 16px;font-size:12px;font-weight:800;margin-top:10px;
+}
 
 /* ============ FORMS ============ */
 label.f{display:block;font-size:13px;font-weight:800;margin:14px 0 6px}
@@ -280,8 +310,8 @@ input.f,select.f,textarea.f{
 }
 textarea.f{resize:vertical;min-height:80px}
 input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
-.check-row{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;margin-top:14px}
-.check-row input{width:19px;height:19px;accent-color:var(--coral)}
+.check-row{display:flex;align-items:flex-start;gap:10px;font-size:13px;font-weight:700;margin-top:14px}
+.check-row input{width:19px;height:19px;accent-color:var(--coral);margin-top:2px;flex:none}
 
 /* ============ BUY FLOW ============ */
 .steps-ind{display:flex;gap:8px;margin-bottom:20px}
@@ -313,10 +343,9 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   background:#fff3c4;border:2px dashed var(--ink);border-radius:14px;padding:12px 16px;
   font-size:12.5px;font-weight:600;margin-top:14px;
 }
-.sum-row{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;color:var(--muted)}
+.sum-row{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;color:var(--muted);gap:14px}
 .sum-row.total{font-size:16px;font-weight:800;color:var(--ink);border-top:2px dashed rgba(43,36,64,.25);margin-top:6px;padding-top:10px}
 
-/* payment instruction */
 .pay-box{background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:22px;text-align:center;box-shadow:0 5px 0 rgba(43,36,64,.12)}
 .qris{
   width:190px;height:190px;margin:14px auto;border:2.5px solid var(--ink);border-radius:14px;
@@ -355,6 +384,60 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 .sb-unpaid{background:#ffe0ec}.sb-held{background:#fff3c4}.sb-move{background:#d8f3ff}.sb-check{background:#ece7ff}.sb-done{background:#d9f8ea}.sb-cod{background:#ffe8d9}
 .order-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
 
+/* ============ CHAT ============ */
+.chat-list-row{
+  display:flex;gap:12px;align-items:center;background:#fff;border:2px solid var(--ink);
+  border-radius:16px;padding:12px 14px;margin-bottom:12px;cursor:pointer;
+  box-shadow:0 3px 0 rgba(43,36,64,.1);transition:transform .15s;
+}
+.chat-list-row:hover{transform:translateY(-2px)}
+.chat-list-row .ava{width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:20px;flex:none;background:var(--ac,#fff3c4)}
+.chat-list-row .inf{flex:1;min-width:0}
+.chat-list-row b{font-size:14px;display:block}
+.chat-list-row span{font-size:12px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-list-row .dot-unread{width:12px;height:12px;border-radius:50%;background:var(--coral);border:2px solid var(--ink);flex:none}
+.chat-thread{display:flex;flex-direction:column;gap:10px}
+.bubble{
+  max-width:82%;padding:10px 16px;border:2px solid var(--ink);border-radius:18px;
+  font-size:13.5px;box-shadow:0 3px 0 rgba(43,36,64,.1);
+}
+.bubble.me{align-self:flex-end;background:var(--yellow);border-bottom-right-radius:6px}
+.bubble.them{align-self:flex-start;background:#fff;border-bottom-left-radius:6px}
+.bubble small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+.chat-input{display:flex;gap:9px}
+.chat-input input{
+  flex:1;border:2px solid var(--ink);border-radius:999px;padding:11px 17px;font-family:inherit;
+  font-size:13.5px;outline:none;background:#fff;min-width:0;
+}
+.chat-input button{
+  width:46px;height:46px;border-radius:50%;border:2px solid var(--ink);background:var(--coral);
+  color:#fff;font-size:17px;box-shadow:0 3px 0 var(--ink);flex:none;
+}
+
+/* ============ KULINER ============ */
+.resto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
+.resto-card{
+  background:#fff;border:2.5px solid var(--ink);border-radius:22px;overflow:hidden;
+  box-shadow:0 6px 0 rgba(43,36,64,.12);transition:transform .2s;display:flex;flex-direction:column;
+}
+.resto-card:hover{transform:translateY(-5px)}
+.resto-media{aspect-ratio:16/8;display:grid;place-items:center;font-size:52px;border-bottom:2.5px solid var(--ink);position:relative}
+.resto-media .dist-tag{
+  position:absolute;right:12px;bottom:10px;background:var(--ink);color:#fff;border:2px solid #fff;
+  border-radius:999px;padding:4px 13px;font-weight:800;font-size:11.5px;
+}
+.resto-media .type-tag{position:absolute;left:12px;top:10px;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:4px 13px;font-weight:800;font-size:11.5px}
+.resto-body{padding:16px 18px 18px;display:flex;flex-direction:column;flex:1}
+.resto-body h4{font-size:16.5px;margin-bottom:2px}
+.resto-meta{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:10px}
+.menu-mini{border:2px dashed rgba(43,36,64,.3);border-radius:14px;padding:10px 14px;margin-bottom:12px;background:#fffdf6}
+.menu-mini .mtitle{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.menu-line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:3px 0;border-bottom:1.5px dotted rgba(43,36,64,.18)}
+.menu-line:last-child{border-bottom:none}
+.menu-line b{white-space:nowrap}
+.resto-body .btn{margin-top:auto}
+.resto-info-row{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:#4d4762;padding:5px 0}
+
 /* ============ TOAST ============ */
 #toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:200;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
 .toast{
@@ -362,7 +445,7 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   border:2px solid #fff;box-shadow:0 6px 20px rgba(43,36,64,.4);animation:toastIn .3s ease;max-width:90vw;
 }
 @keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
-.view-tabs{display:flex;gap:10px;margin-bottom:20px}
+.view-tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -371,23 +454,31 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 <header>
   <div class="wrap head-inner">
     <a href="#" class="logo" onclick="showView('feed');return false">
-      <span class="mark">🛍️</span>
-      <span class="word">MONGG<em>.</em>market</span>
+      <span class="mark">🌾</span>
+      <span class="word">Lebak<em>.</em>market</span>
     </a>
     <div class="search">
       <span>🔍</span>
-      <input id="searchInput" type="text" placeholder="Cari barang second, jasa, ikan hias..." oninput="renderFeed()">
+      <input id="searchInput" type="text" placeholder="Cari di Lebak: barang, jasa, ikan hias..." oninput="renderFeed()">
     </div>
     <div class="head-actions">
+      <button class="icon-btn" onclick="showView('kuliner')" title="Kuliner Lebak">🍽️</button>
+      <button class="icon-btn" onclick="openChatList()" title="Chat">💬<span id="chatCount" class="count hidden">0</span></button>
       <button class="icon-btn" onclick="showView('orders')" title="Transaksi Saya">📦<span id="orderCount" class="count hidden">0</span></button>
       <button class="icon-btn" onclick="openFavs()" title="Favorit">💖<span id="favCount" class="count hidden">0</span></button>
+      <span id="authSlot"></span>
     </div>
   </div>
 </header>
 
 <div class="wrap hero-strip" id="heroStrip">
-  <h1>Belanja rasa <span class="hl">scrolling sosmed</span> 🤳</h1>
-  <p>Barang baru & bekas dari orang sekitarmu — rekber aman, bisa COD, bisa diantar driver. Beres!</p>
+  <h1>🌾 Bangga Belanja <span class="hl">Produk Lebak</span></h1>
+  <p>Marketplace-nya urang Lebak — penjual sekitarmu tampil paling atas. Rekber aman, COD dekat, driver siap antar!</p>
+  <div class="quick-row">
+    <button class="chip" onclick="showView('kuliner')">🍽️ Kuliner Lebak Terdekat</button>
+    <button class="chip" onclick="openSell()">＋ Jual Barangmu</button>
+    <button class="chip" onclick="openInfoBiaya()">ℹ️ Biaya & Komisi</button>
+  </div>
   <div class="stories" id="stories"></div>
 </div>
 
@@ -396,7 +487,7 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   <div class="wrap">
     <div class="cat-scroll" id="catScroll"></div>
     <div class="radius-row">
-      <span class="loc">📍 Lokasimu: <b style="color:var(--ink)">Tebet, Jaksel</b> · Radius:</span>
+      <span class="loc">📍 <b id="locLabel" style="color:var(--ink)">Rangkasbitung, Lebak</b> · Radius:</span>
       <span id="radiusChips"></span>
     </div>
   </div>
@@ -408,32 +499,46 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
     <div id="view-feed">
       <div class="feed" id="feed"></div>
     </div>
+
     <div id="view-orders" class="hidden">
-      <div class="view-tabs">
-        <button class="chip" onclick="showView('feed')">← Kembali belanja</button>
-      </div>
+      <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
       <h2 style="margin-bottom:18px">📦 Transaksi Saya</h2>
       <div id="ordersList"></div>
+    </div>
+
+    <div id="view-kuliner" class="hidden">
+      <div class="view-tabs">
+        <button class="chip" onclick="showView('feed')">← Kembali belanja</button>
+        <span class="chip" style="background:#ffe8d9">🍽️ Cek menu & lokasi — pesannya langsung ke tempatnya ya!</span>
+      </div>
+      <h2 style="margin-bottom:6px">🍽️ Kuliner & Nongkrong di Lebak</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:22px">Resto, warung, cafe & coffeeshop terdekat dari lokasimu — lengkap dengan menu dan harga.</p>
+      <div class="resto-grid" id="restoGrid"></div>
     </div>
   </main>
 
   <!-- SIDEBAR -->
   <aside class="side">
+    <div class="side-card" style="background:linear-gradient(150deg,#d9f8ea,#fff3c4)">
+      <h3>🌾 Lokal Pride Lebak</h3>
+      <p style="font-size:13px;color:#4d5f52;margin-bottom:10px">Penjual dari Lebak selalu <b>diprioritaskan di feed</b>. Belanja tetangga sendiri = ekonomi Lebak muter di Lebak! 💪</p>
+      <div class="how-step"><span class="n">✓</span><span>Gratis ongkir? Nggak perlu — COD-an aja, deket!</span></div>
+      <div class="how-step"><span class="n">✓</span><span>Driver lokal antar mulai Rp10rb</span></div>
+    </div>
     <div class="side-card">
       <h3>🛡️ Transaksi aman (win-win)</h3>
-      <div class="how-step"><span class="n">1</span><span>Pembeli bayar → dana <b>ditahan sistem</b> (rekber), bukan langsung ke penjual</span></div>
-      <div class="how-step"><span class="n">2</span><span>Penjual kirim barang / serahkan ke driver</span></div>
-      <div class="how-step"><span class="n">3</span><span>Barang tiba → pembeli <b>cek dulu</b> sesuai deskripsi</span></div>
-      <div class="how-step"><span class="n">4</span><span>Pembeli konfirmasi ✅ → dana baru cair ke penjual</span></div>
-      <div class="how-step"><span class="n">5</span><span>Barang tak sesuai? Ajukan komplain — dana tetap tertahan sampai beres</span></div>
+      <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber)</span></div>
+      <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan</span></div>
+      <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi ✅ → dana cair</span></div>
+      <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan sampai beres</span></div>
     </div>
     <div class="side-card">
       <h3>🔥 Terdekat & banyak dicari</h3>
       <div id="trending"></div>
     </div>
     <div class="side-card" style="background:#fff3c4">
-      <h3>💡 Mau ikut jualan?</h3>
-      <p style="font-size:13px;color:#5d5470;margin-bottom:14px">Posting barang baru/bekas gratis. Aktifkan COD kalau mau ketemuan di sekitarmu.</p>
+      <h3>💡 1 akun = jual & beli</h3>
+      <p style="font-size:13px;color:#5d5470;margin-bottom:14px">Tanpa daftar toko terpisah — akunmu otomatis bisa posting jualan sekaligus belanja.</p>
       <button class="btn btn-coral btn-sm" onclick="openSell()">+ Posting Jualan</button>
     </div>
   </aside>
@@ -445,16 +550,15 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 
 <script>
 /* ================================================================
-   MONGG.market v2 — sosmed jualan barang baru & bekas (demo front-end).
-   - Favorit menggantikan keranjang; pembelian per-barang (khas barang second)
-   - Rekber (escrow): dana ditahan sistem, cair setelah pembeli konfirmasi
-   - Radius jarak: filter penjual terdekat, buka opsi COD ketemuan
-   - Driver instan: barang diantar hari itu tanpa ketemuan
-   Pembayaran = simulasi alur payment gateway (webhook dsb. dijalankan
-   timer browser; di produksi ini tugas server backend).
+   Lebak.market — sosmed jualan lokal Lebak, Banten (demo front-end).
+   Fitur: auth (register/login), 1 akun jual+beli, prioritas penjual
+   Lebak, chat penjual-pembeli (balasan disimulasikan), rekber escrow,
+   COD radius, driver resmi (mulai Rp10rb), monetisasi platform, dan
+   direktori kuliner Lebak dengan menu lengkap.
+   Data di localStorage; pembayaran = simulasi alur payment gateway.
    ================================================================ */
 
-/* ---------- DATA ---------- */
+/* ---------- KONSTANTA ---------- */
 const CATS = [
   { id:'all',        label:'✨ Semua' },
   { id:'jasa',       label:'🛠️ Jasa' },
@@ -462,86 +566,25 @@ const CATS = [
   { id:'elektronik', label:'📱 Elektronik' },
   { id:'ikan',       label:'🐠 Ikan Hias' },
   { id:'fashion',    label:'👕 Fashion' },
+  { id:'kriya',      label:'🧺 Kriya Lebak' },
 ];
-const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ikan:'b-ikan', fashion:'b-fashion' };
-const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ikan:'Ikan Hias', fashion:'Fashion' };
+const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ikan:'b-ikan', fashion:'b-fashion', kriya:'b-kriya' };
+const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ikan:'Ikan Hias', fashion:'Fashion', kriya:'Kriya Lebak' };
 const RADII = [ {v:5,l:'≤ 5 km'}, {v:10,l:'≤ 10 km'}, {v:25,l:'≤ 25 km'}, {v:Infinity,l:'Semua'} ];
 const COD_MAX_KM = 25, DRIVER_MAX_KM = 15;
+const KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
 
-const SEED = [
-  { id:1, cat:'elektronik', emoji:'📷', g:'g-4', name:'Kamera Mirrorless Second — Mulus', price:4200000, stock:1, cond:'bekas',
-    seller:'GadgetKu Second', ava:'🤖', ac:'#ece7ff', verified:true, time:'1 jam lalu', likes:342, loc:'Tebet, Jaksel', dist:1.2, cod:true,
-    desc:'Pemakaian 1 tahun, shutter count 8rb, fullset box. Minus pemakaian wajar. Bisa cek langsung sepuasnya!' },
-  { id:2, cat:'ikan', emoji:'🐠', g:'g-3', name:'Cupang Halfmoon Blue Rim', price:85000, stock:6, cond:'baru',
-    seller:'Betta House', ava:'🐟', ac:'#d8f3ff', verified:true, time:'2 jam lalu', likes:214, loc:'Pancoran, Jaksel', dist:3.4, cod:true,
-    desc:'Grade A, umur 4 bulan, sehat & agresif. COD bisa lihat ikan langsung, packing oksigen kalau dikirim.' },
-  { id:3, cat:'jasa', emoji:'🎬', g:'g-2', name:'Jasa Edit Video Reels/TikTok', price:150000, stock:99, cond:'baru',
-    seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'3 jam lalu', likes:128, loc:'Online', dist:0, cod:false,
-    desc:'Editing rapi, subtitle otomatis, backsound kekinian. Pengerjaan 2-3 hari. 50+ project selesai!' },
-  { id:4, cat:'elektronik', emoji:'⌨️', g:'g-3', name:'Keyboard Mechanical — Like New', price:380000, stock:1, cond:'bekas',
-    seller:'Rakit Corner', ava:'🔧', ac:'#d8f3ff', verified:false, time:'4 jam lalu', likes:265, loc:'Kuningan, Jaksel', dist:4.8, cod:true,
-    desc:'Baru pakai 2 bulan, pindah ke HHKB jadi dijual. Switch red, keycap PBT, dus lengkap. Nego tipis.' },
-  { id:5, cat:'makanan', emoji:'🍰', g:'g-6', name:'Brownies Lumer Homemade (Box)', price:45000, stock:15, cond:'baru',
-    seller:'Dapur Bunda', ava:'👩‍🍳', ac:'#fff3c4', verified:false, time:'5 jam lalu', likes:96, loc:'Manggarai, Jaksel', dist:2.1, cod:true,
-    desc:'Fudgy lumer isi 9. Varian coklat, keju, red velvet. Fresh setiap hari — paling enak diantar driver!' },
-  { id:6, cat:'fashion', emoji:'🧥', g:'g-2', name:'Jaket Denim Vintage — Second', price:120000, stock:1, cond:'bekas',
-    seller:'Thrift & Co', ava:'🧢', ac:'#fff3c4', verified:false, time:'7 jam lalu', likes:159, loc:'Setiabudi, Jaksel', dist:6.7, cod:true,
-    desc:'Size L, no defect, washed sempurna. COD boleh coba dulu. First pay first get ya!' },
-  { id:7, cat:'ikan', emoji:'🦐', g:'g-5', name:'Udang Red Cherry (10 ekor)', price:50000, stock:12, cond:'baru',
-    seller:'Aquascape Corner', ava:'🌿', ac:'#d9f8ea', verified:false, time:'9 jam lalu', likes:73, loc:'Kalibata, Jaksel', dist:5.9, cod:true,
-    desc:'Warna merah pekat, cocok untuk aquascape. Bonus moss. Ambil sendiri lebih aman untuk udangnya!' },
-  { id:8, cat:'elektronik', emoji:'🎧', g:'g-4', name:'TWS Earbuds ANC — Baru Segel', price:299000, stock:23, cond:'baru',
-    seller:'GadgetKu Second', ava:'🤖', ac:'#ece7ff', verified:true, time:'12 jam lalu', likes:198, loc:'Tebet, Jaksel', dist:1.2, cod:true,
-    desc:'Baru & bersegel, garansi resmi 1 tahun. ANC, baterai 30 jam, BT 5.3.' },
-  { id:9, cat:'makanan', emoji:'🍗', g:'g-1', name:'Ayam Geprek Sambal Bawang', price:18000, stock:30, cond:'baru',
-    seller:'Geprek Mantap', ava:'🔥', ac:'#ffe0ec', verified:false, time:'1 hari lalu', likes:158, loc:'Cikini, Jakpus', dist:8.3, cod:false,
-    desc:'Ayam crispy + sambal bawang level 1-10. Khusus diantar driver / ambil sendiri — masih anget!' },
-  { id:10, cat:'fashion', emoji:'👟', g:'g-1', name:'Sepatu Lari Second — 8/10', price:250000, stock:1, cond:'bekas',
-    seller:'Lari Yuk Store', ava:'🏃', ac:'#d9f8ea', verified:false, time:'1 hari lalu', likes:87, loc:'Depok', dist:19.5, cod:true,
-    desc:'Size 42, dipakai 5x, sol masih tebal. Jual karena kegedean. Boleh COD area Depok-Jaksel.' },
-  { id:11, cat:'ikan', emoji:'🐡', g:'g-4', name:'Guppy Albino Full Red (Pasang)', price:35000, stock:10, cond:'baru',
-    seller:'Guppy Bekasi', ava:'🐟', ac:'#d8f3ff', verified:true, time:'2 hari lalu', likes:112, loc:'Bekasi', dist:28.4, cod:true,
-    desc:'Sepasang indukan bagus, siap breeding, sehat makan lahap. Luar kota dikirim packing oksigen.' },
-  { id:12, cat:'jasa', emoji:'📱', g:'g-1', name:'Desain UI/UX Aplikasi (per screen)', price:100000, stock:99, cond:'baru',
-    seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'2 hari lalu', likes:87, loc:'Online', dist:0, cod:false,
-    desc:'Mockup high-fidelity di Figma + prototype interaktif. Clean, konsisten, developer-friendly.' },
-  { id:13, cat:'ikan', emoji:'🐟', g:'g-3', name:'Channa Maru Yellow Sentarum', price:450000, stock:2, cond:'baru',
-    seller:'Borneo Fish Farm', ava:'🎣', ac:'#d9f8ea', verified:true, time:'4 jam lalu', likes:301, loc:'Pontianak, Kalbar', dist:730, cod:false, freeship:true,
-    desc:'Channa maru asli Sentarum 18-20 cm, warna kuning keluar. Kirim antar pulau aman: packing oksigen + styrofoam + garansi hidup. GRATIS ONGKIR ditanggung toko!' },
-  { id:14, cat:'fashion', emoji:'👜', g:'g-6', name:'Tas Rotan Handmade Bali', price:135000, stock:5, cond:'baru',
-    seller:'Bali Craft', ava:'🌺', ac:'#fff3c4', verified:false, time:'8 jam lalu', likes:144, loc:'Gianyar, Bali', dist:960, cod:false,
-    desc:'Tas rotan anyaman tangan pengrajin Gianyar. Belanja min Rp100rb otomatis dapat voucher gratis ongkir s.d. Rp20rb!' },
-];
+/* --- Monetisasi platform (pendapatan developer) --- */
+const APP_FEE = 1000;              // biaya aplikasi per transaksi rekber (pembeli)
+const SELLER_COMMISSION = 0.03;    // komisi 3% dipotong saat dana cair (penjual)
+const DRIVER_COMMISSION = 0.10;    // 10% dari ongkos driver (mitra driver)
+const FREESHIP_EXTRA = 0.04;       // +4% komisi program gratis ongkir (penjual opt-in)
 
-const PAY_METHODS = [
-  { id:'qris',  name:'QRIS',                 ic:'🔳', pc:'#fff3c4', fee:s=>Math.round(s*0.007), feeLabel:'Biaya 0,7%',  desc:'Scan dari semua e-wallet & m-banking' },
-  { id:'va',    name:'Virtual Account Bank', ic:'🏦', pc:'#d8f3ff', fee:()=>4000,               feeLabel:'Biaya Rp4.000', desc:'BCA, BRI, Mandiri, BNI' },
-  { id:'ewal',  name:'E-Wallet',             ic:'📲', pc:'#d9f8ea', fee:s=>Math.round(s*0.015), feeLabel:'Biaya 1,5%',  desc:'GoPay, OVO, DANA, ShopeePay' },
-];
+/* --- Tarif driver RESMI: Rp10.000 (0–3 km) + Rp2.500/km berikutnya --- */
+const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
 
-const MEET_POINTS = ['Minimarket / Indomaret terdekat', 'Halaman kantor polisi (paling aman)', 'Food court mall', 'Halte / stasiun ramai', 'Kampus / area kantor'];
-
-/* ---------- STATE ---------- */
-const store = {
-  get(k, d){ try { return JSON.parse(localStorage.getItem('mongg_'+k)) ?? d; } catch { return d; } },
-  set(k, v){ localStorage.setItem('mongg_'+k, JSON.stringify(v)); }
-};
-let products  = [...SEED, ...store.get('products', [])];
-let favs      = new Set(store.get('favs', []));
-let orders    = store.get('orders', []);
-let likes     = new Set(store.get('likes', []));
-let activeCat = 'all';
-let radiusKm  = Infinity;
-
-const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
-const uid = () => 'INV-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
-const km = d => d === 0 ? 'Online' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
-const driverFee = d => Math.max(10000, Math.round(d * 3000 / 1000) * 1000);
-
-/* Ongkir bertingkat: sekitar kota → antar kota → antar pulau */
+/* --- Ongkir ekspedisi bertingkat + strategi gratis ongkir --- */
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
-/* Strategi "gratis ongkir": (1) ditanggung penjual via program (+komisi),
-   (2) voucher subsidi platform dengan syarat min. belanja & plafon */
 const FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 function shipBreakdown(p, mode){
   if (mode === 'driver') return { base: driverFee(p.dist), seller: 0, subsidy: 0 };
@@ -551,24 +594,258 @@ function shipBreakdown(p, mode){
   return { base, seller: 0, subsidy };
 }
 
+const SEED = [
+  { id:1, cat:'kriya', emoji:'🍯', g:'g-5', name:'Gula Aren Cetak Asli Cimarga', price:35000, stock:40, cond:'baru',
+    seller:'Aren Lestari', ava:'🌴', ac:'#d9f8ea', verified:true, time:'1 jam lalu', likes:412, loc:'Cimarga, Lebak', dist:6.2, cod:true, lebak:true,
+    desc:'Gula aren murni dari penderes Cimarga, tanpa campuran. 1 kg isi 8 cetak. Manisnya beda, dijamin!' },
+  { id:2, cat:'elektronik', emoji:'📷', g:'g-4', name:'Kamera Mirrorless Second — Mulus', price:4200000, stock:1, cond:'bekas',
+    seller:'Rangkas Gadget', ava:'🤖', ac:'#ece7ff', verified:true, time:'2 jam lalu', likes:342, loc:'Rangkasbitung, Lebak', dist:1.1, cod:true, lebak:true,
+    desc:'Pemakaian 1 tahun, shutter count 8rb, fullset box. COD di Rangkas bisa cek sepuasnya!' },
+  { id:3, cat:'ikan', emoji:'🐠', g:'g-3', name:'Cupang Halfmoon Blue Rim', price:85000, stock:6, cond:'baru',
+    seller:'Betta Rangkas', ava:'🐟', ac:'#d8f3ff', verified:true, time:'3 jam lalu', likes:214, loc:'Rangkasbitung, Lebak', dist:2.3, cod:true, lebak:true,
+    desc:'Grade A, umur 4 bulan, sehat & agresif. COD bisa pilih ikan langsung di kolam!' },
+  { id:4, cat:'kriya', emoji:'🧺', g:'g-1', name:'Tas Anyaman Pandan Handmade', price:65000, stock:8, cond:'baru',
+    seller:'Kriya Leuwidamar', ava:'🧶', ac:'#fff3c4', verified:true, time:'4 jam lalu', likes:287, loc:'Leuwidamar, Lebak', dist:14.8, cod:true, lebak:true,
+    desc:'Anyaman tangan pengrajin Leuwidamar, kuat & rapi. Dukung kriya lokal Lebak! 🌾' },
+  { id:5, cat:'makanan', emoji:'🥟', g:'g-6', name:'Emping Melinjo Renyah (500gr)', price:28000, stock:25, cond:'baru',
+    seller:'Dapur Bu Iis', ava:'👩‍🍳', ac:'#fff3c4', verified:false, time:'5 jam lalu', likes:176, loc:'Warunggunung, Lebak', dist:7.4, cod:true, lebak:true,
+    desc:'Emping asli buatan rumah, digoreng pas pesan biar renyah. Varian original & pedas manis.' },
+  { id:6, cat:'jasa', emoji:'🎬', g:'g-2', name:'Jasa Edit Video Reels/TikTok', price:150000, stock:99, cond:'baru',
+    seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'6 jam lalu', likes:128, loc:'Online', dist:0, cod:false, lebak:true,
+    desc:'Editing rapi, subtitle otomatis, backsound kekinian. Pengerjaan 2-3 hari. Karya anak Lebak! 🌾' },
+  { id:7, cat:'elektronik', emoji:'⌨️', g:'g-3', name:'Keyboard Mechanical — Like New', price:380000, stock:1, cond:'bekas',
+    seller:'Rakit Cibadak', ava:'🔧', ac:'#d8f3ff', verified:false, time:'8 jam lalu', likes:265, loc:'Cibadak, Lebak', dist:4.2, cod:true, lebak:true,
+    desc:'Baru pakai 2 bulan. Switch red, keycap PBT, dus lengkap. Nego tipis, COD sekitar Cibadak.' },
+  { id:8, cat:'fashion', emoji:'🧥', g:'g-2', name:'Jaket Denim Vintage — Second', price:120000, stock:1, cond:'bekas',
+    seller:'Thrift Maja', ava:'🧢', ac:'#fff3c4', verified:false, time:'10 jam lalu', likes:159, loc:'Maja, Lebak', dist:17.6, cod:true, lebak:true,
+    desc:'Size L, no defect, washed sempurna. COD stasiun Maja oke. First pay first get!' },
+  { id:9, cat:'ikan', emoji:'🦐', g:'g-5', name:'Udang Red Cherry (10 ekor)', price:50000, stock:12, cond:'baru',
+    seller:'Aquascape Kalanganyar', ava:'🌿', ac:'#d9f8ea', verified:false, time:'12 jam lalu', likes:73, loc:'Kalanganyar, Lebak', dist:3.8, cod:true, lebak:true,
+    desc:'Warna merah pekat, cocok untuk aquascape. Bonus moss. Ambil sendiri lebih aman untuk udangnya!' },
+  { id:10, cat:'makanan', emoji:'🍌', g:'g-1', name:'Sale Pisang Asap Khas Lebak', price:22000, stock:30, cond:'baru',
+    seller:'Oleh-oleh Sajira', ava:'🍯', ac:'#ffe0ec', verified:true, time:'14 jam lalu', likes:198, loc:'Sajira, Lebak', dist:12.1, cod:true, lebak:true,
+    desc:'Sale pisang diasap tradisional, manis legit tanpa pengawet. Oleh-oleh wajib Lebak!' },
+  { id:11, cat:'elektronik', emoji:'🎧', g:'g-4', name:'TWS Earbuds ANC — Baru Segel', price:299000, stock:23, cond:'baru',
+    seller:'Serang Elektronik', ava:'🔌', ac:'#ece7ff', verified:true, time:'1 hari lalu', likes:188, loc:'Kota Serang', dist:38, cod:false, lebak:false,
+    desc:'Baru & bersegel, garansi resmi 1 tahun. ANC, baterai 30 jam, BT 5.3.' },
+  { id:12, cat:'fashion', emoji:'👟', g:'g-1', name:'Sepatu Lari Second — 8/10', price:250000, stock:1, cond:'bekas',
+    seller:'Sneakers Jakarta', ava:'🏃', ac:'#d9f8ea', verified:false, time:'1 hari lalu', likes:87, loc:'Jakarta Selatan', dist:92, cod:false, lebak:false,
+    desc:'Size 42, dipakai 5x, sol masih tebal. Kirim-kirim aja ya, jauh soalnya.' },
+  { id:13, cat:'ikan', emoji:'🐟', g:'g-3', name:'Channa Maru Yellow Sentarum', price:450000, stock:2, cond:'baru',
+    seller:'Borneo Fish Farm', ava:'🎣', ac:'#d9f8ea', verified:true, time:'2 hari lalu', likes:301, loc:'Pontianak, Kalbar', dist:1100, cod:false, lebak:false, freeship:true,
+    desc:'Channa maru 18-20 cm. Kirim antar pulau aman: packing oksigen + styrofoam + garansi hidup. GRATIS ONGKIR!' },
+];
+
+const PAY_METHODS = [
+  { id:'qris',  name:'QRIS',                 ic:'🔳', pc:'#fff3c4', fee:s=>Math.round(s*0.007), feeLabel:'Biaya 0,7%',  desc:'Scan dari semua e-wallet & m-banking' },
+  { id:'va',    name:'Virtual Account Bank', ic:'🏦', pc:'#d8f3ff', fee:()=>4000,               feeLabel:'Biaya Rp4.000', desc:'BCA, BRI, Mandiri, BNI' },
+  { id:'ewal',  name:'E-Wallet',             ic:'📲', pc:'#d9f8ea', fee:s=>Math.round(s*0.015), feeLabel:'Biaya 1,5%',  desc:'GoPay, OVO, DANA, ShopeePay' },
+];
+
+const MEET_POINTS = ['Alun-alun Rangkasbitung', 'Depan Stasiun Rangkasbitung', 'Minimarket terdekat (sebut di chat)', 'Halaman Polres Lebak (paling aman)', 'Kampus / area kantor'];
+
+/* --- Kuliner Lebak: cek lokasi & MENU (bukan delivery) --- */
+const RESTOS = [
+  { id:1, name:'Kedai Kopi Multatuli', type:'Coffeeshop', emoji:'☕', g:'g-4', dist:0.8, rating:4.7,
+    addr:'Jl. Multatuli No. 12, Rangkasbitung', open:'08.00 – 22.00', wifi:true,
+    menu:[['Es Kopi Gula Aren Lebak',15000],['Kopi Susu Reguler',13000],['Americano',12000],['Matcha Latte',18000],['Croffle Original',18000],['Pisang Goreng Wijen',12000],['Teh Tarik',10000]] },
+  { id:2, name:'Warung Angeun Lada Bu Enah', type:'Warung', emoji:'🍲', g:'g-6', dist:1.4, rating:4.8,
+    addr:'Ps. Rangkasbitung Blok C, Rangkasbitung', open:'07.00 – 15.00', wifi:false,
+    menu:[['Angeun Lada + Nasi (khas Lebak!)',18000],['Nasi Timbel Komplit',20000],['Pepes Ikan Mas',15000],['Sayur Asem',8000],['Es Teh Manis',5000],['Es Kelapa Muda',10000]] },
+  { id:3, name:'Saung Sawah Resto', type:'Resto', emoji:'🍛', g:'g-5', dist:3.6, rating:4.6,
+    addr:'Jl. Raya Cipanas KM 4, Kalanganyar', open:'10.00 – 21.00', wifi:true,
+    menu:[['Nasi Liwet Komplit (2-3 org)',65000],['Ayam Bakar Madu',28000],['Gurame Goreng Terbang',55000],['Karedok',15000],['Sambal Dadak + Lalapan',10000],['Es Jeruk Peras',8000]] },
+  { id:4, name:'Halte 27 Coffee & Space', type:'Coffeeshop', emoji:'🎧', g:'g-2', dist:2.2, rating:4.5,
+    addr:'Jl. RT Hardiwinangun No. 27, Rangkasbitung', open:'10.00 – 23.00', wifi:true,
+    menu:[['Kopi Susu Halte',15000],['V60 Beans Lokal Banten',20000],['Red Velvet',18000],['Kentang Goreng Truffle',20000],['Indomie Kuah Telor Keju',15000],['Lemon Tea',12000]] },
+  { id:5, name:'Bakso & Mie Ayam Mas Yono', type:'Warung', emoji:'🍜', g:'g-1', dist:1.9, rating:4.6,
+    addr:'Jl. Tirtayasa (dekat alun-alun), Rangkasbitung', open:'09.00 – 21.00', wifi:false,
+    menu:[['Bakso Urat Jumbo',18000],['Bakso Biasa',13000],['Mie Ayam Bakso',16000],['Mie Ayam Ceker',15000],['Es Jeruk',6000],['Kerupuk',2000]] },
+  { id:6, name:'Kopi Kebon Baduy View', type:'Cafe', emoji:'🌄', g:'g-3', dist:13.5, rating:4.9,
+    addr:'Jl. Raya Ciboleger, Leuwidamar (arah Baduy)', open:'09.00 – 20.00', wifi:true,
+    menu:[['Kopi Tubruk Aren',12000],['Kopi Susu Kebon',16000],['Madu Hutan Lemon Hangat',18000],['Singkong Goreng Sambal Roa',15000],['Nasi Goreng Kampung',22000],['Mendoan (5 pcs)',12000]] },
+];
+
+/* ---------- STATE ---------- */
+const store = {
+  get(k, d){ try { return JSON.parse(localStorage.getItem('lebak_'+k)) ?? d; } catch { return d; } },
+  set(k, v){ localStorage.setItem('lebak_'+k, JSON.stringify(v)); }
+};
+let products  = [...SEED, ...store.get('products', [])];
+let favs      = new Set(store.get('favs', []));
+let orders    = store.get('orders', []);
+let likes     = new Set(store.get('likes', []));
+let users     = store.get('users', []);
+let session   = store.get('session', null);
+let chats     = store.get('chats', {});   // { sellerName: { msgs:[{me,text,t}], unread:0 } }
+let activeCat = 'all';
+let radiusKm  = Infinity;
+let openThread = null;
+
+const me = () => users.find(u => u.email === session) || null;
+const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
+const uid = () => 'INV-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
+const km = d => d === 0 ? 'Online' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
+const clock = t => new Date(t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+
 function toast(msg){
   const t = document.createElement('div');
   t.className = 'toast'; t.textContent = msg;
   document.getElementById('toasts').appendChild(t);
   setTimeout(() => t.remove(), 3400);
 }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- AUTH ---------- */
+function renderAuthSlot(){
+  const slot = document.getElementById('authSlot');
+  const u = me();
+  slot.innerHTML = u
+    ? `<button class="ava-btn" onclick="openProfile()" title="${esc(u.name)}">${esc(u.name.trim()[0].toUpperCase())}</button>`
+    : `<button class="login-btn" onclick="openAuth('login')">Masuk</button>`;
+}
+function needLogin(action){
+  if (me()) return false;
+  toast('🔐 Masuk dulu untuk ' + action + ' ya!');
+  openAuth('login');
+  return true;
+}
+function openAuth(tab, first){
+  const isReg = tab === 'register';
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>${first ? '👋 Wilujeng sumping!' : isReg ? '📝 Daftar Akun' : '🔑 Masuk'}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <span class="big">🌾</span>
+          <b>Lebak.market — marketplace-nya urang Lebak</b>
+          <p>Satu akun untuk semua: belanja, jualan, chat, sampai cek kuliner terdekat.</p>
+          <span class="dual-badge">🛍️ Pembeli ✔ &nbsp;·&nbsp; 🏪 Penjual ✔ &nbsp;·&nbsp; 1 akun aja</span>
+        </div>
+        <div class="auth-tabs">
+          <button class="chip ${!isReg?'active':''}" onclick="openAuth('login')">Masuk</button>
+          <button class="chip ${isReg?'active':''}" onclick="openAuth('register')">Daftar Baru</button>
+        </div>
+        ${isReg ? `
+          <label class="f">Nama lengkap</label>
+          <input class="f" id="aName" placeholder="cth: Mongg Saputra">
+          <label class="f">Email</label>
+          <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
+          <label class="f">No. HP / WhatsApp</label>
+          <input class="f" id="aPhone" type="tel" placeholder="08xxxxxxxxxx">
+          <label class="f">Kecamatan (domisili di Lebak)</label>
+          <select class="f" id="aKec">${KECAMATAN.map(k => `<option>${k}</option>`).join('')}</select>
+          <label class="f">Password (min. 6 karakter)</label>
+          <input class="f" id="aPass" type="password" placeholder="••••••••">
+          <label class="f">Ulangi password</label>
+          <input class="f" id="aPass2" type="password" placeholder="••••••••">
+          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doRegister()">🚀 Daftar & Langsung Masuk</button>
+          <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Demo: data tersimpan di browser ini saja. Versi live memakai server + enkripsi password & verifikasi OTP.</p>
+        ` : `
+          <label class="f">Email</label>
+          <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
+          <label class="f">Password</label>
+          <input class="f" id="aPass" type="password" placeholder="••••••••">
+          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doLogin()">🔑 Masuk</button>
+          <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">Belum punya akun? <a href="#" style="font-weight:800;color:var(--coral)" onclick="openAuth('register');return false">Daftar gratis →</a></p>
+          ${first ? `<button class="btn btn-sm" style="width:100%;margin-top:10px" onclick="closeModal()">👀 Lihat-lihat dulu aja</button>` : ''}
+        `}
+      </div>
+    </div>
+  </div>`;
+}
+function doRegister(){
+  const name = document.getElementById('aName').value.trim();
+  const email = document.getElementById('aEmail').value.trim().toLowerCase();
+  const phone = document.getElementById('aPhone').value.trim();
+  const kec = document.getElementById('aKec').value;
+  const pass = document.getElementById('aPass').value;
+  const pass2 = document.getElementById('aPass2').value;
+  if (!name || name.length < 3) return toast('Nama minimal 3 huruf ya 🙏');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Format email belum benar 📧');
+  if (users.some(u => u.email === email)) return toast('Email sudah terdaftar — coba masuk aja!');
+  if (!/^08\d{8,12}$/.test(phone)) return toast('No. HP format 08xxxxxxxxxx ya 📱');
+  if (pass.length < 6) return toast('Password minimal 6 karakter 🔒');
+  if (pass !== pass2) return toast('Ulangan password tidak sama 🙈');
+  users.push({ name, email, phone, kec, pass, joined: Date.now() });
+  session = email;
+  store.set('users', users); store.set('session', session);
+  renderAuthSlot(); closeModal();
+  document.getElementById('locLabel').textContent = kec + ', Lebak';
+  toast('🎉 Wilujeng sumping, ' + name.split(' ')[0] + '! Akunmu siap jual & beli');
+}
+function doLogin(){
+  const email = document.getElementById('aEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('aPass').value;
+  const u = users.find(x => x.email === email);
+  if (!u) return toast('Email belum terdaftar — daftar dulu yuk!');
+  if (u.pass !== pass) return toast('Password salah 🙈');
+  session = email; store.set('session', session);
+  renderAuthSlot(); closeModal();
+  document.getElementById('locLabel').textContent = u.kec + ', Lebak';
+  toast('👋 Halo lagi, ' + u.name.split(' ')[0] + '!');
+}
+function doLogout(){
+  session = null; store.set('session', null);
+  renderAuthSlot(); closeModal();
+  toast('Sampai jumpa lagi! 👋');
+}
+function openProfile(){
+  const u = me(); if (!u) return openAuth('login');
+  const myPosts = products.filter(p => p.seller === u.name).length;
+  const myOrders = orders.length;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>👤 Akun Saya</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <span class="big">🙋</span>
+          <b>${esc(u.name)}</b>
+          <p>${esc(u.email)} · 📱 ${esc(u.phone)}<br>📍 ${esc(u.kec)}, Kab. Lebak, Banten</p>
+          <span class="dual-badge">🛍️ Pembeli ✔ · 🏪 Penjual ✔ — satu akun untuk semua</span>
+        </div>
+        <div class="mini-row"><span class="em g-1">🏪</span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan ＋ Jual untuk menambah</span></div></div>
+        <div class="mini-row"><span class="em g-3">📦</span><div><b>Transaksiku</b><span>${myOrders} transaksi tercatat</span></div></div>
+        <div class="mini-row"><span class="em g-5">🌾</span><div><b>Lokal Pride</b><span>Produkmu otomatis diprioritaskan untuk warga Lebak</span></div></div>
+        <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">＋ Posting Jualan Baru</button>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">🚪 Keluar Akun</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- INFO BIAYA (transparansi monetisasi) ---------- */
+function openInfoBiaya(){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>ℹ️ Biaya & Komisi Lebak.market</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Kami transparan soal biaya — dari sinilah platform ini hidup & terus dikembangkan:</p>
+        <div class="mini-row"><span class="em g-1">🧾</span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
+        <div class="mini-row"><span class="em g-5">🏪</span><div><b>Komisi penjual — 3%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
+        <div class="mini-row"><span class="em g-3">🛵</span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
+        <div class="mini-row"><span class="em g-6">🚚</span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge & prioritas feed</span></div></div>
+        <div class="mini-row"><span class="em g-2">📣</span><div><b>Slot promosi (segera)</b><span>Resto/kuliner & post jualan bisa naik ke urutan atas</span></div></div>
+        <div class="safe-note">🤝 Gratis: daftar akun, posting jualan, chat, COD ketemuan, dan lihat kuliner. Biaya hanya muncul saat transaksi terjadi.</div>
+      </div>
+    </div>
+  </div>`;
+}
 
 /* ---------- VIEWS ---------- */
 function showView(v){
-  document.getElementById('view-feed').classList.toggle('hidden', v !== 'feed');
-  document.getElementById('view-orders').classList.toggle('hidden', v !== 'orders');
+  ['feed','orders','kuliner'].forEach(x => document.getElementById('view-'+x).classList.toggle('hidden', v !== x));
   document.getElementById('heroStrip').style.display = v === 'feed' ? '' : 'none';
   document.getElementById('catBar').style.display = v === 'feed' ? '' : 'none';
   if (v === 'orders') renderOrders();
+  if (v === 'kuliner') renderRestos();
   window.scrollTo({ top: 0 });
 }
 
-/* ---------- BARS ---------- */
+/* ---------- BARS & STORIES ---------- */
 function renderCats(){
   document.getElementById('catScroll').innerHTML = CATS.map(c =>
     `<button class="chip ${activeCat===c.id?'active':''}" onclick="setCat('${c.id}')">${c.label}</button>`
@@ -581,24 +858,25 @@ function setCat(id){ activeCat = id; renderCats(); renderFeed(); }
 function setRadius(v){ radiusKm = v; renderCats(); renderFeed(); toast(v===Infinity ? '📍 Menampilkan semua jarak' : '📍 Hanya penjual dalam ' + v + ' km'); }
 
 function renderStories(){
-  const sellers = [...new Map(products.map(p => [p.seller, p])).values()].sort((a,b) => a.dist - b.dist);
+  const sellers = [...new Map(products.map(p => [p.seller, p])).values()]
+    .sort((a,b) => (b.lebak?1:0) - (a.lebak?1:0) || a.dist - b.dist);
   document.getElementById('stories').innerHTML = sellers.map(p => `
-    <div class="story" title="${p.seller} · ${km(p.dist)}">
+    <div class="story" title="${esc(p.seller)} · ${km(p.dist)}">
       <div class="ring"><div class="ava" style="background:${p.ac||'#fff'}">${p.ava}</div></div>
-      <span>${p.seller}</span>
+      <span>${p.lebak?'🌾 ':''}${esc(p.seller)}</span>
     </div>`).join('');
 }
 
-/* ---------- FEED ---------- */
+/* ---------- FEED (prioritas Lebak) ---------- */
 function perks(p){
   const out = [];
+  if (p.lebak) out.push('<span class="perk pk-lokal">🌾 Lokal Lebak</span>');
   if (p.freeship) out.push('<span class="perk pk-cod">🚚 GRATIS ONGKIR</span>');
   else if (p.dist > 0 && p.price >= FREESHIP_MIN) out.push('<span class="perk pk-driver">🎟️ Voucher ongkir s.d. ' + rupiah(FREESHIP_CAP) + '</span>');
   if (p.cod && p.dist <= COD_MAX_KM) out.push('<span class="perk pk-cod">🤝 Bisa COD</span>');
   out.push('<span class="perk pk-rekber">🛡️ Rekber</span>');
-  if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">🛵 Driver instan</span>');
-  if (p.dist > 100) out.push('<span class="perk pk-far">🚢 Antar pulau/kota — ekspedisi</span>');
-  else if (p.dist > COD_MAX_KM) out.push('<span class="perk pk-far">📦 Kirim ekspedisi saja</span>');
+  if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">🛵 Driver mulai 10rb</span>');
+  if (p.dist > 100) out.push('<span class="perk pk-far">🚢 Antar pulau/kota</span>');
   return out.join('');
 }
 
@@ -609,7 +887,7 @@ function renderFeed(){
       (activeCat === 'all' || p.cat === activeCat) &&
       (p.dist <= radiusKm) &&
       (!q || p.name.toLowerCase().includes(q) || p.seller.toLowerCase().includes(q) || (CAT_LABEL[p.cat]||'').toLowerCase().includes(q)))
-    .sort((a,b) => radiusKm !== Infinity ? a.dist - b.dist : 0);
+    .sort((a,b) => (b.lebak?1:0) - (a.lebak?1:0) || a.dist - b.dist);
   const feed = document.getElementById('feed');
   if (!list.length){
     feed.innerHTML = `<div class="empty-feed"><span class="big">📍</span><h3>Tidak ada di radius ini</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori ya!</p></div>`;
@@ -620,30 +898,31 @@ function renderFeed(){
     const faved = favs.has(p.id);
     const out = p.stock <= 0;
     return `
-    <article class="post">
+    <article class="post ${p.lebak?'lokal':''}">
+      ${p.lebak ? '<div class="lokal-strip">🌾 LOKAL PRIDE — penjual dari Kab. Lebak, diprioritaskan untukmu</div>' : ''}
       <div class="post-head">
         <span class="ava" style="--ac:${p.ac||'#fff3c4'}">${p.ava}</span>
         <div class="who">
-          <b>${p.seller} ${p.verified?'<span class="verif">✔️</span>':''}</b>
-          <span>${p.time} · 📍 ${p.loc} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
+          <b>${esc(p.seller)} ${p.verified?'<span class="verif">✔️</span>':''}</b>
+          <span>${p.time} · 📍 ${esc(p.loc)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
         </div>
-        <button class="act" onclick="toast('Fitur ikuti penjual — coming soon!')">+ Ikuti</button>
+        <button class="act" onclick="openChatWith('${esc(p.seller)}')">💬 Chat</button>
       </div>
       <div class="post-media ${p.g}">
         <span>${p.emoji}</span>
-        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}" style="border-width:2px">${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'}</span>
+        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'}</span>
         <span class="price-tag">${rupiah(p.price)}</span>
         <span class="dist-tag">📍 ${km(p.dist)}</span>
         ${out?'<div class="sold-out"><b>SOLD OUT</b></div>':''}
       </div>
       <div class="post-body">
         <div class="post-actions">
-          <button class="act ${liked?'liked':''}" onclick="toggleLike(${p.id})">${liked?'👍':'👍🏻'} ${p.likes + (liked?1:0)}</button>
+          <button class="act ${liked?'liked':''}" onclick="toggleLike(${p.id})">👍 ${p.likes + (liked?1:0)}</button>
           <button class="act" onclick="toast('Kolom komentar — coming soon!')">💬 ${(p.id*7)%40+3}</button>
           <button class="act" onclick="toast('Link produk disalin! 🔗')">↗️</button>
         </div>
-        <div class="post-title">${p.name}</div>
-        <div class="post-desc">${p.desc}</div>
+        <div class="post-title">${esc(p.name)}</div>
+        <div class="post-desc">${esc(p.desc)}</div>
         <div class="post-perks">${perks(p)}</div>
         <div class="post-cta">
           <button class="btn btn-yellow fav-btn ${faved?'on':''}" onclick="toggleFav(${p.id})">${faved?'💖 Tersimpan':'🤍 Favorit'}</button>
@@ -660,18 +939,19 @@ function toggleLike(id){
   renderFeed();
 }
 function toggleFav(id){
+  if (needLogin('menyimpan favorit')) return;
   if (favs.has(id)) { favs.delete(id); toast('Dihapus dari favorit'); }
-  else { favs.add(id); toast('💖 Masuk favorit! Cek kapan aja di menu atas'); }
+  else { favs.add(id); toast('💖 Masuk favorit!'); }
   store.set('favs', [...favs]);
   updateBadges(); renderFeed();
 }
 
 function renderTrending(){
-  const top = [...products].filter(p => p.dist <= 10).sort((a,b) => b.likes - a.likes).slice(0,4);
+  const top = [...products].filter(p => p.lebak).sort((a,b) => b.likes - a.likes).slice(0,4);
   document.getElementById('trending').innerHTML = top.map(p => `
     <div class="mini-row">
       <span class="em ${p.g}">${p.emoji}</span>
-      <div><b>${p.name}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)} · 👍 ${p.likes}</span></div>
+      <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)} · 👍 ${p.likes}</span></div>
     </div>`).join('');
 }
 
@@ -679,12 +959,16 @@ function updateBadges(){
   const fc = document.getElementById('favCount');
   fc.textContent = favs.size; fc.classList.toggle('hidden', !favs.size);
   const oc = document.getElementById('orderCount');
-  const active = orders.filter(o => !['Selesai — Dana Cair','Selesai'].includes(o.status)).length;
+  const active = orders.filter(o => !o.status.startsWith('Selesai')).length;
   oc.textContent = active; oc.classList.toggle('hidden', !active);
+  const cc = document.getElementById('chatCount');
+  const unread = Object.values(chats).reduce((s,c) => s + (c.unread||0), 0);
+  cc.textContent = unread; cc.classList.toggle('hidden', !unread);
 }
 
 /* ---------- FAVORIT ---------- */
 function openFavs(){
+  if (needLogin('melihat favorit')) return;
   const items = [...favs].map(id => products.find(p => p.id === id)).filter(Boolean);
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
@@ -694,8 +978,8 @@ function openFavs(){
         ${items.length ? items.map(p => `
           <div class="fav-row">
             <span class="em ${p.g}">${p.emoji}</span>
-            <div class="inf"><b>${p.name}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)}${p.stock<=0?' · <b style=color:var(--coral)>Habis</b>':''}</span></div>
-            <button class="btn btn-sm btn-coral" ${p.stock<=0?'disabled':''} onclick="openBuy(${p.id})">⚡ Beli</button>
+            <div class="inf"><b>${esc(p.name)}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)}${p.stock<=0?' · <b style=color:var(--coral)>Habis</b>':''}</span></div>
+            <button class="btn btn-sm btn-coral" ${p.stock<=0?'disabled':''} onclick="openBuy(${p.id})">⚡</button>
             <button class="x-btn" style="width:30px;height:30px;font-size:12px" onclick="toggleFav(${p.id});openFavs()">✕</button>
           </div>`).join('')
         : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">🤍</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Belum ada favorit.<br>Tap 🤍 di barang yang kamu incar!</p></div>`}
@@ -703,19 +987,110 @@ function openFavs(){
     </div>
   </div>`;
 }
-function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
+function closeModal(){ openThread = null; document.getElementById('modalRoot').innerHTML = ''; }
+
+/* ---------- CHAT ---------- */
+const REPLIES = [
+  'Halo kak! 👋 Masih ready, silakan langsung diorder ya 😊',
+  'Boleh kak, mau COD atau lewat rekber aja biar aman?',
+  'Siap kak, barang aman & sesuai deskripsi. Bisa cek dulu pas ketemuan 👌',
+  'Nego tipis boleh kak, yang penting sama-sama enak 😄',
+  'Kalau lewat driver bisa sampai hari ini juga lho kak 🛵',
+];
+function chatOf(seller){
+  if (!chats[seller]) chats[seller] = { msgs: [], unread: 0 };
+  return chats[seller];
+}
+function openChatWith(seller){
+  if (needLogin('chat dengan penjual')) return;
+  openThread = seller;
+  const c = chatOf(seller);
+  c.unread = 0; store.set('chats', chats); updateBadges();
+  const p = products.find(x => x.seller === seller);
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="drawer">
+      <div class="drawer-head">
+        <button class="x-btn" onclick="openChatList()" title="Semua chat">←</button>
+        <h3 style="flex:1;display:flex;align-items:center;gap:9px"><span class="ava" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:16px;background:${p?p.ac:'#fff3c4'}">${p?p.ava:'🙂'}</span> ${esc(seller)}</h3>
+        <button class="x-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="drawer-body"><div class="chat-thread" id="thread"></div></div>
+      <div class="drawer-foot">
+        <div class="chat-input">
+          <input id="chatMsg" placeholder="Tulis pesan... (cth: masih ada kak?)" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  renderThread();
+}
+function renderThread(){
+  const el = document.getElementById('thread');
+  if (!el || !openThread) return;
+  const c = chatOf(openThread);
+  el.innerHTML = c.msgs.length
+    ? c.msgs.map(m => `<div class="bubble ${m.me?'me':'them'}">${esc(m.text)}<small>${clock(m.t)}</small></div>`).join('')
+    : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan — tanya stok, nego, atau atur COD di sini 💬<br><span style="font-size:11.5px;font-weight:600">(balasan penjual disimulasikan untuk demo)</span></div>`;
+  el.parentElement.scrollTop = el.parentElement.scrollHeight;
+}
+function sendMsg(){
+  const inp = document.getElementById('chatMsg');
+  const text = inp.value.trim();
+  if (!text || !openThread) return;
+  const seller = openThread;
+  const c = chatOf(seller);
+  c.msgs.push({ me: true, text, t: Date.now() });
+  store.set('chats', chats);
+  inp.value = ''; renderThread();
+  setTimeout(() => {
+    const reply = REPLIES[Math.floor(Math.random()*REPLIES.length)];
+    c.msgs.push({ me: false, text: reply, t: Date.now() });
+    if (openThread !== seller) c.unread = (c.unread||0) + 1;
+    store.set('chats', chats);
+    updateBadges();
+    if (openThread === seller) renderThread();
+    else toast('💬 ' + seller + ' membalas chatmu');
+  }, 1200 + Math.random()*1500);
+}
+function openChatList(){
+  if (needLogin('membuka chat')) return;
+  openThread = null;
+  const names = Object.keys(chats).filter(s => chats[s].msgs.length);
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="drawer">
+      <div class="drawer-head"><h3>💬 Chat Kamu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="drawer-body">
+        ${names.length ? names.map(s => {
+          const c = chats[s], last = c.msgs[c.msgs.length-1];
+          const p = products.find(x => x.seller === s);
+          return `
+          <div class="chat-list-row" onclick="openChatWith('${esc(s)}')">
+            <span class="ava" style="--ac:${p?p.ac:'#fff3c4'}">${p?p.ava:'🙂'}</span>
+            <div class="inf"><b>${esc(s)}</b><span>${last.me?'Kamu: ':''}${esc(last.text)}</span></div>
+            ${c.unread ? '<span class="dot-unread"></span>' : ''}
+          </div>`;
+        }).join('')
+        : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">💬</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Belum ada obrolan.<br>Tekan "💬 Chat" di post penjual untuk mulai!</p></div>`}
+      </div>
+    </div>
+  </div>`;
+}
 
 /* ---------- BELI (rekber / driver / COD) ---------- */
 let buy = {};
 function openBuy(id){
+  if (needLogin('membeli')) return;
   const p = products.find(x => x.id === id);
   if (!p || p.stock <= 0) return;
-  buy = { pid: id, step: 1, mode: null, pay: null, name:'', addr:'', meet: MEET_POINTS[0], time:'' };
+  buy = { pid: id, step: 1, mode: null, pay: null, name: me().name, addr:'', meet: MEET_POINTS[0], time:'' };
   renderBuy();
 }
 function buyItemHTML(p){
   return `<div class="buy-item"><span class="em ${p.g}">${p.emoji}</span>
-    <div><b>${p.name}</b><span>${rupiah(p.price)} · ${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'} · 📍 ${km(p.dist)} (${p.loc})</span></div></div>`;
+    <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'} · 📍 ${km(p.dist)} (${esc(p.loc)})</span></div></div>`;
 }
 function renderBuy(){
   const p = products.find(x => x.id === buy.pid);
@@ -736,19 +1111,19 @@ function renderBuy(){
       </div>
       <div class="pay-opt ${drvOk ? (buy.mode==='driver'?'sel':'') : 'off'}" ${drvOk?`onclick="buy.mode='driver';renderBuy()"`:''}>
         <span class="ic" style="--pc:#d8f3ff">🛵</span>
-        <div><b>Rekber + Antar Driver Instan</b>
-        <span>${drvOk ? 'Diantar hari ini juga (± ' + km(p.dist) + ', ongkos ' + rupiah(driverFee(p.dist)) + '). Malas keluar rumah? Ini jawabannya 😌'
-                      : isJasa ? 'Tidak relevan untuk jasa online' : 'Terlalu jauh (maks ' + DRIVER_MAX_KM + ' km dari lokasimu)'}</span></div>
+        <div><b>Rekber + Driver Lebak <span class="badge" style="background:#d9f8ea;font-size:9.5px;vertical-align:middle">RESMI</span></b>
+        <span>${drvOk ? 'Diantar driver lokal hari ini (± ' + km(p.dist) + ', ongkos ' + rupiah(driverFee(p.dist)) + ' — tarif resmi mulai Rp10rb)'
+                      : isJasa ? 'Tidak relevan untuk jasa online' : 'Terlalu jauh (maks ' + DRIVER_MAX_KM + ' km)'}</span></div>
         <span class="rad"></span>
       </div>
       <div class="pay-opt ${codOk ? (buy.mode==='cod'?'sel':'') : 'off'}" ${codOk?`onclick="buy.mode='cod';renderBuy()"`:''}>
         <span class="ic" style="--pc:#d9f8ea">🤝</span>
         <div><b>COD Ketemuan</b>
-        <span>${codOk ? 'Gratis biaya! Ketemu langsung, cek barang di tempat, bayar kalau cocok. Jarak penjual ' + km(p.dist) + '.'
+        <span>${codOk ? 'Gratis biaya! Ketemu langsung, cek barang, bayar kalau cocok. Jarak penjual ' + km(p.dist) + '.'
                       : isJasa ? 'Tidak tersedia untuk jasa online' : !p.cod ? 'Penjual tidak membuka COD' : 'Di luar jangkauan COD (maks ' + COD_MAX_KM + ' km)'}</span></div>
         <span class="rad"></span>
       </div>
-      ${p.cond==='bekas' ? `<div class="warn-note">🏷️ <b>Barang bekas?</b> Selalu cek: kelengkapan, fungsi semua tombol/fitur, dan minus yang disebut di deskripsi. Di rekber, kamu punya waktu cek sebelum dana cair.</div>` : ''}
+      ${p.cond==='bekas' ? `<div class="warn-note">🏷️ <b>Barang bekas?</b> Cek kelengkapan, fungsi, dan minus yang disebut deskripsi. Di rekber kamu punya waktu cek sebelum dana cair.</div>` : ''}
       <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.mode?'':'disabled'} onclick="buyNext()">Lanjut →</button>`;
   }
   else if (buy.step === 2 && buy.mode === 'cod'){
@@ -756,24 +1131,24 @@ function renderBuy(){
       <label class="f">Titik temu (pilih tempat ramai & aman)</label>
       <select class="f" id="bMeet">${MEET_POINTS.map(m => `<option ${buy.meet===m?'selected':''}>${m}</option>`).join('')}</select>
       <label class="f">Waktu janjian</label>
-      <input class="f" id="bTime" type="text" placeholder="cth: Sabtu, 15.00 WIB" value="${buy.time}">
-      <div class="safe-note">🛡️ <b>Tips COD aman:</b> ajak teman, ketemu di tempat ramai/siang hari, cek barang sampai puas <b>sebelum</b> uang berpindah, dan jangan transfer DP apa pun sebelum ketemu.</div>
+      <input class="f" id="bTime" type="text" placeholder="cth: Sabtu, 15.00 WIB" value="${esc(buy.time)}">
+      <div class="safe-note">🛡️ <b>Tips COD aman:</b> ajak teman, ketemu di tempat ramai/siang hari, cek barang sampai puas <b>sebelum</b> uang berpindah, jangan transfer DP sebelum ketemu. Atur detailnya lewat 💬 chat!</div>
       <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="placeCod()">🤝 Buat Janjian COD</button>`;
   }
   else if (buy.step === 2){
     body = `${stepDots}${buyItemHTML(p)}
       <label class="f">Nama penerima</label>
-      <input class="f" id="bName" value="${buy.name}" placeholder="cth: Mongg Ganteng">
-      <label class="f">${buy.mode==='driver' ? 'Alamat antar (driver instan)' : isJasa ? 'Kontak (email/WA) untuk hasil kerja' : 'Alamat lengkap'}</label>
-      <textarea class="f" id="bAddr" placeholder="${isJasa ? 'cth: ini.mongg@gmail.com / 08xx' : 'Jalan, RT/RW, kecamatan, kota, kode pos...'}">${buy.addr}</textarea>
-      ${buy.mode==='driver' ? `<div class="safe-note">🛵 Estimasi driver: <b>${rupiah(driverFee(p.dist))}</b> untuk ${km(p.dist)} — barang tiba hari ini. Dana tetap lewat rekber, jadi tetap aman.</div>` : ''}
+      <input class="f" id="bName" value="${esc(buy.name)}">
+      <label class="f">${buy.mode==='driver' ? 'Alamat antar (driver)' : isJasa ? 'Kontak (email/WA) untuk hasil kerja' : 'Alamat lengkap'}</label>
+      <textarea class="f" id="bAddr" placeholder="${isJasa ? 'cth: email / 08xx' : 'Jalan, kampung/perum, kecamatan, kode pos...'}">${esc(buy.addr)}</textarea>
+      ${buy.mode==='driver' ? `<div class="safe-note">🛵 <b>Tarif resmi Driver Lebak:</b> Rp10.000 (0–3 km) + Rp2.500/km berikutnya. Jarak ${km(p.dist)} = <b>${rupiah(driverFee(p.dist))}</b>, tiba hari ini. Dana tetap lewat rekber.</div>` : ''}
       <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="buyNext()">Pilih pembayaran →</button>`;
   }
   else {
     const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
     const shipPaid = Math.max(0, bd.base - bd.seller - bd.subsidy);
     const m = PAY_METHODS.find(x => x.id === buy.pay);
-    const fee = m ? m.fee(p.price + shipPaid) : 0;
+    const fee = m ? m.fee(p.price + shipPaid + APP_FEE) : 0;
     body = `${stepDots}
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
       ${PAY_METHODS.map(pm => `
@@ -784,14 +1159,14 @@ function renderBuy(){
         </div>`).join('')}
       <div style="background:#fff;border:2px dashed var(--ink);border-radius:16px;padding:14px 18px;margin-top:16px">
         <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
-        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos driver instan':isJasa?'Ongkir':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
+        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
         ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>🚚 Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
-        ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>🎟️ Voucher gratis ongkir (min. belanja ${rupiah(FREESHIP_MIN)})</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
+        ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>🎟️ Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
+        <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
         <div class="sum-row"><span>Biaya layanan${m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
-        <div class="sum-row total"><span>Total ke rekber</span><span>${rupiah(p.price + shipPaid + fee)}</span></div>
+        <div class="sum-row total"><span>Total ke rekber</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
       </div>
-      ${!isJasa && !bd.seller && !bd.subsidy && bd.base > 0 && p.price < FREESHIP_MIN ? `<div class="warn-note">🎟️ Psst — belanja min. ${rupiah(FREESHIP_MIN)} otomatis dapat voucher gratis ongkir s.d. ${rupiah(FREESHIP_CAP)}!</div>` : ''}
-      <div class="safe-note">🛡️ Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai. Kalau bermasalah, dana bisa dikembalikan.</div>
+      <div class="safe-note">🛡️ Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
       <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">🔒 Bayar ke Rekber</button>`;
   }
 
@@ -814,7 +1189,7 @@ function buyNext(){
   renderBuy();
 }
 
-/* ---------- ORDERS ---------- */
+/* ---------- ORDER ENGINE ---------- */
 function baseOrder(p, extra){
   return Object.assign({
     id: uid(), pid: p.id,
@@ -848,7 +1223,7 @@ function placeCod(){
     mode:'cod', method:'Bayar di tempat', total:p.price, meet:buy.meet, time:buy.time,
     status:'Janjian COD',
   });
-  o.timeline.push({ t:Date.now(), s:'Janjian COD dibuat', d:`${buy.meet} · ${buy.time}. Kontak penjual terbuka di chat (demo). Bayar HANYA setelah cek barang!` });
+  o.timeline.push({ t:Date.now(), s:'Janjian COD dibuat', d:`${buy.meet} · ${buy.time}. Atur detail lewat 💬 chat. Bayar HANYA setelah cek barang!` });
   pushOrder(o); cutStock(p.id);
   closeModal(); showView('orders');
   toast('🤝 Janjian COD dibuat! Penjual sudah dinotifikasi');
@@ -860,9 +1235,9 @@ function placeRekber(){
   const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
   const ship = Math.max(0, bd.base - bd.seller - bd.subsidy);
   const m = PAY_METHODS.find(x => x.id === buy.pay);
-  const fee = m.fee(p.price + ship);
+  const fee = m.fee(p.price + ship + APP_FEE);
   const o = baseOrder(p, {
-    mode:buy.mode, method:m.name, methodId:m.id, ship, fee, total:p.price + ship + fee,
+    mode:buy.mode, method:m.name, methodId:m.id, ship, fee, appFee:APP_FEE, total:p.price + ship + APP_FEE + fee,
     name:buy.name, addr:buy.addr,
     va:'8808' + String(Math.floor(1e11 + Math.random()*9e11)),
     status:'Menunggu Pembayaran',
@@ -896,11 +1271,11 @@ function openPayment(orderId){
           ${isQr ? qrisHTML() + `<p style="font-size:12.5px;color:var(--muted)">Scan pakai e-wallet / m-banking apa pun</p>`
                  : `<div class="va-num">${o.va.replace(/(\d{4})(?=\d)/g,'$1 ')}</div><p style="font-size:12.5px;color:var(--muted)">Salin nomor VA lalu transfer dari m-banking</p>`}
           <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-          <p style="font-size:12px;color:var(--muted)">Dana masuk ke rekening bersama (escrow), bukan ke penjual</p>
+          <p style="font-size:12px;color:var(--muted)">Dana masuk rekening bersama (escrow), bukan ke penjual</p>
         </div>
         <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">✅ [DEMO] Simulasikan Pembayaran Berhasil</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Di versi live tombol ini tidak ada — payment gateway mengirim <b>webhook</b> ke server begitu kamu bayar, dan status berubah otomatis.
+          Di versi live tombol ini tidak ada — payment gateway mengirim <b>webhook</b> ke server begitu kamu bayar.
         </p>
       </div>
     </div>
@@ -916,15 +1291,15 @@ function simulatePaid(orderId){
   toast('🛡️ Dana masuk rekber — penjual tidak menerima uang sebelum kamu konfirmasi');
   const isJasa = o.item.dist === 0;
   if (o.mode === 'driver'){
-    setTimeout(() => { setStatus(orderId, 'Driver Menjemput', 'Driver menuju lokasi penjual untuk ambil barang 🛵'); toast('🛵 Driver menjemput barangmu'); }, 6000);
+    setTimeout(() => { setStatus(orderId, 'Driver Menjemput', 'Driver Lebak menuju lokasi penjual untuk ambil barang 🛵'); toast('🛵 Driver menjemput barangmu'); }, 6000);
     setTimeout(() => { setStatus(orderId, 'Diantar Driver', 'Barang di tangan driver, menuju alamatmu — live tracking (demo)'); toast('🛵 Barang sedang diantar!'); }, 13000);
-    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Barang sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair ke penjual'); toast('📬 Barang tiba — cek dulu sebelum konfirmasi ya'); }, 20000);
+    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Barang sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair'); toast('📬 Barang tiba — cek dulu ya'); }, 20000);
   } else if (isJasa){
     setTimeout(() => { setStatus(orderId, 'Dikerjakan', 'Penjual mulai mengerjakan pesananmu 🎨'); toast('🎨 Jasa mulai dikerjakan'); }, 6000);
-    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Hasil kerja dikirim! Review dulu, minta revisi bila perlu, lalu konfirmasi agar dana cair'); toast('📬 Hasil kerja diterima — silakan review'); }, 15000);
+    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Hasil kerja dikirim! Review, minta revisi bila perlu, lalu konfirmasi'); toast('📬 Hasil kerja diterima'); }, 15000);
   } else {
     setTimeout(() => { setStatus(orderId, 'Dikirim', 'Penjual menyerahkan paket ke ekspedisi — resi otomatis terbit 📦'); toast('📦 ' + orderId + ' dikirim'); }, 6000);
-    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Paket sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair ke penjual'); toast('📬 Paket tiba — cek dulu sebelum konfirmasi ya'); }, 16000);
+    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Paket sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair'); toast('📬 Paket tiba — cek dulu ya'); }, 16000);
   }
 }
 
@@ -932,11 +1307,14 @@ function confirmDone(orderId){
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
   if (o.mode === 'cod'){
-    setStatus(orderId, 'Selesai', 'Ketemuan sukses — barang oke, pembayaran langsung di tempat. Win-win! 🎉');
+    setStatus(orderId, 'Selesai', 'Ketemuan sukses — barang oke, bayar di tempat. Win-win! 🎉');
     toast('🎉 Transaksi COD selesai!');
   } else {
-    setStatus(orderId, 'Selesai — Dana Cair', 'Kamu konfirmasi barang sesuai → sistem otomatis meneruskan dana ke penjual. Win-win! 💸');
-    toast('💸 Dana diteruskan ke penjual. Makasih sudah jujur & cepat konfirmasi!');
+    const commission = Math.round(o.item.price * SELLER_COMMISSION);
+    const net = o.item.price - commission;
+    setStatus(orderId, 'Selesai — Dana Cair',
+      `Kamu konfirmasi sesuai → dana otomatis diteruskan ke penjual: ${rupiah(net)} (harga ${rupiah(o.item.price)} − komisi platform 3% ${rupiah(commission)}) 💸`);
+    toast('💸 Dana cair ke penjual ' + rupiah(net) + ' (setelah komisi 3%)');
   }
 }
 function complain(orderId){
@@ -964,9 +1342,10 @@ function renderOrders(){
       </div>
       <div class="mini-row">
         <span class="em ${o.item.g}">${o.item.emoji}</span>
-        <div><b>${o.item.name}</b><span>${rupiah(o.item.price)} · ${o.item.seller} · ${o.mode==='cod'?'🤝 COD':o.mode==='driver'?'🛵 Driver + Rekber':'🛡️ Rekber'}</span></div>
+        <div><b>${esc(o.item.name)}</b><span>${rupiah(o.item.price)} · ${esc(o.item.seller)} · ${o.mode==='cod'?'🤝 COD':o.mode==='driver'?'🛵 Driver + Rekber':'🛡️ Rekber'}</span></div>
+        <button class="btn btn-sm" onclick="openChatWith('${esc(o.item.seller)}')">💬</button>
       </div>
-      ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📍 ${o.meet} · 🕐 ${o.time}</p>` : ''}
+      ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📍 ${esc(o.meet)} · 🕐 ${esc(o.time)}</p>` : ''}
       <div class="sum-row total" style="margin-top:10px"><span>Total (${o.method})</span><span>${rupiah(o.total)}</span></div>
       <div class="status-line" style="margin-top:16px">
         ${o.timeline.map((tl,i) => `
@@ -987,15 +1366,61 @@ function renderOrders(){
     </div>`).join('');
 }
 
-/* ---------- SELL ---------- */
+/* ---------- KULINER LEBAK ---------- */
+function renderRestos(){
+  const list = [...RESTOS].sort((a,b) => a.dist - b.dist);
+  document.getElementById('restoGrid').innerHTML = list.map(r => `
+    <div class="resto-card">
+      <div class="resto-media ${r.g}">
+        <span>${r.emoji}</span>
+        <span class="type-tag">${r.type}${r.wifi?' · 📶':''}</span>
+        <span class="dist-tag">📍 ${km(r.dist)}</span>
+      </div>
+      <div class="resto-body">
+        <h4>${esc(r.name)}</h4>
+        <div class="resto-meta">⭐ ${r.rating} · 🕐 ${r.open} · ${esc(r.addr)}</div>
+        <div class="menu-mini">
+          <div class="mtitle">🍽️ Menu andalan</div>
+          ${r.menu.slice(0,3).map(([n,h]) => `<div class="menu-line"><span>${esc(n)}</span><b>${rupiah(h)}</b></div>`).join('')}
+        </div>
+        <button class="btn btn-yellow btn-sm" onclick="openResto(${r.id})">📖 Menu Lengkap & Lokasi</button>
+      </div>
+    </div>`).join('');
+}
+function openResto(id){
+  const r = RESTOS.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>${r.emoji} ${esc(r.name)}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="resto-info-row">🏷️ <span><b>${r.type}</b> · ⭐ ${r.rating}${r.wifi?' · 📶 WiFi gratis':''}</span></div>
+        <div class="resto-info-row">📍 <span>${esc(r.addr)} — <b>${km(r.dist)} dari lokasimu</b></span></div>
+        <div class="resto-info-row">🕐 <span>Buka ${r.open}</span></div>
+        <div class="menu-mini" style="margin-top:14px">
+          <div class="mtitle">🍽️ Menu lengkap & harga</div>
+          ${r.menu.map(([n,h]) => `<div class="menu-line"><span>${esc(n)}</span><b>${rupiah(h)}</b></div>`).join('')}
+        </div>
+        <div class="warn-note">ℹ️ Lebak.market hanya menampilkan lokasi & menu — datang dan pesan langsung di tempatnya ya! Bukan layanan pesan-antar.</div>
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="toast('📍 Membuka petunjuk arah ke ${esc(r.name)} (demo peta)')">🗺️ Petunjuk Arah</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- SELL (1 akun = jual & beli) ---------- */
 function openSell(){
+  if (needLogin('posting jualan')) return;
+  const u = me();
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <div class="modal-head"><h3>＋ Posting Jualan Baru</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
+        <div class="safe-note" style="margin:0 0 6px">🏪 Posting sebagai <b>${esc(u.name)}</b> (📍 ${esc(u.kec)}, Lebak) — akunmu otomatis jadi penjual, tanpa daftar toko terpisah!</div>
         <label class="f">Nama produk / jasa</label>
-        <input class="f" id="sName" placeholder="cth: Cupang Avatar Gordon">
+        <input class="f" id="sName" placeholder="cth: Gula Aren Super">
         <label class="f">Kategori</label>
         <select class="f" id="sCat">
           ${CATS.filter(c => c.id!=='all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
@@ -1006,21 +1431,20 @@ function openSell(){
         <input class="f" id="sPrice" type="number" min="1000" placeholder="cth: 50000">
         <label class="f">Stok</label>
         <input class="f" id="sStock" type="number" min="1" value="1">
-        <label class="f">Lokasi (kelurahan/kota)</label>
-        <input class="f" id="sLoc" placeholder="cth: Tebet, Jaksel" value="Tebet, Jaksel">
         <label class="f">Emoji produk (foto sementara)</label>
-        <input class="f" id="sEmoji" placeholder="cth: 🐠" maxlength="4" value="📦">
+        <input class="f" id="sEmoji" placeholder="cth: 🍯" maxlength="4" value="📦">
         <label class="f">Deskripsi (untuk barang bekas: jujur soal minus ya!)</label>
         <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
         <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">🤝 Buka COD ketemuan (radius ${COD_MAX_KM} km)</label></div>
-        <div class="check-row"><input type="checkbox" id="sFreeship"><label for="sFreeship">🚚 Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge & prioritas di feed (di versi live: +4% komisi)</label></div>
+        <div class="check-row"><input type="checkbox" id="sFreeship"><label for="sFreeship">🚚 Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge & prioritas (komisi +4%)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">🚀 Posting Sekarang</button>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Di versi live: upload foto asli, verifikasi KTP penjual & rekening pencairan rekber.</p>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Komisi penjual 3% hanya dipotong saat transaksi sukses. Posting gratis!</p>
       </div>
     </div>
   </div>`;
 }
 function submitSell(){
+  const u = me(); if (!u) return;
   const name  = document.getElementById('sName').value.trim();
   const price = parseInt(document.getElementById('sPrice').value, 10);
   const stock = parseInt(document.getElementById('sStock').value, 10);
@@ -1028,25 +1452,29 @@ function submitSell(){
   const desc  = document.getElementById('sDesc').value.trim();
   const cat   = document.getElementById('sCat').value;
   const cond  = document.getElementById('sCond').value;
-  const loc   = document.getElementById('sLoc').value.trim() || 'Tebet, Jaksel';
   const cod   = document.getElementById('sCod').checked;
   const freeship = document.getElementById('sFreeship').checked;
   if (!name || !price || price < 1000 || !stock) { toast('Lengkapi nama, harga (min Rp1.000) & stok ya 🙏'); return; }
   const p = {
     id: Date.now(), cat, emoji, g: 'g-' + (Math.floor(Math.random()*6)+1),
-    name, price, stock, cond, loc, dist: 0.5, cod, freeship,
-    seller: 'Toko Kamu', ava: '🙋', ac: '#fff3c4',
+    name, price, stock, cond, loc: u.kec + ', Lebak', dist: 0.5, cod, freeship, lebak: true,
+    seller: u.name, ava: '🙋', ac: '#fff3c4',
     verified: false, time: 'baru saja', likes: 0, desc: desc || 'Tanpa deskripsi.',
   };
   products.unshift(p);
   store.set('products', products.filter(x => !SEED.find(s => s.id === x.id)));
   closeModal();
   activeCat = cat; renderCats(); renderFeed(); renderStories();
-  toast('🎉 Jualanmu tayang di feed!');
+  toast('🎉 Jualanmu tayang — diprioritaskan untuk warga Lebak! 🌾');
 }
 
 /* ---------- INIT ---------- */
-renderCats(); renderStories(); renderFeed(); renderTrending(); updateBadges();
+renderAuthSlot(); renderCats(); renderStories(); renderFeed(); renderTrending(); updateBadges();
+if (me()) document.getElementById('locLabel').textContent = me().kec + ', Lebak';
+if (!session && !store.get('welcomed', false)) {
+  store.set('welcomed', true);
+  setTimeout(() => openAuth('login', true), 600);
+}
 </script>
 </body>
 </html>
