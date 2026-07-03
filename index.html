@@ -9,487 +9,577 @@
 /* ============ RESET & VARIABLES ============ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0d0b1e;
-  --bg-soft:#161232;
-  --card:#1c1740;
-  --text:#f4f2ff;
-  --muted:#a79fce;
-  --pink:#ff4d8d;
-  --purple:#8b5cf6;
-  --cyan:#22d3ee;
-  --yellow:#fbbf24;
-  --orange:#fb7143;
-  --lime:#a3e635;
-  --grad-main:linear-gradient(135deg,#ff4d8d 0%,#8b5cf6 50%,#22d3ee 100%);
-  --grad-warm:linear-gradient(135deg,#fbbf24 0%,#fb7143 60%,#ff4d8d 100%);
-  --radius:22px;
-  --font:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;
+  --bg:#fff9f2;
+  --ink:#2b2440;
+  --muted:#6f6787;
+  --coral:#ff6b6b;
+  --pink:#ff8fab;
+  --yellow:#ffd93d;
+  --mint:#6ee7b7;
+  --sky:#7dd3fc;
+  --lavender:#c4b5fd;
+  --peach:#ffc09f;
+  --card:#ffffff;
+  --line:#2b2440;
+  --radius:26px;
+  --font:'Poppins','Quicksand','Segoe UI',system-ui,-apple-system,sans-serif;
+  --shadow:0 10px 30px rgba(43,36,64,.10);
 }
 html{scroll-behavior:smooth}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--font);
-  overflow-x:hidden;
-  line-height:1.6;
-}
-::selection{background:var(--pink);color:#fff}
-img{max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.65;overflow-x:hidden}
+::selection{background:var(--yellow);color:var(--ink)}
 a{color:inherit;text-decoration:none}
-h1,h2,h3{line-height:1.15;font-weight:800}
+h1,h2,h3,h4{line-height:1.18;font-weight:800}
+
+/* dotted confetti background */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    radial-gradient(circle 3px at 8% 12%, #ffd93d 99%, transparent),
+    radial-gradient(circle 4px at 90% 8%, #ff8fab 99%, transparent),
+    radial-gradient(circle 3px at 75% 30%, #7dd3fc 99%, transparent),
+    radial-gradient(circle 4px at 12% 55%, #6ee7b7 99%, transparent),
+    radial-gradient(circle 3px at 92% 60%, #c4b5fd 99%, transparent),
+    radial-gradient(circle 4px at 45% 85%, #ffc09f 99%, transparent),
+    radial-gradient(circle 3px at 20% 90%, #ff6b6b 99%, transparent);
+  opacity:.5;
+}
 
 /* ============ UTILITIES ============ */
 .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-.grad-text{background:var(--grad-main);-webkit-background-clip:text;background-clip:text;color:transparent}
-.grad-text-warm{background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;color:transparent}
-.section{padding:96px 0;position:relative}
-.section-label{
-  display:inline-flex;align-items:center;gap:8px;
-  font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
-  color:var(--cyan);margin-bottom:14px;
+.section{padding:90px 0;position:relative}
+.section-head{text-align:center;max-width:620px;margin:0 auto 54px}
+.eyebrow{
+  display:inline-block;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;padding:8px 20px;border-radius:999px;margin-bottom:18px;
+  transform:rotate(-2deg);
 }
-.section-label::before{content:"";width:28px;height:3px;border-radius:3px;background:var(--grad-main)}
-.section-title{font-size:clamp(30px,4.5vw,46px);margin-bottom:14px}
-.section-desc{color:var(--muted);max-width:560px;font-size:16px}
+.eyebrow.y{background:var(--yellow);color:var(--ink)}
+.eyebrow.p{background:var(--pink);color:#fff}
+.eyebrow.m{background:var(--mint);color:var(--ink)}
+.eyebrow.s{background:var(--sky);color:var(--ink)}
+.eyebrow.l{background:var(--lavender);color:var(--ink)}
+.section-title{font-size:clamp(30px,4.5vw,44px);margin-bottom:14px}
+.section-desc{color:var(--muted);font-size:16px}
+.hl{position:relative;display:inline-block;z-index:1;white-space:nowrap}
+.hl::after{
+  content:"";position:absolute;left:-4px;right:-4px;bottom:6%;height:38%;z-index:-1;
+  background:var(--hl,var(--yellow));border-radius:6px;transform:rotate(-1deg);
+}
+.hl-pink{--hl:#ffc2d4}
+.hl-mint{--hl:#a7f3d0}
+.hl-sky{--hl:#bae6fd}
+.hl-lav{--hl:#ddd6fe}
 
 /* reveal on scroll */
-.reveal{opacity:0;transform:translateY(34px);transition:opacity .7s ease,transform .7s ease}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}
 
-/* ============ BACKGROUND BLOBS ============ */
-.blob{position:fixed;border-radius:50%;filter:blur(110px);opacity:.35;z-index:-1;pointer-events:none}
-.blob-1{width:480px;height:480px;background:#8b5cf6;top:-140px;left:-120px;animation:float 14s ease-in-out infinite}
-.blob-2{width:420px;height:420px;background:#ff4d8d;top:35%;right:-160px;animation:float 18s ease-in-out infinite reverse}
-.blob-3{width:380px;height:380px;background:#22d3ee;bottom:-120px;left:22%;animation:float 16s ease-in-out infinite 2s;opacity:.22}
-@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-40px) scale(1.08)}}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;padding:15px 32px;border-radius:999px;
+  font-weight:700;font-size:15px;border:2.5px solid var(--ink);cursor:pointer;font-family:inherit;
+  transition:transform .2s,box-shadow .2s;box-shadow:0 5px 0 var(--ink);position:relative;
+}
+.btn:hover{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.btn-coral{background:var(--coral);color:#fff}
+.btn-yellow{background:var(--yellow);color:var(--ink)}
+.btn-white{background:#fff;color:var(--ink)}
 
 /* ============ NAV ============ */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  background:rgba(13,11,30,.72);
-  border-bottom:1px solid rgba(255,255,255,.07);
+nav{position:fixed;top:14px;left:0;right:0;z-index:100;pointer-events:none}
+.nav-pill{
+  pointer-events:auto;max-width:1080px;margin:0 auto;padding:0 10px 0 24px;height:62px;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:2.5px solid var(--ink);border-radius:999px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 6px 0 rgba(43,36,64,.15);
 }
-.nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
-.logo{font-weight:800;font-size:20px;letter-spacing:.5px}
-.logo span{background:var(--grad-main);-webkit-background-clip:text;background-clip:text;color:transparent}
-.logo em{font-style:normal;color:var(--yellow)}
-.nav-links{display:flex;gap:28px;font-size:14.5px;font-weight:500}
+@media(max-width:1120px){.nav-pill{margin:0 20px}}
+.logo{font-weight:800;font-size:19px;display:flex;align-items:center;gap:9px}
+.logo .mark{
+  width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-size:17px;
+  background:linear-gradient(135deg,var(--yellow),var(--coral));border:2px solid var(--ink);
+}
+.nav-links{display:flex;gap:26px;font-size:14.5px;font-weight:600}
 .nav-links a{color:var(--muted);transition:color .2s}
-.nav-links a:hover{color:#fff}
+.nav-links a:hover{color:var(--ink)}
 .nav-cta{
-  background:var(--grad-main);color:#fff;font-weight:700;font-size:14px;
-  padding:10px 22px;border-radius:999px;transition:transform .2s,box-shadow .2s;
-  box-shadow:0 4px 18px rgba(139,92,246,.4);
+  background:var(--ink);color:#fff;font-weight:700;font-size:14px;padding:11px 24px;
+  border-radius:999px;transition:background .2s,transform .2s;
 }
-.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(255,77,141,.45)}
-@media(max-width:760px){.nav-links{display:none}}
+.nav-cta:hover{background:var(--coral);transform:rotate(-2deg)}
+@media(max-width:820px){.nav-links{display:none}}
 
 /* ============ HERO ============ */
-.hero{min-height:100vh;display:flex;align-items:center;padding:130px 0 80px;position:relative}
-.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+.hero{padding:150px 0 70px;position:relative;overflow:hidden}
+.hero-blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.45;z-index:-1}
+.hb-1{width:420px;height:420px;background:#ffe0ec;top:-100px;right:-80px}
+.hb-2{width:380px;height:380px;background:#d5f6e8;bottom:-140px;left:-100px}
+.hb-3{width:300px;height:300px;background:#fef3c7;top:30%;left:38%}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:50px;align-items:center}
 @media(max-width:880px){.hero-grid{grid-template-columns:1fr}}
 .hero-badge{
-  display:inline-flex;align-items:center;gap:10px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-  padding:8px 18px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--muted);
-  margin-bottom:24px;
+  display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--ink);
+  padding:9px 20px;border-radius:999px;font-size:13.5px;font-weight:700;margin-bottom:26px;
+  box-shadow:0 4px 0 rgba(43,36,64,.12);transform:rotate(-1.5deg);
 }
-.hero-badge .dot{width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);animation:pulse 1.6s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.hero h1{font-size:clamp(40px,6.5vw,68px);margin-bottom:22px}
-.hero h1 .outline{
-  color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.85);
+.hero-badge .dot{width:10px;height:10px;border-radius:50%;background:#22c55e;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(38px,6vw,62px);margin-bottom:22px}
+.hero h1 .squiggle{position:relative;display:inline-block;white-space:nowrap}
+.hero h1 .squiggle::after{
+  content:"";position:absolute;left:0;right:0;bottom:-6px;height:10px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='10' viewBox='0 0 60 10'%3E%3Cpath d='M0 5 Q 7.5 0, 15 5 T 30 5 T 45 5 T 60 5' fill='none' stroke='%23ff6b6b' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x;
+  background-size:60px 10px;
 }
-.hero p{color:var(--muted);font-size:17px;max-width:520px;margin-bottom:34px}
-.hero-btns{display:flex;gap:16px;flex-wrap:wrap}
-.btn{
-  display:inline-flex;align-items:center;gap:10px;
-  padding:15px 32px;border-radius:999px;font-weight:700;font-size:15px;
-  transition:transform .2s,box-shadow .2s;cursor:pointer;border:none;font-family:inherit;
+.hero p{color:var(--muted);font-size:17px;max-width:500px;margin-bottom:32px}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:44px}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap}
+.stat{
+  background:#fff;border:2px solid var(--ink);border-radius:18px;padding:12px 22px;
+  box-shadow:0 4px 0 rgba(43,36,64,.12);
 }
-.btn-primary{background:var(--grad-main);color:#fff;box-shadow:0 6px 24px rgba(139,92,246,.45)}
-.btn-primary:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(255,77,141,.5)}
-.btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.25)}
-.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-3px)}
-.hero-stats{display:flex;gap:38px;margin-top:52px;flex-wrap:wrap}
-.stat b{display:block;font-size:30px;font-weight:800}
-.stat span{color:var(--muted);font-size:13.5px}
+.stat:nth-child(1){transform:rotate(-2deg);background:#fff3c4}
+.stat:nth-child(2){transform:rotate(1.5deg);background:#ffe0ec}
+.stat:nth-child(3){transform:rotate(-1deg);background:#d8f3ff}
+.stat b{display:block;font-size:24px;font-weight:800}
+.stat span{color:var(--muted);font-size:12.5px;font-weight:600}
 
-/* hero visual card */
-.hero-visual{position:relative;display:flex;justify-content:center}
-.hv-card{
-  width:min(340px,100%);aspect-ratio:3.4/4;border-radius:28px;position:relative;
-  background:conic-gradient(from 210deg at 60% 40%,#ff4d8d,#fb7143,#fbbf24,#a3e635,#22d3ee,#8b5cf6,#ff4d8d);
-  animation:hue 10s linear infinite;
-  box-shadow:0 24px 70px rgba(139,92,246,.4);
-  display:flex;align-items:flex-end;overflow:hidden;
+/* hero polaroid stack */
+.hero-visual{position:relative;display:flex;justify-content:center;min-height:420px;align-items:center}
+.polaroid{
+  background:#fff;border:2.5px solid var(--ink);border-radius:14px;padding:12px 12px 16px;
+  box-shadow:0 12px 28px rgba(43,36,64,.16);position:absolute;transition:transform .35s;
 }
-@keyframes hue{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
-.hv-card::after{
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(circle at 30% 20%,transparent 30%,rgba(13,11,30,.55));
+.polaroid .ph{border-radius:9px;display:grid;place-items:center;font-size:56px;border:2px solid var(--ink)}
+.polaroid figcaption{font-size:13px;font-weight:700;text-align:center;padding-top:10px}
+.pol-1{width:230px;transform:rotate(-8deg) translate(-110px,-40px);z-index:1}
+.pol-1 .ph{height:200px;background:linear-gradient(135deg,#ffd93d,#ffc09f)}
+.pol-2{width:250px;transform:rotate(4deg) translate(85px,55px);z-index:2}
+.pol-2 .ph{height:215px;background:linear-gradient(135deg,#ff8fab,#c4b5fd)}
+.pol-1:hover,.pol-2:hover{transform:rotate(0) translate(0,0) scale(1.04);z-index:5}
+@media(max-width:880px){
+  .pol-1{transform:rotate(-6deg) translateX(-70px)}
+  .pol-2{transform:rotate(4deg) translate(60px,26px)}
 }
-.hv-inner{position:relative;z-index:2;padding:26px;width:100%}
-.hv-inner .tag{background:rgba(0,0,0,.45);backdrop-filter:blur(6px);display:inline-block;padding:7px 16px;border-radius:999px;font-size:12.5px;font-weight:700;margin-bottom:10px}
-.hv-inner h3{font-size:22px}
-.hv-float{
-  position:absolute;background:var(--card);border:1px solid rgba(255,255,255,.12);
-  border-radius:16px;padding:13px 18px;font-size:13px;font-weight:700;
-  display:flex;align-items:center;gap:10px;box-shadow:0 12px 34px rgba(0,0,0,.45);
-  animation:bob 5s ease-in-out infinite;z-index:5;
+.sticker{
+  position:absolute;background:#fff;border:2px solid var(--ink);border-radius:999px;
+  padding:9px 18px;font-size:13px;font-weight:800;box-shadow:0 4px 0 rgba(43,36,64,.15);
+  animation:bob 5s ease-in-out infinite;z-index:6;white-space:nowrap;
 }
-.hv-float .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:16px}
-.hv-f1{top:8%;left:-6%;animation-delay:.4s}
-.hv-f1 .ic{background:linear-gradient(135deg,#8b5cf6,#22d3ee)}
-.hv-f2{bottom:-4%;right:-8%}
-.hv-f2 .ic{background:linear-gradient(135deg,#fb7143,#ff4d8d)}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
-@media(max-width:880px){.hv-f1{left:0}.hv-f2{right:0}}
+.st-1{top:6%;left:4%;background:var(--yellow);transform:rotate(-6deg)}
+.st-2{bottom:10%;right:2%;background:var(--mint);transform:rotate(5deg);animation-delay:.8s}
+.st-3{top:12%;right:6%;background:var(--pink);color:#fff;transform:rotate(8deg);animation-delay:1.6s}
+@keyframes bob{0%,100%{margin-top:0}50%{margin-top:-12px}}
 
 /* ============ MARQUEE ============ */
 .marquee{
-  background:var(--grad-main);padding:15px 0;overflow:hidden;white-space:nowrap;
-  transform:rotate(-1.2deg) scale(1.02);margin:10px 0;
+  background:var(--yellow);border-top:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);
+  padding:14px 0;overflow:hidden;white-space:nowrap;transform:rotate(-1.2deg) scale(1.02);
 }
-.marquee-track{display:inline-block;animation:scroll 22s linear infinite;font-weight:800;font-size:17px;letter-spacing:1px}
-.marquee-track span{margin:0 26px;color:#fff}
-.marquee-track .star{color:#0d0b1e}
-@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.marquee-track{display:inline-block;animation:scroll 24s linear infinite;font-weight:800;font-size:16px}
+.marquee-track span{margin:0 24px}
+.marquee-track .star{color:var(--coral)}
+@keyframes scroll{to{transform:translateX(-50%)}}
 
-/* ============ SERVICES ============ */
-.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;margin-top:52px}
-.svc{
-  background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);
-  padding:32px 26px;position:relative;overflow:hidden;transition:transform .3s,border-color .3s;
+/* ============ PROSES ============ */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;counter-reset:step}
+.step{
+  background:#fff;border:2.5px solid var(--ink);border-radius:var(--radius);padding:30px 24px;
+  position:relative;box-shadow:0 6px 0 rgba(43,36,64,.12);transition:transform .25s;
 }
-.svc:hover{transform:translateY(-8px)}
-.svc::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent,var(--grad-main))}
-.svc .icon{
-  width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:26px;
-  background:var(--accent,var(--grad-main));margin-bottom:20px;box-shadow:0 8px 22px rgba(0,0,0,.35);
+.step:hover{transform:translateY(-6px) rotate(-1deg)}
+.step::before{
+  counter-increment:step;content:"0" counter(step);
+  position:absolute;top:-18px;right:18px;font-size:15px;font-weight:800;
+  background:var(--sc,var(--yellow));border:2px solid var(--ink);border-radius:999px;padding:5px 15px;
 }
-.svc h3{font-size:19px;margin-bottom:10px}
-.svc p{color:var(--muted);font-size:14.5px}
-.svc-1{--accent:linear-gradient(135deg,#ff4d8d,#fb7143)}
-.svc-2{--accent:linear-gradient(135deg,#8b5cf6,#ff4d8d)}
-.svc-3{--accent:linear-gradient(135deg,#22d3ee,#8b5cf6)}
-.svc-4{--accent:linear-gradient(135deg,#fbbf24,#fb7143)}
+.step:nth-child(1){--sc:var(--yellow)}
+.step:nth-child(2){--sc:var(--pink)}
+.step:nth-child(3){--sc:var(--sky)}
+.step:nth-child(4){--sc:var(--mint)}
+.step .ic{font-size:34px;margin-bottom:14px;display:block}
+.step h3{font-size:18px;margin-bottom:8px}
+.step p{color:var(--muted);font-size:14px}
+
+/* ============ LAYANAN (BENTO) ============ */
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:880px){.bento{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.bento{grid-template-columns:1fr}}
+.bento-card{
+  border:2.5px solid var(--ink);border-radius:var(--radius);padding:32px 28px;
+  position:relative;overflow:hidden;transition:transform .25s;box-shadow:0 6px 0 rgba(43,36,64,.12);
+}
+.bento-card:hover{transform:translateY(-6px)}
+.bento-big{grid-column:span 2;grid-row:span 2;background:linear-gradient(150deg,#ffe9ad,#ffd0dd);display:flex;flex-direction:column;justify-content:flex-end;min-height:380px}
+@media(max-width:600px){.bento-big{grid-column:span 1;min-height:300px}}
+.bento-big .big-emoji{font-size:90px;position:absolute;top:26px;right:30px;transform:rotate(8deg);filter:drop-shadow(0 6px 0 rgba(43,36,64,.15))}
+.bento-card .tagchip{
+  display:inline-block;background:#fff;border:2px solid var(--ink);border-radius:999px;
+  font-size:11.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  padding:5px 14px;margin-bottom:14px;width:fit-content;
+}
+.bento-card h3{font-size:21px;margin-bottom:8px}
+.bento-big h3{font-size:28px}
+.bento-card p{color:var(--muted);font-size:14.5px}
+.bento-big p{color:#5d5470;max-width:400px}
+.bc-mint{background:#d9f8ea}
+.bc-sky{background:#ddf1ff}
+.bc-lav{background:#ece7ff}
+.bc-peach{background:#ffe8d9}
+.bento-card .ic{font-size:38px;display:block;margin-bottom:14px}
 
 /* ============ PORTFOLIO ============ */
-.filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin:40px 0 34px}
+.filter-bar{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:44px}
 .filter-btn{
-  padding:10px 24px;border-radius:999px;border:1.5px solid rgba(255,255,255,.18);
-  background:transparent;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;
-  font-family:inherit;transition:all .25s;
+  padding:10px 24px;border-radius:999px;border:2px solid var(--ink);background:#fff;
+  color:var(--ink);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;
+  transition:all .2s;box-shadow:0 3px 0 rgba(43,36,64,.15);
 }
-.filter-btn:hover{color:#fff;border-color:#fff}
-.filter-btn.active{background:var(--grad-main);border-color:transparent;color:#fff;box-shadow:0 6px 18px rgba(139,92,246,.4)}
-.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
+.filter-btn:hover{transform:translateY(-2px)}
+.filter-btn.active{background:var(--ink);color:#fff;transform:rotate(-2deg)}
+.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:30px}
 .port-item{
-  border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer;
-  border:1px solid rgba(255,255,255,.08);transition:transform .3s,box-shadow .3s,opacity .4s;
+  background:#fff;border:2.5px solid var(--ink);border-radius:16px;padding:12px 12px 0;
+  position:relative;cursor:pointer;transition:transform .3s,box-shadow .3s;
+  box-shadow:0 8px 0 rgba(43,36,64,.1);
 }
-.port-item:hover{transform:translateY(-7px) scale(1.01);box-shadow:0 18px 46px rgba(0,0,0,.5)}
+.port-item:nth-child(odd){transform:rotate(-1.3deg)}
+.port-item:nth-child(even){transform:rotate(1.2deg)}
+.port-item:hover{transform:rotate(0) translateY(-8px);box-shadow:0 14px 0 rgba(43,36,64,.12);z-index:3}
 .port-item.hide{display:none}
-.port-thumb{aspect-ratio:4/3;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.port-thumb .big-emoji{font-size:64px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.4));transition:transform .4s}
-.port-item:hover .big-emoji{transform:scale(1.18) rotate(-6deg)}
-.pt-1{background:linear-gradient(135deg,#ff4d8d,#8b5cf6)}
-.pt-2{background:linear-gradient(135deg,#22d3ee,#8b5cf6)}
-.pt-3{background:linear-gradient(135deg,#fbbf24,#fb7143)}
-.pt-4{background:linear-gradient(135deg,#a3e635,#22d3ee)}
-.pt-5{background:linear-gradient(135deg,#fb7143,#ff4d8d)}
-.pt-6{background:linear-gradient(135deg,#8b5cf6,#22d3ee)}
-.port-thumb::after{
-  content:"";position:absolute;inset:0;
-  background:repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 14px);
+.tape{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-3deg);
+  width:100px;height:26px;background:rgba(255,217,61,.85);border:1.5px dashed rgba(43,36,64,.35);
+  border-radius:3px;z-index:4;
 }
-.port-info{background:var(--card);padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
-.port-info h4{font-size:16px;margin-bottom:3px}
-.port-info small{color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.port-thumb{
+  aspect-ratio:4/3;border-radius:10px;border:2px solid var(--ink);
+  display:grid;place-items:center;position:relative;overflow:hidden;
+}
+.port-thumb .big-emoji{font-size:60px;transition:transform .35s}
+.port-item:hover .big-emoji{transform:scale(1.2) rotate(-8deg)}
+.pt-1{background:linear-gradient(135deg,#ffd93d,#ff8fab)}
+.pt-2{background:linear-gradient(135deg,#7dd3fc,#c4b5fd)}
+.pt-3{background:linear-gradient(135deg,#6ee7b7,#7dd3fc)}
+.pt-4{background:linear-gradient(135deg,#ffc09f,#ff8fab)}
+.pt-5{background:linear-gradient(135deg,#c4b5fd,#ff8fab)}
+.pt-6{background:linear-gradient(135deg,#ffd93d,#6ee7b7)}
+.play-badge{
+  position:absolute;width:58px;height:58px;border-radius:50%;background:#fff;
+  border:2.5px solid var(--ink);display:grid;place-items:center;font-size:19px;
+  box-shadow:0 4px 0 rgba(43,36,64,.2);
+}
+.port-info{padding:16px 10px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.port-info h4{font-size:16px}
+.port-info small{
+  display:inline-block;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:1.2px;
+  text-transform:uppercase;background:var(--cc,#fff3c4);border:1.5px solid var(--ink);
+  padding:3px 11px;border-radius:999px;
+}
+.cc-design{--cc:#ffe0ec}.cc-video{--cc:#d8f3ff}.cc-uiux{--cc:#e5ffe9}
 .port-arrow{
   width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;
-  border:1.5px solid rgba(255,255,255,.2);transition:all .25s;font-size:15px;
+  border:2px solid var(--ink);font-size:15px;transition:all .25s;background:#fff;
 }
-.port-item:hover .port-arrow{background:var(--grad-main);border-color:transparent;transform:rotate(45deg)}
-.play-badge{
-  position:absolute;width:64px;height:64px;border-radius:50%;
-  background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.6);
-  display:grid;place-items:center;font-size:22px;color:#fff;
-}
+.port-item:hover .port-arrow{background:var(--yellow);transform:rotate(45deg)}
 
 /* ============ MOCKUP UI/UX ============ */
-.mockup-section{background:var(--bg-soft);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
-.mockup-stage{
-  display:flex;align-items:flex-end;justify-content:center;gap:0;margin-top:60px;
-  flex-wrap:wrap;position:relative;
+.mockup-section{
+  background:#f3ecff;border-top:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);
 }
-/* --- laptop frame --- */
-.laptop{width:min(640px,92vw);position:relative;z-index:1}
+.mockup-stage{display:flex;align-items:flex-end;justify-content:center;margin-top:10px;flex-wrap:wrap;position:relative}
+/* laptop */
+.laptop{width:min(620px,92vw);position:relative;z-index:1}
 .laptop-screen{
-  background:#0a0918;border:10px solid #2a2450;border-bottom-width:14px;border-radius:18px 18px 0 0;
-  overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);
+  background:#fff;border:3px solid var(--ink);border-radius:16px 16px 0 0;overflow:hidden;
+  box-shadow:0 18px 40px rgba(43,36,64,.18);
 }
-.laptop-base{
-  height:16px;background:linear-gradient(#3b3468,#241f4a);border-radius:0 0 16px 16px;
-  position:relative;
-}
+.laptop-base{height:15px;background:var(--ink);border-radius:0 0 14px 14px;position:relative}
 .laptop-base::after{
   content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:110px;height:7px;background:#191439;border-radius:0 0 9px 9px;
+  width:100px;height:6px;background:#57506e;border-radius:0 0 8px 8px;
 }
-.browser-bar{background:#1c1740;display:flex;align-items:center;gap:8px;padding:9px 14px}
-.b-dot{width:10px;height:10px;border-radius:50%}
-.bd-r{background:#ff5f57}.bd-y{background:#febc2e}.bd-g{background:#28c840}
+.browser-bar{background:#faf6ff;display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:2px solid var(--ink)}
+.b-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink)}
+.bd-r{background:#ff6b6b}.bd-y{background:#ffd93d}.bd-g{background:#6ee7b7}
 .b-url{
-  flex:1;background:#0d0b1e;border-radius:7px;padding:4px 14px;font-size:10.5px;color:var(--muted);
-  max-width:280px;margin-left:8px;
+  flex:1;background:#fff;border:1.5px solid rgba(43,36,64,.25);border-radius:7px;
+  padding:3px 14px;font-size:10.5px;color:var(--muted);max-width:270px;margin-left:8px;
 }
-/* mini landing UI inside laptop */
-.mini-ui{padding:22px 26px 30px;background:linear-gradient(160deg,#141031,#0a0918)}
+.mini-ui{padding:22px 26px 28px;background:linear-gradient(160deg,#fffdf6,#fff1f5)}
 .mini-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
-.mini-logo{width:74px;height:12px;border-radius:6px;background:var(--grad-main)}
+.mini-logo{width:74px;height:14px;border-radius:7px;background:var(--coral);border:1.5px solid var(--ink)}
 .mini-links{display:flex;gap:8px}
-.mini-links i{width:34px;height:8px;border-radius:4px;background:rgba(255,255,255,.18);display:block}
+.mini-links i{width:34px;height:9px;border-radius:5px;background:#e8e2f2;display:block}
 .mini-hero{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:center;margin-bottom:20px}
-.mini-h-title{height:16px;border-radius:8px;background:#fff;margin-bottom:8px;width:92%}
-.mini-h-title.t2{width:70%;background:var(--grad-warm)}
-.mini-h-text{height:7px;border-radius:4px;background:rgba(255,255,255,.22);margin-bottom:6px}
-.mini-h-text.short{width:64%}
+.mini-h-title{height:16px;border-radius:8px;background:var(--ink);margin-bottom:8px;width:92%}
+.mini-h-title.t2{width:68%;background:var(--coral)}
+.mini-h-text{height:7px;border-radius:4px;background:#ded8ea;margin-bottom:6px}
+.mini-h-text.short{width:62%}
 .mini-h-btns{display:flex;gap:8px;margin-top:12px}
-.mini-btn{height:22px;width:72px;border-radius:11px;background:var(--grad-main)}
-.mini-btn.o{background:transparent;border:1.5px solid rgba(255,255,255,.3)}
+.mini-btn{height:23px;width:74px;border-radius:12px;background:var(--yellow);border:1.5px solid var(--ink)}
+.mini-btn.o{background:#fff}
 .mini-art{
-  aspect-ratio:1.15/1;border-radius:14px;
-  background:conic-gradient(from 120deg,#ff4d8d,#fbbf24,#22d3ee,#8b5cf6,#ff4d8d);
+  aspect-ratio:1.15/1;border-radius:14px;border:2px solid var(--ink);
+  background:conic-gradient(from 120deg,#ff8fab,#ffd93d,#6ee7b7,#7dd3fc,#c4b5fd,#ff8fab);
   position:relative;overflow:hidden;
 }
 .mini-art::after{content:"🎬";position:absolute;inset:0;display:grid;place-items:center;font-size:34px}
 .mini-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.mini-card{background:rgba(255,255,255,.07);border-radius:10px;padding:10px}
-.mini-card i{display:block;width:20px;height:20px;border-radius:7px;margin-bottom:7px}
-.mini-card i.c1{background:linear-gradient(135deg,#ff4d8d,#fb7143)}
-.mini-card i.c2{background:linear-gradient(135deg,#22d3ee,#8b5cf6)}
-.mini-card i.c3{background:linear-gradient(135deg,#fbbf24,#a3e635)}
-.mini-card b{display:block;height:7px;border-radius:4px;background:rgba(255,255,255,.5);margin-bottom:5px;width:80%}
-.mini-card s{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.18)}
-/* --- phone frame --- */
+.mini-card{background:#fff;border:1.5px solid var(--ink);border-radius:11px;padding:10px;box-shadow:0 3px 0 rgba(43,36,64,.1)}
+.mini-card i{display:block;width:20px;height:20px;border-radius:7px;margin-bottom:7px;border:1.5px solid var(--ink)}
+.mini-card i.c1{background:var(--pink)}
+.mini-card i.c2{background:var(--sky)}
+.mini-card i.c3{background:var(--yellow)}
+.mini-card b{display:block;height:7px;border-radius:4px;background:var(--ink);opacity:.7;margin-bottom:5px;width:80%}
+.mini-card s{display:block;height:5px;border-radius:3px;background:#ded8ea}
+/* phone */
 .phone{
-  width:190px;background:#0a0918;border:8px solid #2a2450;border-radius:30px;overflow:hidden;
-  box-shadow:0 26px 70px rgba(0,0,0,.6);position:relative;z-index:2;margin-left:-70px;margin-bottom:-8px;
-  animation:bob 6s ease-in-out infinite;
+  width:185px;background:#fff;border:3px solid var(--ink);border-radius:28px;overflow:hidden;
+  box-shadow:0 18px 44px rgba(43,36,64,.22);position:relative;z-index:2;
+  margin-left:-64px;margin-bottom:-6px;animation:bob 6s ease-in-out infinite;
 }
 @media(max-width:700px){.phone{margin-left:0;margin-top:34px}}
-.phone-notch{height:20px;display:flex;justify-content:center;align-items:center}
-.phone-notch::after{content:"";width:64px;height:9px;border-radius:6px;background:#2a2450}
-.phone-ui{padding:12px 13px 20px;background:linear-gradient(170deg,#1b1440,#0a0918)}
+.phone-notch{height:20px;display:flex;justify-content:center;align-items:center;background:#faf6ff;border-bottom:1.5px solid rgba(43,36,64,.15)}
+.phone-notch::after{content:"";width:60px;height:8px;border-radius:6px;background:var(--ink)}
+.phone-ui{padding:12px 13px 18px;background:linear-gradient(170deg,#fffdf6,#f3ecff)}
 .p-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.p-ava{width:26px;height:26px;border-radius:50%;background:var(--grad-warm)}
-.p-bell{width:22px;height:22px;border-radius:8px;background:rgba(255,255,255,.12)}
-.p-greet{height:8px;width:70%;border-radius:4px;background:#fff;margin-bottom:6px}
-.p-sub{height:6px;width:45%;border-radius:3px;background:rgba(255,255,255,.25);margin-bottom:14px}
+.p-ava{width:26px;height:26px;border-radius:50%;background:var(--peach);border:1.5px solid var(--ink)}
+.p-bell{width:22px;height:22px;border-radius:8px;background:#fff;border:1.5px solid var(--ink)}
+.p-greet{height:8px;width:70%;border-radius:4px;background:var(--ink);margin-bottom:6px}
+.p-sub{height:6px;width:45%;border-radius:3px;background:#ded8ea;margin-bottom:14px}
 .p-banner{
-  border-radius:13px;background:var(--grad-main);height:64px;margin-bottom:12px;position:relative;overflow:hidden;
+  border-radius:13px;background:linear-gradient(120deg,var(--coral),var(--pink));
+  border:1.5px solid var(--ink);height:62px;margin-bottom:12px;position:relative;overflow:hidden;
 }
-.p-banner::after{content:"✨";position:absolute;right:10px;bottom:6px;font-size:22px}
-.p-banner i{display:block;height:7px;border-radius:4px;background:rgba(255,255,255,.85);width:55%;margin:14px 0 0 12px}
-.p-banner s{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.4);width:40%;margin:6px 0 0 12px}
+.p-banner::after{content:"✨";position:absolute;right:10px;bottom:6px;font-size:20px}
+.p-banner i{display:block;height:7px;border-radius:4px;background:#fff;width:55%;margin:14px 0 0 12px}
+.p-banner s{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.55);width:40%;margin:6px 0 0 12px}
 .p-chips{display:flex;gap:6px;margin-bottom:12px}
-.p-chips i{height:16px;border-radius:8px;flex:1;background:rgba(255,255,255,.1)}
-.p-chips i:first-child{background:var(--grad-warm)}
+.p-chips i{height:16px;border-radius:8px;flex:1;background:#fff;border:1.5px solid rgba(43,36,64,.25)}
+.p-chips i:first-child{background:var(--yellow);border-color:var(--ink)}
 .p-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.p-tile{border-radius:11px;aspect-ratio:1/.85;position:relative;overflow:hidden}
-.p-t1{background:linear-gradient(135deg,#ff4d8d,#8b5cf6)}
-.p-t2{background:linear-gradient(135deg,#22d3ee,#a3e635)}
-.p-t3{background:linear-gradient(135deg,#fbbf24,#fb7143)}
-.p-t4{background:linear-gradient(135deg,#8b5cf6,#22d3ee)}
-.p-tile::after{content:"";position:absolute;left:8px;bottom:8px;width:55%;height:5px;border-radius:3px;background:rgba(255,255,255,.75)}
-.p-navbar{display:flex;justify-content:space-around;margin-top:13px}
-.p-navbar i{width:18px;height:18px;border-radius:7px;background:rgba(255,255,255,.14)}
-.p-navbar i:first-child{background:var(--grad-main)}
-.mockup-notes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:46px}
+.p-tile{border-radius:11px;aspect-ratio:1/.85;position:relative;overflow:hidden;border:1.5px solid var(--ink)}
+.p-t1{background:linear-gradient(135deg,#ff8fab,#c4b5fd)}
+.p-t2{background:linear-gradient(135deg,#6ee7b7,#7dd3fc)}
+.p-t3{background:linear-gradient(135deg,#ffd93d,#ffc09f)}
+.p-t4{background:linear-gradient(135deg,#7dd3fc,#c4b5fd)}
+.p-tile::after{content:"";position:absolute;left:8px;bottom:8px;width:55%;height:5px;border-radius:3px;background:#fff}
+.p-navbar{display:flex;justify-content:space-around;margin-top:12px}
+.p-navbar i{width:18px;height:18px;border-radius:7px;background:#fff;border:1.5px solid rgba(43,36,64,.3)}
+.p-navbar i:first-child{background:var(--coral);border-color:var(--ink)}
+.mockup-notes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:48px}
 .m-note{
-  background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:999px;
-  padding:10px 22px;font-size:13.5px;font-weight:600;color:var(--muted);display:flex;gap:9px;align-items:center;
+  background:#fff;border:2px solid var(--ink);border-radius:999px;padding:10px 22px;
+  font-size:13.5px;font-weight:700;display:flex;gap:9px;align-items:center;
+  box-shadow:0 4px 0 rgba(43,36,64,.12);
 }
-.m-note b{color:#fff}
+
+/* ============ TESTIMONI ============ */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px}
+.testi{
+  background:#fff;border:2.5px solid var(--ink);border-radius:var(--radius);padding:28px 26px;
+  position:relative;box-shadow:0 6px 0 rgba(43,36,64,.12);transition:transform .25s;
+}
+.testi:hover{transform:translateY(-6px)}
+.testi:nth-child(1){transform:rotate(-1deg)}
+.testi:nth-child(3){transform:rotate(1deg)}
+.testi:nth-child(1):hover,.testi:nth-child(3):hover{transform:rotate(0) translateY(-6px)}
+.testi .stars{color:#f59e0b;font-size:16px;letter-spacing:3px;margin-bottom:14px}
+.testi p{font-size:14.5px;color:#4d4762;margin-bottom:20px}
+.testi-who{display:flex;align-items:center;gap:13px}
+.testi-who .ava{
+  width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:21px;
+  border:2px solid var(--ink);background:var(--ac,#fff3c4);
+}
+.testi:nth-child(1) .ava{--ac:#ffe0ec}
+.testi:nth-child(2) .ava{--ac:#d8f3ff}
+.testi:nth-child(3) .ava{--ac:#e5ffe9}
+.testi-who b{display:block;font-size:14.5px}
+.testi-who span{font-size:12.5px;color:var(--muted)}
 
 /* ============ RATE CARD ============ */
-.rate-note{
-  display:inline-flex;gap:10px;align-items:center;margin-top:8px;
-  background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:var(--yellow);
-  padding:9px 18px;border-radius:12px;font-size:13.5px;font-weight:600;
+.rate-section{background:#fff4e3;border-top:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink)}
+.promo-pill{
+  display:inline-flex;gap:10px;align-items:center;background:var(--yellow);border:2px solid var(--ink);
+  padding:10px 22px;border-radius:999px;font-size:14px;font-weight:800;transform:rotate(-1.5deg);
+  box-shadow:0 4px 0 rgba(43,36,64,.15);
 }
-.rate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px;margin-top:54px}
+.rate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;margin-top:52px}
 .rate-card{
-  background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:26px;
-  padding:36px 30px;position:relative;transition:transform .3s,box-shadow .3s;display:flex;flex-direction:column;
+  background:#fff;border:2.5px solid var(--ink);border-radius:28px;overflow:visible;
+  position:relative;transition:transform .3s;display:flex;flex-direction:column;
+  box-shadow:0 8px 0 rgba(43,36,64,.12);
 }
-.rate-card:hover{transform:translateY(-9px);box-shadow:0 22px 55px rgba(0,0,0,.5)}
-.rate-card.featured{
-  background:linear-gradient(var(--card),var(--card)) padding-box,var(--grad-main) border-box;
-  border:2px solid transparent;transform:scale(1.035);
-}
-.rate-card.featured:hover{transform:scale(1.035) translateY(-9px)}
+.rate-card:hover{transform:translateY(-8px)}
+.rate-card.featured{transform:scale(1.03);box-shadow:0 10px 0 var(--coral)}
+.rate-card.featured:hover{transform:scale(1.03) translateY(-8px)}
+.rate-head{padding:30px 30px 22px;border-bottom:2.5px dashed rgba(43,36,64,.25);border-radius:26px 26px 0 0}
+.rh-1{background:#d8f3ff}.rh-2{background:#ffe0ec}.rh-3{background:#e9e2ff}
 .best-badge{
-  position:absolute;top:-15px;left:50%;transform:translateX(-50%);
-  background:var(--grad-warm);padding:7px 22px;border-radius:999px;font-size:12px;font-weight:800;
-  letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 6px 18px rgba(251,113,67,.5);white-space:nowrap;
+  position:absolute;top:-17px;left:50%;transform:translateX(-50%) rotate(-2deg);
+  background:var(--coral);color:#fff;border:2px solid var(--ink);padding:7px 20px;border-radius:999px;
+  font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;white-space:nowrap;
+  box-shadow:0 4px 0 rgba(43,36,64,.2);
 }
-.rate-tier{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}
-.rate-card.featured .rate-tier{color:var(--pink)}
-.rate-name{font-size:23px;margin-bottom:16px}
-.rate-price{font-size:38px;font-weight:800;margin-bottom:4px}
-.rate-price small{font-size:15px;font-weight:600;color:var(--muted)}
-.rate-per{color:var(--muted);font-size:13px;margin-bottom:24px}
-.rate-list{list-style:none;margin-bottom:30px;flex:1}
+.rate-tier{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#5d5470;margin-bottom:6px}
+.rate-name{font-size:22px;margin-bottom:14px}
+.rate-price{font-size:37px;font-weight:800}
+.rate-price small{font-size:15px;font-weight:700;color:#5d5470}
+.rate-per{color:#5d5470;font-size:12.5px;font-weight:600}
+.rate-body{padding:24px 30px 30px;display:flex;flex-direction:column;flex:1}
+.rate-list{list-style:none;margin-bottom:28px;flex:1}
 .rate-list li{
-  padding:9px 0;font-size:14.5px;color:var(--muted);display:flex;gap:12px;align-items:flex-start;
-  border-bottom:1px dashed rgba(255,255,255,.08);
+  padding:8px 0;font-size:14.5px;color:#4d4762;display:flex;gap:11px;align-items:flex-start;
 }
-.rate-list li:last-child{border-bottom:none}
 .rate-list li::before{
-  content:"✓";flex:none;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:800;
-  display:grid;place-items:center;background:rgba(163,230,53,.15);color:var(--lime);margin-top:2px;
+  content:"✓";flex:none;width:21px;height:21px;border-radius:50%;font-size:11px;font-weight:800;
+  display:grid;place-items:center;background:var(--mint);border:1.5px solid var(--ink);margin-top:2px;
 }
-.rate-list li.no::before{content:"✕";background:rgba(255,255,255,.07);color:rgba(255,255,255,.3)}
-.rate-list li.no{color:rgba(255,255,255,.3)}
+.rate-list li.no{color:#b3aec4}
+.rate-list li.no::before{content:"✕";background:#eee9f5;border-color:#c6c0d4;color:#b3aec4}
 .rate-btn{
-  display:block;text-align:center;padding:14px;border-radius:999px;font-weight:700;font-size:15px;
-  border:2px solid rgba(255,255,255,.22);transition:all .25s;
+  display:block;text-align:center;padding:14px;border-radius:999px;font-weight:800;font-size:15px;
+  border:2.5px solid var(--ink);background:#fff;transition:all .2s;box-shadow:0 4px 0 var(--ink);
 }
-.rate-btn:hover{border-color:var(--cyan);color:var(--cyan)}
-.rate-card.featured .rate-btn{background:var(--grad-main);border-color:transparent;box-shadow:0 8px 24px rgba(139,92,246,.45)}
-.rate-card.featured .rate-btn:hover{color:#fff;transform:translateY(-2px);box-shadow:0 12px 30px rgba(255,77,141,.5)}
+.rate-btn:hover{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+.rate-card.featured .rate-btn{background:var(--yellow)}
 
 /* design price table */
-.price-table-wrap{margin-top:64px}
-.price-table-wrap h3{font-size:26px;margin-bottom:26px;display:flex;align-items:center;gap:12px}
-.price-cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.price-table-wrap{margin-top:70px}
+.price-table-wrap h3{font-size:25px;margin-bottom:28px;text-align:center}
+.price-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px}
 @media(max-width:800px){.price-cols{grid-template-columns:1fr}}
-.price-box{background:var(--card);border:1px solid rgba(255,255,255,.09);border-radius:24px;overflow:hidden}
-.price-box-head{
-  padding:20px 26px;font-weight:800;font-size:17px;display:flex;align-items:center;gap:12px;
-}
-.pbh-design{background:linear-gradient(135deg,rgba(255,77,141,.25),rgba(139,92,246,.25));border-bottom:1px solid rgba(255,255,255,.09)}
-.pbh-addon{background:linear-gradient(135deg,rgba(34,211,238,.2),rgba(163,230,53,.15));border-bottom:1px solid rgba(255,255,255,.09)}
+.price-box{background:#fff;border:2.5px solid var(--ink);border-radius:24px;overflow:hidden;box-shadow:0 6px 0 rgba(43,36,64,.12)}
+.price-box-head{padding:18px 26px;font-weight:800;font-size:16.5px;border-bottom:2.5px solid var(--ink);display:flex;align-items:center;gap:11px}
+.pbh-design{background:#ffe0ec}
+.pbh-addon{background:#d9f8ea}
 .price-row{
   display:flex;justify-content:space-between;align-items:center;gap:14px;
-  padding:15px 26px;border-bottom:1px dashed rgba(255,255,255,.08);font-size:14.5px;
+  padding:14px 26px;border-bottom:2px dashed rgba(43,36,64,.15);font-size:14.5px;
 }
 .price-row:last-child{border-bottom:none}
-.price-row span{color:var(--muted)}
-.price-row b{color:#fff;white-space:nowrap;font-size:14.5px}
+.price-row span{color:#4d4762}
+.price-row b{
+  white-space:nowrap;font-size:13.5px;background:#fff3c4;border:1.5px solid var(--ink);
+  padding:4px 13px;border-radius:999px;
+}
 .terms{
-  margin-top:44px;background:var(--bg-soft);border:1px solid rgba(255,255,255,.08);border-radius:20px;
-  padding:28px 30px;
+  margin-top:46px;background:#fff;border:2.5px dashed var(--ink);border-radius:22px;padding:28px 30px;
 }
 .terms h4{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .terms ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 26px}
-.terms li{color:var(--muted);font-size:13.5px;display:flex;gap:9px;align-items:flex-start}
-.terms li::before{content:"•";color:var(--pink);font-weight:800}
+.terms li{color:#4d4762;font-size:13.5px;display:flex;gap:9px;align-items:flex-start}
+.terms li::before{content:"★";color:var(--coral);font-size:11px;margin-top:4px}
 
-/* ============ TOOLS ============ */
-.tools-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:42px}
-.tool{
-  display:flex;align-items:center;gap:12px;background:var(--card);
-  border:1px solid rgba(255,255,255,.09);padding:13px 24px;border-radius:16px;
-  font-weight:700;font-size:14.5px;transition:transform .25s,border-color .25s;
+/* ============ FAQ ============ */
+.faq-wrap{max-width:720px;margin:0 auto}
+.faq{
+  background:#fff;border:2.5px solid var(--ink);border-radius:20px;margin-bottom:16px;
+  box-shadow:0 5px 0 rgba(43,36,64,.12);overflow:hidden;
 }
-.tool:hover{transform:translateY(-4px);border-color:var(--tc,var(--purple))}
-.tool .tico{
-  width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
-  font-size:13px;font-weight:800;color:#fff;background:var(--tc,var(--purple));
+.faq summary{
+  padding:20px 26px;font-weight:700;font-size:15.5px;cursor:pointer;list-style:none;
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
 }
-.t-ps{--tc:#0f6fff}.t-ai{--tc:#ff7c00}.t-pr{--tc:#9999ff;color:#fff}.t-ae{--tc:#9966ff}
-.t-fg{--tc:#0acf83}.t-cv{--tc:#00c4cc}.t-dv{--tc:#25c2a0}.t-cc{--tc:#ff4d8d}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"+";flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);
+  display:grid;place-items:center;font-size:17px;font-weight:800;background:var(--yellow);
+  transition:transform .25s;
+}
+.faq[open] summary::after{content:"–";transform:rotate(180deg);background:var(--pink)}
+.faq .faq-body{padding:0 26px 22px;color:var(--muted);font-size:14.5px}
 
-/* ============ CONTACT ============ */
-.contact-card{
-  margin-top:54px;border-radius:32px;padding:64px 40px;text-align:center;position:relative;overflow:hidden;
-  background:var(--grad-main);
+/* ============ CTA ============ */
+.cta-card{
+  border:2.5px solid var(--ink);border-radius:34px;padding:64px 40px;text-align:center;
+  position:relative;overflow:hidden;background:linear-gradient(135deg,#ff8fab,#ffb56b);
+  box-shadow:0 10px 0 rgba(43,36,64,.18);
 }
-.contact-card::before{
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(circle at 80% 10%,rgba(255,255,255,.25),transparent 45%),
-             radial-gradient(circle at 15% 90%,rgba(0,0,0,.25),transparent 50%);
+.cta-card::before{
+  content:"";position:absolute;inset:0;opacity:.5;
+  background-image:
+    radial-gradient(circle 4px at 10% 20%, #fff 99%, transparent),
+    radial-gradient(circle 3px at 85% 15%, #fff 99%, transparent),
+    radial-gradient(circle 4px at 70% 80%, #fff 99%, transparent),
+    radial-gradient(circle 3px at 25% 85%, #fff 99%, transparent),
+    radial-gradient(circle 3px at 50% 10%, #fff 99%, transparent);
 }
-.contact-card>*{position:relative;z-index:2}
-.contact-card h2{font-size:clamp(28px,4.5vw,44px);margin-bottom:16px}
-.contact-card p{max-width:520px;margin:0 auto 34px;font-size:16px;color:rgba(255,255,255,.9)}
-.btn-white{background:#fff;color:#0d0b1e;box-shadow:0 8px 26px rgba(0,0,0,.3)}
-.btn-white:hover{transform:translateY(-3px);box-shadow:0 12px 34px rgba(0,0,0,.35)}
-.btn-dark{background:rgba(13,11,30,.55);color:#fff;backdrop-filter:blur(6px)}
-.btn-dark:hover{transform:translateY(-3px);background:rgba(13,11,30,.75)}
-.contact-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.cta-card>*{position:relative;z-index:2}
+.cta-card h2{font-size:clamp(28px,4.5vw,42px);margin-bottom:16px;color:#fff;text-shadow:2px 2px 0 rgba(43,36,64,.25)}
+.cta-card p{max-width:520px;margin:0 auto 34px;font-size:16px;color:#fff}
+.cta-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 
 /* ============ FOOTER ============ */
-footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
+footer{padding:42px 0;border-top:2.5px solid var(--ink);background:#fff}
 .foot-inner{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
 .foot-inner p{color:var(--muted);font-size:13.5px}
 .socials{display:flex;gap:12px}
 .socials a{
   width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:17px;
-  border:1.5px solid rgba(255,255,255,.16);transition:all .25s;
+  border:2px solid var(--ink);background:#fff;transition:all .2s;box-shadow:0 3px 0 rgba(43,36,64,.15);
 }
-.socials a:hover{background:var(--grad-main);border-color:transparent;transform:translateY(-4px)}
+.socials a:hover{background:var(--yellow);transform:translateY(-4px) rotate(-8deg)}
 </style>
 </head>
 <body>
 
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
-<div class="blob blob-3"></div>
-
 <!-- ============ NAV ============ -->
 <nav>
-  <div class="wrap nav-inner">
-    <a href="#" class="logo"><span>MONGG</span><em>.</em>studio</a>
+  <div class="nav-pill">
+    <a href="#" class="logo"><span class="mark">🎨</span> MONGG<span style="color:var(--coral)">.</span>studio</a>
     <div class="nav-links">
+      <a href="#proses">Proses</a>
       <a href="#layanan">Layanan</a>
-      <a href="#portofolio">Portofolio</a>
-      <a href="#mockup">Mockup UI/UX</a>
+      <a href="#portofolio">Karya</a>
+      <a href="#mockup">Mockup</a>
       <a href="#ratecard">Rate Card</a>
-      <a href="#kontak">Kontak</a>
+      <a href="#faq">FAQ</a>
     </div>
-    <a href="#ratecard" class="nav-cta">Lihat Rate Card</a>
+    <a href="#kontak" class="nav-cta">Hubungi Saya ✦</a>
   </div>
 </nav>
 
 <!-- ============ HERO ============ -->
 <header class="hero">
+  <div class="hero-blob hb-1"></div>
+  <div class="hero-blob hb-2"></div>
+  <div class="hero-blob hb-3"></div>
   <div class="wrap hero-grid">
     <div>
-      <div class="hero-badge"><span class="dot"></span> Open for project — Juli 2026</div>
+      <div class="hero-badge"><span class="dot"></span> Open for project — Juli 2026 🙌</div>
       <h1>
-        Halo, saya <span class="grad-text">Kreator Visual</span> —
-        <span class="outline">Desain</span> &amp;
-        <span class="grad-text-warm">Video Editing</span>
+        Bikin brand kamu <span class="hl">tampil beda</span> lewat
+        <span class="hl hl-pink">desain</span> &amp;
+        <span class="squiggle">video</span> yang seru!
       </h1>
       <p>
-        Saya membantu brand, konten kreator, dan bisnis tampil beda lewat desain grafis yang berkarakter,
-        UI/UX yang rapi, dan editing video yang bikin audiens betah nonton sampai habis. 🎨🎬
+        Halo! Saya kreator visual yang fokus di desain grafis, UI/UX, dan video editing.
+        Misi saya sederhana: bikin kontenmu susah di-skip. 🎨🎬
       </p>
       <div class="hero-btns">
-        <a href="#portofolio" class="btn btn-primary">🚀 Lihat Karya Saya</a>
-        <a href="#ratecard" class="btn btn-ghost">💰 Cek Rate Card</a>
+        <a href="#portofolio" class="btn btn-coral">🚀 Lihat Karya</a>
+        <a href="#ratecard" class="btn btn-white">💰 Cek Rate Card</a>
       </div>
       <div class="hero-stats">
-        <div class="stat"><b class="grad-text">50+</b><span>Project Selesai</span></div>
-        <div class="stat"><b class="grad-text-warm">30+</b><span>Klien Puas</span></div>
-        <div class="stat"><b class="grad-text">3+</b><span>Tahun Pengalaman</span></div>
+        <div class="stat"><b>50+</b><span>Project selesai</span></div>
+        <div class="stat"><b>30+</b><span>Klien happy</span></div>
+        <div class="stat"><b>3 th</b><span>Pengalaman</span></div>
       </div>
     </div>
     <div class="hero-visual">
-      <div class="hv-card">
-        <div class="hv-inner">
-          <span class="tag">🔥 Featured Work</span>
-          <h3>Visual yang Ngomong Duluan</h3>
-        </div>
-      </div>
-      <div class="hv-float hv-f1"><span class="ic">🎨</span> Graphic &amp; UI Design</div>
-      <div class="hv-float hv-f2"><span class="ic">🎬</span> Video Editing Pro</div>
+      <figure class="polaroid pol-1">
+        <div class="ph">🎨</div>
+        <figcaption>Desain Grafis & UI ✦</figcaption>
+      </figure>
+      <figure class="polaroid pol-2">
+        <div class="ph">🎬</div>
+        <figcaption>Video Editing Pro ✦</figcaption>
+      </figure>
+      <span class="sticker st-1">✂️ Cut yang rapi!</span>
+      <span class="sticker st-3">✨ Estetik!</span>
+      <span class="sticker st-2">🔥 Anti nge-bosenin</span>
     </div>
   </div>
 </header>
@@ -512,93 +602,138 @@ footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
   </div>
 </div>
 
-<!-- ============ SERVICES ============ -->
-<section class="section" id="layanan">
+<!-- ============ PROSES ============ -->
+<section class="section" id="proses">
   <div class="wrap">
-    <div class="reveal">
-      <span class="section-label">Layanan</span>
-      <h2 class="section-title">Apa yang Bisa Saya <span class="grad-text">Kerjakan?</span></h2>
-      <p class="section-desc">Fokus utama saya di dunia visual — dari statis sampai bergerak, dari feed Instagram sampai aplikasi.</p>
+    <div class="section-head reveal">
+      <span class="eyebrow y">Cara Kerja</span>
+      <h2 class="section-title">Prosesnya <span class="hl hl-mint">Gampang Banget</span> 🙌</h2>
+      <p class="section-desc">Nggak pakai ribet — dari brief sampai file final, semua jelas tahapannya.</p>
     </div>
-    <div class="services-grid">
-      <div class="svc svc-1 reveal">
-        <div class="icon">🎨</div>
-        <h3>Desain Grafis</h3>
-        <p>Poster, feed &amp; story Instagram, banner, thumbnail YouTube, sampai kebutuhan cetak. Estetik dan tepat sasaran.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="ic">💬</span>
+        <h3>Cerita Dulu</h3>
+        <p>Kirim brief atau sekadar ide kasar via WhatsApp/email. Konsultasi awal gratis!</p>
       </div>
-      <div class="svc svc-2 reveal">
-        <div class="icon">📱</div>
-        <h3>UI/UX Design</h3>
-        <p>Mockup aplikasi &amp; website yang clean, user flow yang masuk akal, dan prototype interaktif di Figma.</p>
+      <div class="step reveal">
+        <span class="ic">🧠</span>
+        <h3>Konsep &amp; Deal</h3>
+        <p>Saya susun konsep, moodboard, dan estimasi biaya. Setuju? DP 50% dan kita gas.</p>
       </div>
-      <div class="svc svc-3 reveal">
-        <div class="icon">🎬</div>
+      <div class="step reveal">
+        <span class="ic">⚡</span>
+        <h3>Eksekusi</h3>
+        <p>Pengerjaan dimulai dengan progress update berkala — kamu nggak akan di-ghosting.</p>
+      </div>
+      <div class="step reveal">
+        <span class="ic">🎁</span>
+        <h3>Revisi &amp; Kirim</h3>
+        <p>Preview, revisi sesuai paket, pelunasan, lalu semua file final dikirim rapi.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAYANAN (BENTO) ============ -->
+<section class="section" id="layanan" style="padding-top:30px">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow p">Layanan</span>
+      <h2 class="section-title">Bisa Bantu <span class="hl hl-sky">Apa Aja?</span></h2>
+      <p class="section-desc">Dari konten statis sampai bergerak — semua kebutuhan visual brand kamu.</p>
+    </div>
+    <div class="bento">
+      <div class="bento-card bento-big reveal">
+        <span class="big-emoji">🎬</span>
+        <span class="tagchip">Spesialisasi Utama</span>
         <h3>Video Editing</h3>
-        <p>Reels, TikTok, YouTube, video promosi, sampai dokumentasi event. Cutting rapi, pacing enak, color grading ciamik.</p>
+        <p>Reels, TikTok, YouTube, video promosi, sampai dokumentasi event. Cutting rapi, pacing enak ditonton, color grading ciamik, dan sound design yang bikin betah.</p>
       </div>
-      <div class="svc svc-4 reveal">
-        <div class="icon">✨</div>
+      <div class="bento-card bc-mint reveal">
+        <span class="ic">🎨</span>
+        <h3>Desain Grafis</h3>
+        <p>Feed &amp; story IG, poster, banner, thumbnail YouTube, kebutuhan cetak.</p>
+      </div>
+      <div class="bento-card bc-sky reveal">
+        <span class="ic">📱</span>
+        <h3>UI/UX Design</h3>
+        <p>Mockup aplikasi &amp; website yang clean + prototype interaktif di Figma.</p>
+      </div>
+      <div class="bento-card bc-lav reveal">
+        <span class="ic">✨</span>
         <h3>Motion Graphics</h3>
-        <p>Animasi logo, lower-third, bumper intro/outro, dan teks kinetik yang bikin video makin hidup.</p>
+        <p>Animasi logo, bumper intro/outro, lower-third, dan teks kinetik.</p>
+      </div>
+      <div class="bento-card bc-peach reveal">
+        <span class="ic">📦</span>
+        <h3>Paket Bulanan</h3>
+        <p>Butuh konten rutin? Ada paket langganan konten sosmed — lebih hemat.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============ PORTFOLIO ============ -->
-<section class="section" id="portofolio" style="padding-top:40px">
+<section class="section" id="portofolio" style="padding-top:30px">
   <div class="wrap">
-    <div class="reveal">
-      <span class="section-label">Portofolio</span>
-      <h2 class="section-title">Karya <span class="grad-text-warm">Pilihan</span> 🔥</h2>
-      <p class="section-desc">Ganti thumbnail di bawah dengan karya aslimu — struktur & filternya sudah siap pakai.</p>
+    <div class="section-head reveal">
+      <span class="eyebrow s">Portofolio</span>
+      <h2 class="section-title">Karya yang <span class="hl">Pernah Dibuat</span> 📌</h2>
+      <p class="section-desc">Ganti thumbnail di bawah dengan karya aslimu — tinggal tempel seperti foto polaroid.</p>
     </div>
     <div class="filter-bar reveal">
-      <button class="filter-btn active" data-filter="all">Semua</button>
-      <button class="filter-btn" data-filter="design">Desain Grafis</button>
-      <button class="filter-btn" data-filter="uiux">UI/UX</button>
-      <button class="filter-btn" data-filter="video">Video</button>
+      <button class="filter-btn active" data-filter="all">✦ Semua</button>
+      <button class="filter-btn" data-filter="design">🎨 Desain</button>
+      <button class="filter-btn" data-filter="uiux">📱 UI/UX</button>
+      <button class="filter-btn" data-filter="video">🎬 Video</button>
     </div>
     <div class="port-grid">
       <div class="port-item reveal" data-cat="design">
+        <span class="tape"></span>
         <div class="port-thumb pt-1"><span class="big-emoji">🖼️</span></div>
         <div class="port-info">
-          <div><h4>Brand Feed — Kopi Senja</h4><small>Desain Grafis</small></div>
+          <div><h4>Brand Feed — Kopi Senja</h4><small class="cc-design">Desain Grafis</small></div>
           <span class="port-arrow">↗</span>
         </div>
       </div>
       <div class="port-item reveal" data-cat="video">
+        <span class="tape"></span>
         <div class="port-thumb pt-2"><span class="big-emoji">🎞️</span><span class="play-badge">▶</span></div>
         <div class="port-info">
-          <div><h4>Reels Promo — Fashion Local</h4><small>Video Editing</small></div>
+          <div><h4>Reels Promo — Fashion Local</h4><small class="cc-video">Video Editing</small></div>
           <span class="port-arrow">↗</span>
         </div>
       </div>
       <div class="port-item reveal" data-cat="uiux">
+        <span class="tape"></span>
         <div class="port-thumb pt-3"><span class="big-emoji">📱</span></div>
         <div class="port-info">
-          <div><h4>App UI — FoodDelivery</h4><small>UI/UX Design</small></div>
+          <div><h4>App UI — FoodDelivery</h4><small class="cc-uiux">UI/UX Design</small></div>
           <span class="port-arrow">↗</span>
         </div>
       </div>
       <div class="port-item reveal" data-cat="video">
+        <span class="tape"></span>
         <div class="port-thumb pt-4"><span class="big-emoji">🎥</span><span class="play-badge">▶</span></div>
         <div class="port-info">
-          <div><h4>Cinematic Wedding Recap</h4><small>Video Editing</small></div>
+          <div><h4>Cinematic Wedding Recap</h4><small class="cc-video">Video Editing</small></div>
           <span class="port-arrow">↗</span>
         </div>
       </div>
       <div class="port-item reveal" data-cat="design">
+        <span class="tape"></span>
         <div class="port-thumb pt-5"><span class="big-emoji">🎟️</span></div>
         <div class="port-info">
-          <div><h4>Poster Event — Music Fest</h4><small>Desain Grafis</small></div>
+          <div><h4>Poster Event — Music Fest</h4><small class="cc-design">Desain Grafis</small></div>
           <span class="port-arrow">↗</span>
         </div>
       </div>
       <div class="port-item reveal" data-cat="uiux">
+        <span class="tape"></span>
         <div class="port-thumb pt-6"><span class="big-emoji">💻</span></div>
         <div class="port-info">
-          <div><h4>Landing Page — SaaS Startup</h4><small>UI/UX Design</small></div>
+          <div><h4>Landing Page — SaaS Startup</h4><small class="cc-uiux">UI/UX Design</small></div>
           <span class="port-arrow">↗</span>
         </div>
       </div>
@@ -609,17 +744,16 @@ footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
 <!-- ============ MOCKUP UI/UX ============ -->
 <section class="section mockup-section" id="mockup">
   <div class="wrap">
-    <div class="reveal" style="text-align:center">
-      <span class="section-label" style="justify-content:center">Mockup UI/UX</span>
-      <h2 class="section-title">Desain yang <span class="grad-text">Hidup di Layar</span> 📱💻</h2>
-      <p class="section-desc" style="margin:0 auto">
-        Contoh mockup UI/UX buatan saya — dari landing page website sampai aplikasi mobile.
-        Semua dirancang dengan design system yang konsisten.
+    <div class="section-head reveal">
+      <span class="eyebrow l">Mockup UI/UX</span>
+      <h2 class="section-title">Desain yang <span class="hl hl-lav">Hidup di Layar</span> 💻📱</h2>
+      <p class="section-desc">
+        Contoh mockup UI/UX buatan saya — dari landing page website sampai aplikasi mobile,
+        semua dengan design system yang konsisten.
       </p>
     </div>
 
     <div class="mockup-stage reveal">
-      <!-- Laptop mockup -->
       <div class="laptop">
         <div class="laptop-screen">
           <div class="browser-bar">
@@ -652,7 +786,6 @@ footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
         <div class="laptop-base"></div>
       </div>
 
-      <!-- Phone mockup -->
       <div class="phone">
         <div class="phone-notch"></div>
         <div class="phone-ui">
@@ -673,82 +806,131 @@ footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
     </div>
 
     <div class="mockup-notes reveal">
-      <div class="m-note">🧩 <b>Wireframe</b> → High-fidelity</div>
-      <div class="m-note">🎯 <b>User flow</b> yang jelas</div>
-      <div class="m-note">🎨 <b>Design system</b> konsisten</div>
-      <div class="m-note">⚡ <b>Prototype</b> interaktif Figma</div>
+      <div class="m-note">🧩 Wireframe → Hi-fi</div>
+      <div class="m-note">🎯 User flow jelas</div>
+      <div class="m-note">🎨 Design system rapi</div>
+      <div class="m-note">⚡ Prototype Figma</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONI ============ -->
+<section class="section" id="testimoni">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow m">Testimoni</span>
+      <h2 class="section-title">Kata <span class="hl hl-pink">Mereka</span> 💬</h2>
+      <p class="section-desc">Ganti dengan testimoni asli dari klienmu ya — ini contoh formatnya.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi reveal">
+        <div class="stars">★★★★★</div>
+        <p>"Editan reels-nya bikin engagement naik drastis! Pacing-nya enak banget, subtitle-nya juga rapi. Auto langganan tiap bulan."</p>
+        <div class="testi-who">
+          <span class="ava">👩</span>
+          <div><b>Sari W.</b><span>Owner — Brand Fashion Lokal</span></div>
+        </div>
+      </div>
+      <div class="testi reveal">
+        <div class="stars">★★★★★</div>
+        <p>"Desain feed-nya konsisten dan sesuai karakter brand. Komunikasinya enak, revisi cepat, hasil selalu di atas ekspektasi."</p>
+        <div class="testi-who">
+          <span class="ava">👨</span>
+          <div><b>Rizky A.</b><span>Founder — Coffee Shop</span></div>
+        </div>
+      </div>
+      <div class="testi reveal">
+        <div class="stars">★★★★★</div>
+        <p>"Mockup UI aplikasinya clean dan user flow-nya masuk akal. Developer kami langsung paham tanpa banyak tanya. Recommended!"</p>
+        <div class="testi-who">
+          <span class="ava">🧑‍💻</span>
+          <div><b>Dina P.</b><span>PM — Startup Teknologi</span></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============ RATE CARD ============ -->
-<section class="section" id="ratecard">
+<section class="section rate-section" id="ratecard">
   <div class="wrap">
-    <div class="reveal">
-      <span class="section-label">Rate Card</span>
-      <h2 class="section-title">Investasi untuk <span class="grad-text">Konten Kerenmu</span> 💎</h2>
-      <p class="section-desc">Harga transparan, hasil maksimal. Semua paket sudah termasuk konsultasi konsep gratis.</p>
-      <div class="rate-note">⚡ Promo: diskon 10% untuk 5 klien pertama bulan ini!</div>
+    <div class="section-head reveal">
+      <span class="eyebrow y">Rate Card</span>
+      <h2 class="section-title">Harga <span class="hl">Bersahabat</span>, Hasil Maksimal 💎</h2>
+      <p class="section-desc" style="margin-bottom:22px">Transparan dari awal — semua paket sudah termasuk konsultasi konsep gratis.</p>
+      <div class="promo-pill">⚡ Promo: diskon 10% untuk 5 klien pertama bulan ini!</div>
     </div>
 
     <!-- Video editing packages -->
     <div class="rate-grid">
       <div class="rate-card reveal">
-        <div class="rate-tier">Paket Video</div>
-        <h3 class="rate-name">🎬 Basic Cut</h3>
-        <div class="rate-price"><small>Rp</small> 150K</div>
-        <div class="rate-per">per video · durasi s.d. 1 menit</div>
-        <ul class="rate-list">
-          <li>Reels / TikTok / Shorts</li>
-          <li>Cutting &amp; pacing rapi</li>
-          <li>Subtitle otomatis + styling</li>
-          <li>Backsound &amp; SFX dasar</li>
-          <li>2x revisi minor</li>
-          <li class="no">Motion graphics</li>
-          <li class="no">Color grading cinematic</li>
-        </ul>
-        <a href="#kontak" class="rate-btn">Pilih Paket</a>
+        <div class="rate-head rh-1">
+          <div class="rate-tier">Paket Video</div>
+          <h3 class="rate-name">🎬 Basic Cut</h3>
+          <div class="rate-price"><small>Rp</small> 150K</div>
+          <div class="rate-per">per video · durasi s.d. 1 menit</div>
+        </div>
+        <div class="rate-body">
+          <ul class="rate-list">
+            <li>Reels / TikTok / Shorts</li>
+            <li>Cutting &amp; pacing rapi</li>
+            <li>Subtitle otomatis + styling</li>
+            <li>Backsound &amp; SFX dasar</li>
+            <li>2x revisi minor</li>
+            <li class="no">Motion graphics</li>
+            <li class="no">Color grading cinematic</li>
+          </ul>
+          <a href="#kontak" class="rate-btn">Pilih Paket</a>
+        </div>
       </div>
 
       <div class="rate-card featured reveal">
         <div class="best-badge">⭐ Paling Laris</div>
-        <div class="rate-tier">Paket Video</div>
-        <h3 class="rate-name">🚀 Pro Edit</h3>
-        <div class="rate-price"><small>Rp</small> 350K</div>
-        <div class="rate-per">per video · durasi s.d. 3 menit</div>
-        <ul class="rate-list">
-          <li>Semua fitur Basic Cut</li>
-          <li>Color grading cinematic</li>
-          <li>Motion graphics &amp; teks kinetik</li>
-          <li>Sound design lebih detail</li>
-          <li>Thumbnail YouTube GRATIS</li>
-          <li>4x revisi</li>
-          <li>Prioritas pengerjaan (3–4 hari)</li>
-        </ul>
-        <a href="#kontak" class="rate-btn">Pilih Paket</a>
+        <div class="rate-head rh-2">
+          <div class="rate-tier">Paket Video</div>
+          <h3 class="rate-name">🚀 Pro Edit</h3>
+          <div class="rate-price"><small>Rp</small> 350K</div>
+          <div class="rate-per">per video · durasi s.d. 3 menit</div>
+        </div>
+        <div class="rate-body">
+          <ul class="rate-list">
+            <li>Semua fitur Basic Cut</li>
+            <li>Color grading cinematic</li>
+            <li>Motion graphics &amp; teks kinetik</li>
+            <li>Sound design lebih detail</li>
+            <li>Thumbnail YouTube GRATIS</li>
+            <li>4x revisi</li>
+            <li>Prioritas pengerjaan (3–4 hari)</li>
+          </ul>
+          <a href="#kontak" class="rate-btn">Pilih Paket</a>
+        </div>
       </div>
 
       <div class="rate-card reveal">
-        <div class="rate-tier">Paket Video</div>
-        <h3 class="rate-name">👑 Premium Cinema</h3>
-        <div class="rate-price"><small>Rp</small> 750K</div>
-        <div class="rate-per">per video · durasi s.d. 10 menit</div>
-        <ul class="rate-list">
-          <li>Semua fitur Pro Edit</li>
-          <li>Konsep &amp; storyboard bareng</li>
-          <li>Animasi logo / bumper intro</li>
-          <li>VFX &amp; transisi advanced</li>
-          <li>Master file + versi sosmed (9:16, 1:1, 16:9)</li>
-          <li>Revisi unlimited (masa 7 hari)</li>
-          <li>Support publish &amp; konsultasi konten</li>
-        </ul>
-        <a href="#kontak" class="rate-btn">Pilih Paket</a>
+        <div class="rate-head rh-3">
+          <div class="rate-tier">Paket Video</div>
+          <h3 class="rate-name">👑 Premium Cinema</h3>
+          <div class="rate-price"><small>Rp</small> 750K</div>
+          <div class="rate-per">per video · durasi s.d. 10 menit</div>
+        </div>
+        <div class="rate-body">
+          <ul class="rate-list">
+            <li>Semua fitur Pro Edit</li>
+            <li>Konsep &amp; storyboard bareng</li>
+            <li>Animasi logo / bumper intro</li>
+            <li>VFX &amp; transisi advanced</li>
+            <li>Master file + versi 9:16, 1:1, 16:9</li>
+            <li>Revisi unlimited (masa 7 hari)</li>
+            <li>Support publish &amp; konsultasi konten</li>
+          </ul>
+          <a href="#kontak" class="rate-btn">Pilih Paket</a>
+        </div>
       </div>
     </div>
 
     <!-- Design price list -->
     <div class="price-table-wrap reveal">
-      <h3>🎨 Rate Card — <span class="grad-text-warm">Desain Grafis &amp; UI/UX</span></h3>
+      <h3>🎨 Rate Card — <span class="hl hl-pink">Desain Grafis &amp; UI/UX</span></h3>
       <div class="price-cols">
         <div class="price-box">
           <div class="price-box-head pbh-design">🖌️ Desain Grafis</div>
@@ -765,7 +947,7 @@ footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
           <div class="price-row"><span>UI aplikasi mobile (per screen)</span><b>Rp 100K</b></div>
           <div class="price-row"><span>Prototype interaktif Figma</span><b>Rp 200K</b></div>
           <div class="price-row"><span>Add-on: revisi ekstra (per revisi)</span><b>Rp 25K</b></div>
-          <div class="price-row"><span>Add-on: pengerjaan express (1×24 jam)</span><b>+50%</b></div>
+          <div class="price-row"><span>Add-on: express 1×24 jam</span><b>+50%</b></div>
           <div class="price-row"><span>Add-on: source file (.psd/.ai/.fig)</span><b>Rp 75K</b></div>
         </div>
       </div>
@@ -785,35 +967,47 @@ footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
   </div>
 </section>
 
-<!-- ============ TOOLS ============ -->
-<section class="section" id="tools" style="padding-top:20px">
+<!-- ============ FAQ ============ -->
+<section class="section" id="faq">
   <div class="wrap">
-    <div class="reveal">
-      <span class="section-label">Tools</span>
-      <h2 class="section-title">Senjata <span class="grad-text">Andalan</span> 🛠️</h2>
+    <div class="section-head reveal">
+      <span class="eyebrow s">FAQ</span>
+      <h2 class="section-title">Sering <span class="hl hl-sky">Ditanyain</span> 🤔</h2>
     </div>
-    <div class="tools-row reveal">
-      <div class="tool t-ps"><span class="tico">Ps</span> Photoshop</div>
-      <div class="tool t-ai"><span class="tico">Ai</span> Illustrator</div>
-      <div class="tool t-pr"><span class="tico">Pr</span> Premiere Pro</div>
-      <div class="tool t-ae"><span class="tico">Ae</span> After Effects</div>
-      <div class="tool t-fg"><span class="tico">Fg</span> Figma</div>
-      <div class="tool t-cv"><span class="tico">Cv</span> Canva Pro</div>
-      <div class="tool t-dv"><span class="tico">Dv</span> DaVinci Resolve</div>
-      <div class="tool t-cc"><span class="tico">Cc</span> CapCut Pro</div>
+    <div class="faq-wrap reveal">
+      <details class="faq">
+        <summary>Berapa lama pengerjaan satu project?</summary>
+        <div class="faq-body">Normalnya 3–7 hari kerja tergantung kompleksitas dan antrian. Butuh cepat? Ada add-on express 1×24 jam (+50%).</div>
+      </details>
+      <details class="faq">
+        <summary>Bagaimana sistem pembayarannya?</summary>
+        <div class="faq-body">DP 50% di awal sebagai tanda jadi, sisanya dilunasi saat preview final disetujui dan sebelum file dikirim. Pembayaran via transfer bank atau e-wallet.</div>
+      </details>
+      <details class="faq">
+        <summary>Apakah bisa request revisi?</summary>
+        <div class="faq-body">Tentu! Setiap paket sudah termasuk kuota revisi (lihat rate card). Revisi minor seperti ganti teks/warna cepat kok. Ganti konsep total dihitung project baru ya.</div>
+      </details>
+      <details class="faq">
+        <summary>File apa saja yang saya terima?</summary>
+        <div class="faq-body">Desain: file siap pakai (PNG/JPG/PDF). Video: file MP4 kualitas tinggi sesuai platform. Source file (.psd/.ai/.fig/project file) tersedia sebagai add-on.</div>
+      </details>
+      <details class="faq">
+        <summary>Apakah ada paket langganan bulanan?</summary>
+        <div class="faq-body">Ada! Untuk kebutuhan konten rutin (feed sosmed, reels mingguan, dll.) harga langganan lebih hemat dibanding satuan. Hubungi saya untuk penawaran custom.</div>
+      </details>
     </div>
   </div>
 </section>
 
-<!-- ============ CONTACT ============ -->
+<!-- ============ CTA ============ -->
 <section class="section" id="kontak" style="padding-top:20px">
   <div class="wrap">
-    <div class="contact-card reveal">
-      <h2>Punya Project Seru? <br>Yuk, Wujudkan Bareng! 🚀</h2>
+    <div class="cta-card reveal">
+      <h2>Punya Project Seru?<br>Yuk, Wujudkan Bareng! 🚀</h2>
       <p>Ceritakan idemu — konsultasi konsep pertama gratis. Respon cepat setiap hari kerja, jam 09.00–21.00 WIB.</p>
-      <div class="contact-links">
+      <div class="cta-links">
         <a class="btn btn-white" href="mailto:ini.mongg@gmail.com">✉️ ini.mongg@gmail.com</a>
-        <a class="btn btn-dark" href="https://wa.me/6281234567890" target="_blank" rel="noopener">💬 Chat WhatsApp</a>
+        <a class="btn btn-yellow" href="https://wa.me/6281234567890" target="_blank" rel="noopener">💬 Chat WhatsApp</a>
       </div>
     </div>
   </div>
@@ -822,7 +1016,7 @@ footer{padding:44px 0;border-top:1px solid rgba(255,255,255,.07)}
 <!-- ============ FOOTER ============ -->
 <footer>
   <div class="wrap foot-inner">
-    <p>© 2026 <b>MONGG.studio</b> — Dibuat dengan 💜 dan banyak kopi.</p>
+    <p>© 2026 <b>MONGG.studio</b> — Dibuat dengan 🧡 dan banyak kopi.</p>
     <div class="socials">
       <a href="#" aria-label="Instagram">📸</a>
       <a href="#" aria-label="TikTok">🎵</a>

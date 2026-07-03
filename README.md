@@ -1,16 +1,17 @@
 # 🎨 MONGG.studio — Website Portofolio & Rate Card
 
-Website portofolio one-page yang colorful untuk jasa **desain grafis, UI/UX, dan video editing** — lengkap dengan rate card profesional dan mockup UI/UX interaktif.
+Website portofolio one-page bergaya **terang & playful** untuk jasa **desain grafis, UI/UX, dan video editing** — lengkap dengan rate card profesional dan mockup UI/UX.
 
 ## ✨ Fitur
 
-- **Hero section** dengan gradasi animasi, floating badge, dan statistik
-- **Layanan** — desain grafis, UI/UX, video editing, motion graphics
-- **Portofolio** dengan filter kategori (Semua / Desain / UI/UX / Video)
+- **Hero** playful dengan kartu polaroid, stiker melayang, highlight marker & squiggle
+- **Proses kerja** — 4 langkah dari brief sampai file final
+- **Layanan** dalam layout bento grid (video editing sebagai spesialisasi utama)
+- **Portofolio** ala polaroid + selotip, dengan filter kategori (Semua / Desain / UI/UX / Video)
 - **Mockup UI/UX** — frame laptop & smartphone dibuat murni dengan CSS
+- **Testimoni** klien (template, tinggal ganti dengan yang asli)
 - **Rate Card** — 3 paket video editing + tabel harga desain & add-on + S&K
-- **Tools** — badge aplikasi yang dikuasai
-- **Kontak** — CTA email & WhatsApp
+- **FAQ** accordion & CTA kontak email/WhatsApp
 - Animasi reveal-on-scroll, marquee berjalan, responsive mobile
 
 ## 🚀 Cara Pakai
