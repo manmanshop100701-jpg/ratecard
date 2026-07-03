@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MONGG Market — Sosmed Khusus Jualan</title>
-<meta name="description" content="Marketplace bergaya media sosial: jual jasa, makanan, elektronik, sampai ikan hias — dengan pembayaran otomatis.">
+<meta name="description" content="Marketplace bergaya media sosial: barang baru & bekas, rekber aman, COD radius terdekat, dan antar driver instan.">
 <style>
 /* ============ RESET & TOKENS ============ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -19,8 +19,6 @@
   --sky:#7dd3fc;
   --lavender:#c4b5fd;
   --peach:#ffc09f;
-  --green:#22c55e;
-  --card:#fff;
   --font:'Poppins','Quicksand','Segoe UI',system-ui,-apple-system,sans-serif;
 }
 html{scroll-behavior:smooth}
@@ -62,12 +60,15 @@ body::before{
 }
 .chip:hover{transform:translateY(-2px)}
 .chip.active{background:var(--ink);color:#fff;transform:rotate(-1.5deg)}
+.chip.mini{padding:6px 15px;font-size:12px;box-shadow:0 2px 0 rgba(43,36,64,.15)}
+.chip.mini.active{background:var(--coral);color:#fff;border-color:var(--ink)}
 .badge{
   display:inline-block;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
   border:1.5px solid var(--ink);border-radius:999px;padding:3px 12px;
 }
 .b-jasa{background:#ffe0ec}.b-makanan{background:#fff3c4}.b-elektronik{background:#d8f3ff}
 .b-ikan{background:#d9f8ea}.b-fashion{background:#ece7ff}
+.b-bekas{background:#ffe8d9}.b-baru{background:#d9f8ea}
 .hidden{display:none!important}
 
 /* ============ HEADER ============ */
@@ -111,8 +112,6 @@ header{
   background:var(--yellow);border-radius:6px;transform:rotate(-1deg);
 }
 .hero-strip p{color:var(--muted);font-size:14.5px;margin-top:4px}
-
-/* seller stories */
 .stories{display:flex;gap:18px;overflow-x:auto;padding:22px 4px 10px;scrollbar-width:none}
 .stories::-webkit-scrollbar{display:none}
 .story{flex:none;text-align:center;width:74px}
@@ -126,13 +125,19 @@ header{
 }
 .story span{font-size:11.5px;font-weight:700;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* ============ CATEGORY BAR ============ */
+/* ============ CATEGORY + RADIUS BAR ============ */
 .cat-bar{
   position:sticky;top:70px;z-index:80;background:rgba(255,249,242,.94);
-  backdrop-filter:blur(10px);padding:14px 0;border-bottom:2px dashed rgba(43,36,64,.2);
+  backdrop-filter:blur(10px);padding:12px 0 10px;border-bottom:2px dashed rgba(43,36,64,.2);
 }
 .cat-scroll{display:flex;gap:11px;overflow-x:auto;scrollbar-width:none;padding:2px 4px}
 .cat-scroll::-webkit-scrollbar{display:none}
+.radius-row{
+  display:flex;align-items:center;gap:9px;overflow-x:auto;scrollbar-width:none;
+  padding:10px 4px 2px;font-size:12.5px;font-weight:700;color:var(--muted);
+}
+.radius-row::-webkit-scrollbar{display:none}
+.radius-row .loc{white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
 
 /* ============ LAYOUT ============ */
 .main-grid{display:grid;grid-template-columns:1fr 320px;gap:28px;padding:26px 0 90px;align-items:start}
@@ -150,7 +155,7 @@ header{
   display:grid;place-items:center;font-size:20px;flex:none;background:var(--ac,#fff3c4);
 }
 .post-head .who{flex:1;min-width:0}
-.post-head .who b{display:flex;align-items:center;gap:6px;font-size:14.5px}
+.post-head .who b{display:flex;align-items:center;gap:6px;font-size:14.5px;flex-wrap:wrap}
 .verif{color:var(--sky);font-size:13px}
 .post-head .who span{font-size:12px;color:var(--muted)}
 .post-media{
@@ -162,19 +167,21 @@ header{
   border-radius:999px;padding:7px 18px;font-weight:800;font-size:15px;
   box-shadow:0 4px 0 rgba(43,36,64,.2);transform:rotate(-2deg);
 }
-.post-media .stock-tag{
-  position:absolute;right:16px;top:14px;background:var(--yellow);border:2px solid var(--ink);
+.post-media .cond-tag{
+  position:absolute;left:16px;top:14px;border:2px solid var(--ink);
+  border-radius:999px;padding:5px 14px;font-weight:800;font-size:12px;background:#fff;
+}
+.post-media .dist-tag{
+  position:absolute;right:16px;bottom:14px;background:var(--ink);color:#fff;border:2px solid #fff;
   border-radius:999px;padding:5px 14px;font-weight:800;font-size:12px;
 }
-.post-media .sold-out{
-  position:absolute;inset:0;background:rgba(255,255,255,.75);display:grid;place-items:center;
-}
+.post-media .sold-out{position:absolute;inset:0;background:rgba(255,255,255,.75);display:grid;place-items:center}
 .post-media .sold-out b{
   background:var(--coral);color:#fff;border:2.5px solid var(--ink);border-radius:14px;
   padding:10px 26px;font-size:18px;transform:rotate(-6deg);box-shadow:0 5px 0 rgba(43,36,64,.3);
 }
 .post-body{padding:16px 18px 18px}
-.post-actions{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.post-actions{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .act{
   display:inline-flex;align-items:center;gap:7px;border:2px solid var(--ink);background:#fff;
   border-radius:999px;padding:7px 15px;font-weight:700;font-size:13px;
@@ -182,14 +189,18 @@ header{
 }
 .act:hover{transform:translateY(-2px)}
 .act.liked{background:#ffe0ec;transform:rotate(-2deg)}
-.post-actions .spacer{flex:1}
 .post-title{font-size:17px;font-weight:800;margin-bottom:4px}
-.post-desc{font-size:13.5px;color:var(--muted);margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-desc{font-size:13.5px;color:var(--muted);margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-perks{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.perk{
+  display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;
+  border:1.5px solid var(--ink);border-radius:999px;padding:4px 12px;
+}
+.pk-cod{background:#d9f8ea}.pk-rekber{background:#fff3c4}.pk-driver{background:#d8f3ff}.pk-far{background:#f1ede4;color:var(--muted);border-color:rgba(43,36,64,.35)}
 .post-cta{display:flex;gap:10px;flex-wrap:wrap}
 .post-cta .btn{flex:1;min-width:130px}
-.empty-feed{
-  text-align:center;background:#fff;border:2.5px dashed var(--ink);border-radius:24px;padding:60px 24px;
-}
+.fav-btn.on{background:#ffe0ec;transform:rotate(-1.5deg)}
+.empty-feed{text-align:center;background:#fff;border:2.5px dashed var(--ink);border-radius:24px;padding:60px 24px}
 .empty-feed .big{font-size:56px;display:block;margin-bottom:12px}
 
 /* media gradients */
@@ -201,7 +212,7 @@ header{
 .g-6{background:linear-gradient(135deg,#ffc09f,#ff8fab)}
 
 /* ============ SIDEBAR ============ */
-.side{display:flex;flex-direction:column;gap:22px;position:sticky;top:150px}
+.side{display:flex;flex-direction:column;gap:22px;position:sticky;top:170px}
 .side-card{background:#fff;border:2.5px solid var(--ink);border-radius:22px;padding:22px;box-shadow:0 5px 0 rgba(43,36,64,.12)}
 .side-card h3{font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .mini-row{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:2px dashed rgba(43,36,64,.12)}
@@ -216,7 +227,7 @@ header{
   display:grid;place-items:center;font-size:11px;font-weight:800;background:var(--yellow);margin-top:1px;
 }
 
-/* ============ FAB SELL ============ */
+/* ============ FAB ============ */
 .fab{
   position:fixed;right:22px;bottom:22px;z-index:85;
   display:inline-flex;align-items:center;gap:10px;padding:16px 26px;border-radius:999px;
@@ -255,17 +266,11 @@ header{
 @keyframes slide{from{transform:translateX(100%)}to{transform:none}}
 .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:2.5px solid var(--ink)}
 .drawer-body{flex:1;overflow-y:auto;padding:18px 22px}
-.drawer-foot{padding:18px 22px;border-top:2.5px solid var(--ink);background:#fff}
-.cart-row{display:flex;gap:12px;align-items:center;background:#fff;border:2px solid var(--ink);border-radius:16px;padding:12px;margin-bottom:12px;box-shadow:0 3px 0 rgba(43,36,64,.1)}
-.cart-row .em{width:52px;height:52px;border-radius:12px;border:2px solid var(--ink);display:grid;place-items:center;font-size:24px;flex:none}
-.cart-row .inf{flex:1;min-width:0}
-.cart-row .inf b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cart-row .inf span{font-size:12.5px;color:var(--muted);font-weight:700}
-.qty{display:flex;align-items:center;gap:8px}
-.qty button{width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);background:var(--yellow);font-weight:800;font-size:13px}
-.qty b{min-width:18px;text-align:center;font-size:13.5px}
-.sum-row{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;color:var(--muted)}
-.sum-row.total{font-size:16px;font-weight:800;color:var(--ink);border-top:2px dashed rgba(43,36,64,.25);margin-top:6px;padding-top:10px}
+.fav-row{display:flex;gap:12px;align-items:center;background:#fff;border:2px solid var(--ink);border-radius:16px;padding:12px;margin-bottom:12px;box-shadow:0 3px 0 rgba(43,36,64,.1)}
+.fav-row .em{width:52px;height:52px;border-radius:12px;border:2px solid var(--ink);display:grid;place-items:center;font-size:24px;flex:none}
+.fav-row .inf{flex:1;min-width:0}
+.fav-row .inf b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fav-row .inf span{font-size:12px;color:var(--muted);font-weight:700}
 
 /* ============ FORMS ============ */
 label.f{display:block;font-size:13px;font-weight:800;margin:14px 0 6px}
@@ -275,23 +280,41 @@ input.f,select.f,textarea.f{
 }
 textarea.f{resize:vertical;min-height:80px}
 input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
+.check-row{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;margin-top:14px}
+.check-row input{width:19px;height:19px;accent-color:var(--coral)}
 
-/* ============ CHECKOUT ============ */
+/* ============ BUY FLOW ============ */
 .steps-ind{display:flex;gap:8px;margin-bottom:20px}
 .steps-ind i{flex:1;height:8px;border-radius:6px;background:#eee5d8;border:1.5px solid rgba(43,36,64,.25)}
 .steps-ind i.on{background:var(--mint);border-color:var(--ink)}
+.buy-item{display:flex;gap:12px;align-items:center;background:#fff;border:2px dashed var(--ink);border-radius:16px;padding:12px;margin-bottom:16px}
+.buy-item .em{width:50px;height:50px;border-radius:12px;border:2px solid var(--ink);display:grid;place-items:center;font-size:23px;flex:none}
+.buy-item b{font-size:14px;display:block}
+.buy-item span{font-size:12.5px;color:var(--muted);font-weight:700}
 .pay-opt{
-  display:flex;align-items:center;gap:13px;background:#fff;border:2px solid var(--ink);border-radius:16px;
+  display:flex;align-items:flex-start;gap:13px;background:#fff;border:2px solid var(--ink);border-radius:16px;
   padding:14px 16px;margin-bottom:11px;cursor:pointer;transition:transform .15s;box-shadow:0 3px 0 rgba(43,36,64,.1);
 }
 .pay-opt:hover{transform:translateY(-2px)}
 .pay-opt.sel{background:#fff3c4;transform:rotate(-.6deg)}
+.pay-opt.off{opacity:.55;cursor:not-allowed;background:#f6f1e7}
+.pay-opt.off:hover{transform:none}
 .pay-opt .ic{width:42px;height:42px;border-radius:12px;border:2px solid var(--ink);display:grid;place-items:center;font-size:19px;flex:none;background:var(--pc,#d8f3ff)}
 .pay-opt div{flex:1}
 .pay-opt b{font-size:14px;display:block}
 .pay-opt span{font-size:12px;color:var(--muted)}
-.pay-opt .rad{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;flex:none}
+.pay-opt .rad{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;flex:none;margin-top:8px}
 .pay-opt.sel .rad::after{content:"";width:11px;height:11px;border-radius:50%;background:var(--coral)}
+.safe-note{
+  background:#d9f8ea;border:2px solid var(--ink);border-radius:14px;padding:12px 16px;
+  font-size:12.5px;font-weight:600;margin-top:14px;
+}
+.warn-note{
+  background:#fff3c4;border:2px dashed var(--ink);border-radius:14px;padding:12px 16px;
+  font-size:12.5px;font-weight:600;margin-top:14px;
+}
+.sum-row{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;color:var(--muted)}
+.sum-row.total{font-size:16px;font-weight:800;color:var(--ink);border-top:2px dashed rgba(43,36,64,.25);margin-top:6px;padding-top:10px}
 
 /* payment instruction */
 .pay-box{background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:22px;text-align:center;box-shadow:0 5px 0 rgba(43,36,64,.12)}
@@ -310,7 +333,9 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   display:inline-flex;gap:8px;align-items:center;background:#ffe0ec;border:2px solid var(--ink);
   border-radius:999px;padding:7px 18px;font-weight:800;font-size:13px;
 }
-.status-line{display:flex;flex-direction:column;gap:0;margin-top:8px}
+
+/* orders */
+.status-line{display:flex;flex-direction:column;margin-top:8px}
 .st-item{display:flex;gap:13px;align-items:flex-start;position:relative;padding-bottom:20px}
 .st-item::before{content:"";position:absolute;left:13px;top:28px;bottom:0;width:2.5px;background:rgba(43,36,64,.18)}
 .st-item:last-child::before{display:none}
@@ -327,7 +352,8 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 .order-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 .order-top code{font-size:12px;font-weight:800;background:#f3ecff;border:1.5px solid var(--ink);border-radius:8px;padding:3px 10px}
 .stat-badge{font-size:11.5px;font-weight:800;border:2px solid var(--ink);border-radius:999px;padding:4px 13px;text-transform:uppercase;letter-spacing:.6px}
-.sb-unpaid{background:#ffe0ec}.sb-paid{background:#fff3c4}.sb-process{background:#d8f3ff}.sb-ship{background:#ece7ff}.sb-done{background:#d9f8ea}
+.sb-unpaid{background:#ffe0ec}.sb-held{background:#fff3c4}.sb-move{background:#d8f3ff}.sb-check{background:#ece7ff}.sb-done{background:#d9f8ea}.sb-cod{background:#ffe8d9}
+.order-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
 
 /* ============ TOAST ============ */
 #toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:200;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
@@ -336,8 +362,6 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   border:2px solid #fff;box-shadow:0 6px 20px rgba(43,36,64,.4);animation:toastIn .3s ease;max-width:90vw;
 }
 @keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
-
-/* ============ TABS (feed/orders) ============ */
 .view-tabs{display:flex;gap:10px;margin-bottom:20px}
 </style>
 </head>
@@ -352,40 +376,43 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
     </a>
     <div class="search">
       <span>🔍</span>
-      <input id="searchInput" type="text" placeholder="Cari produk, jasa, ikan hias..." oninput="renderFeed()">
+      <input id="searchInput" type="text" placeholder="Cari barang second, jasa, ikan hias..." oninput="renderFeed()">
     </div>
     <div class="head-actions">
-      <button class="icon-btn" onclick="showView('orders')" title="Pesanan Saya">📦<span id="orderCount" class="count hidden">0</span></button>
-      <button class="icon-btn" onclick="openCart()" title="Keranjang">🛒<span id="cartCount" class="count hidden">0</span></button>
+      <button class="icon-btn" onclick="showView('orders')" title="Transaksi Saya">📦<span id="orderCount" class="count hidden">0</span></button>
+      <button class="icon-btn" onclick="openFavs()" title="Favorit">💖<span id="favCount" class="count hidden">0</span></button>
     </div>
   </div>
 </header>
 
 <div class="wrap hero-strip" id="heroStrip">
   <h1>Belanja rasa <span class="hl">scrolling sosmed</span> 🤳</h1>
-  <p>Semua postingan di sini adalah jualan — tinggal like, checkout, bayar otomatis. Beres!</p>
+  <p>Barang baru & bekas dari orang sekitarmu — rekber aman, bisa COD, bisa diantar driver. Beres!</p>
   <div class="stories" id="stories"></div>
 </div>
 
-<!-- ============ CATEGORY BAR ============ -->
+<!-- ============ CATEGORY + RADIUS ============ -->
 <div class="cat-bar" id="catBar">
-  <div class="wrap cat-scroll" id="catScroll"></div>
+  <div class="wrap">
+    <div class="cat-scroll" id="catScroll"></div>
+    <div class="radius-row">
+      <span class="loc">📍 Lokasimu: <b style="color:var(--ink)">Tebet, Jaksel</b> · Radius:</span>
+      <span id="radiusChips"></span>
+    </div>
+  </div>
 </div>
 
 <!-- ============ MAIN ============ -->
 <div class="wrap main-grid">
   <main>
-    <!-- FEED VIEW -->
     <div id="view-feed">
       <div class="feed" id="feed"></div>
     </div>
-
-    <!-- ORDERS VIEW -->
     <div id="view-orders" class="hidden">
       <div class="view-tabs">
         <button class="chip" onclick="showView('feed')">← Kembali belanja</button>
       </div>
-      <h2 style="margin-bottom:18px">📦 Pesanan Saya</h2>
+      <h2 style="margin-bottom:18px">📦 Transaksi Saya</h2>
       <div id="ordersList"></div>
     </div>
   </main>
@@ -393,41 +420,38 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   <!-- SIDEBAR -->
   <aside class="side">
     <div class="side-card">
-      <h3>⚡ Cara kerjanya</h3>
-      <div class="how-step"><span class="n">1</span><span>Pilih produk dari feed, masukkan keranjang 🛒</span></div>
-      <div class="how-step"><span class="n">2</span><span>Checkout — isi alamat & pilih metode bayar</span></div>
-      <div class="how-step"><span class="n">3</span><span>Bayar via QRIS / VA / e-wallet</span></div>
-      <div class="how-step"><span class="n">4</span><span>Sistem deteksi pembayaran <b>otomatis</b> → penjual langsung proses</span></div>
-      <div class="how-step"><span class="n">5</span><span>Pantau status pesanan real-time di menu 📦</span></div>
+      <h3>🛡️ Transaksi aman (win-win)</h3>
+      <div class="how-step"><span class="n">1</span><span>Pembeli bayar → dana <b>ditahan sistem</b> (rekber), bukan langsung ke penjual</span></div>
+      <div class="how-step"><span class="n">2</span><span>Penjual kirim barang / serahkan ke driver</span></div>
+      <div class="how-step"><span class="n">3</span><span>Barang tiba → pembeli <b>cek dulu</b> sesuai deskripsi</span></div>
+      <div class="how-step"><span class="n">4</span><span>Pembeli konfirmasi ✅ → dana baru cair ke penjual</span></div>
+      <div class="how-step"><span class="n">5</span><span>Barang tak sesuai? Ajukan komplain — dana tetap tertahan sampai beres</span></div>
     </div>
     <div class="side-card">
-      <h3>🔥 Lagi banyak dicari</h3>
+      <h3>🔥 Terdekat & banyak dicari</h3>
       <div id="trending"></div>
     </div>
     <div class="side-card" style="background:#fff3c4">
       <h3>💡 Mau ikut jualan?</h3>
-      <p style="font-size:13px;color:#5d5470;margin-bottom:14px">Posting produkmu gratis — jasa, makanan, elektronik, sampai ikan hias. Pembayaran diurus sistem.</p>
+      <p style="font-size:13px;color:#5d5470;margin-bottom:14px">Posting barang baru/bekas gratis. Aktifkan COD kalau mau ketemuan di sekitarmu.</p>
       <button class="btn btn-coral btn-sm" onclick="openSell()">+ Posting Jualan</button>
     </div>
   </aside>
 </div>
 
-<!-- FAB -->
 <button class="fab" onclick="openSell()">＋ Jual</button>
-
-<!-- TOASTS -->
 <div id="toasts"></div>
-
-<!-- ============ MODAL ROOT ============ -->
 <div id="modalRoot"></div>
 
 <script>
 /* ================================================================
-   MONGG.market — demo marketplace bergaya sosmed (front-end only).
-   Pembayaran adalah SIMULASI alur payment gateway (Midtrans/Xendit):
-   checkout → buat transaksi → tampil QRIS/VA → "webhook" pembayaran
-   → status pesanan berubah otomatis. Di produksi, langkah webhook
-   dilakukan server backend, bukan browser.
+   MONGG.market v2 — sosmed jualan barang baru & bekas (demo front-end).
+   - Favorit menggantikan keranjang; pembelian per-barang (khas barang second)
+   - Rekber (escrow): dana ditahan sistem, cair setelah pembeli konfirmasi
+   - Radius jarak: filter penjual terdekat, buka opsi COD ketemuan
+   - Driver instan: barang diantar hari itu tanpa ketemuan
+   Pembayaran = simulasi alur payment gateway (webhook dsb. dijalankan
+   timer browser; di produksi ini tugas server backend).
    ================================================================ */
 
 /* ---------- DATA ---------- */
@@ -441,68 +465,78 @@ const CATS = [
 ];
 const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ikan:'b-ikan', fashion:'b-fashion' };
 const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ikan:'Ikan Hias', fashion:'Fashion' };
+const RADII = [ {v:5,l:'≤ 5 km'}, {v:10,l:'≤ 10 km'}, {v:25,l:'≤ 25 km'}, {v:Infinity,l:'Semua'} ];
+const COD_MAX_KM = 25, DRIVER_MAX_KM = 15;
 
 const SEED = [
-  { id:1, cat:'jasa', emoji:'🎬', g:'g-2', name:'Jasa Edit Video Reels/TikTok', price:150000, stock:99,
-    seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'2 jam lalu', likes:128,
-    desc:'Editing rapi, subtitle otomatis, backsound kekinian. Pengerjaan 2-3 hari. Sudah 50+ project selesai!' },
-  { id:2, cat:'ikan', emoji:'🐠', g:'g-3', name:'Cupang Halfmoon Blue Rim', price:85000, stock:6,
-    seller:'Betta House', ava:'🐟', ac:'#d8f3ff', verified:true, time:'3 jam lalu', likes:214,
-    desc:'Cupang halfmoon blue rim grade A, umur 4 bulan, sehat & agresif. Packing aman pakai oksigen.' },
-  { id:3, cat:'makanan', emoji:'🍰', g:'g-6', name:'Brownies Lumer Homemade (Box)', price:45000, stock:15,
-    seller:'Dapur Bunda', ava:'👩‍🍳', ac:'#fff3c4', verified:false, time:'5 jam lalu', likes:96,
-    desc:'Brownies fudgy lumer isi 9 potong. Varian coklat, keju, red velvet. Fresh from the oven setiap hari!' },
-  { id:4, cat:'elektronik', emoji:'🎧', g:'g-4', name:'TWS Earbuds ANC — Garansi 1 Th', price:299000, stock:23,
-    seller:'GadgetKu Official', ava:'🤖', ac:'#ece7ff', verified:true, time:'6 jam lalu', likes:342,
-    desc:'Active noise cancelling, baterai 30 jam, bluetooth 5.3. Garansi resmi 1 tahun, bisa COD.' },
-  { id:5, cat:'jasa', emoji:'📱', g:'g-1', name:'Desain UI/UX Aplikasi (per screen)', price:100000, stock:99,
-    seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'8 jam lalu', likes:87,
+  { id:1, cat:'elektronik', emoji:'📷', g:'g-4', name:'Kamera Mirrorless Second — Mulus', price:4200000, stock:1, cond:'bekas',
+    seller:'GadgetKu Second', ava:'🤖', ac:'#ece7ff', verified:true, time:'1 jam lalu', likes:342, loc:'Tebet, Jaksel', dist:1.2, cod:true,
+    desc:'Pemakaian 1 tahun, shutter count 8rb, fullset box. Minus pemakaian wajar. Bisa cek langsung sepuasnya!' },
+  { id:2, cat:'ikan', emoji:'🐠', g:'g-3', name:'Cupang Halfmoon Blue Rim', price:85000, stock:6, cond:'baru',
+    seller:'Betta House', ava:'🐟', ac:'#d8f3ff', verified:true, time:'2 jam lalu', likes:214, loc:'Pancoran, Jaksel', dist:3.4, cod:true,
+    desc:'Grade A, umur 4 bulan, sehat & agresif. COD bisa lihat ikan langsung, packing oksigen kalau dikirim.' },
+  { id:3, cat:'jasa', emoji:'🎬', g:'g-2', name:'Jasa Edit Video Reels/TikTok', price:150000, stock:99, cond:'baru',
+    seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'3 jam lalu', likes:128, loc:'Online', dist:0, cod:false,
+    desc:'Editing rapi, subtitle otomatis, backsound kekinian. Pengerjaan 2-3 hari. 50+ project selesai!' },
+  { id:4, cat:'elektronik', emoji:'⌨️', g:'g-3', name:'Keyboard Mechanical — Like New', price:380000, stock:1, cond:'bekas',
+    seller:'Rakit Corner', ava:'🔧', ac:'#d8f3ff', verified:false, time:'4 jam lalu', likes:265, loc:'Kuningan, Jaksel', dist:4.8, cod:true,
+    desc:'Baru pakai 2 bulan, pindah ke HHKB jadi dijual. Switch red, keycap PBT, dus lengkap. Nego tipis.' },
+  { id:5, cat:'makanan', emoji:'🍰', g:'g-6', name:'Brownies Lumer Homemade (Box)', price:45000, stock:15, cond:'baru',
+    seller:'Dapur Bunda', ava:'👩‍🍳', ac:'#fff3c4', verified:false, time:'5 jam lalu', likes:96, loc:'Manggarai, Jaksel', dist:2.1, cod:true,
+    desc:'Fudgy lumer isi 9. Varian coklat, keju, red velvet. Fresh setiap hari — paling enak diantar driver!' },
+  { id:6, cat:'fashion', emoji:'🧥', g:'g-2', name:'Jaket Denim Vintage — Second', price:120000, stock:1, cond:'bekas',
+    seller:'Thrift & Co', ava:'🧢', ac:'#fff3c4', verified:false, time:'7 jam lalu', likes:159, loc:'Setiabudi, Jaksel', dist:6.7, cod:true,
+    desc:'Size L, no defect, washed sempurna. COD boleh coba dulu. First pay first get ya!' },
+  { id:7, cat:'ikan', emoji:'🦐', g:'g-5', name:'Udang Red Cherry (10 ekor)', price:50000, stock:12, cond:'baru',
+    seller:'Aquascape Corner', ava:'🌿', ac:'#d9f8ea', verified:false, time:'9 jam lalu', likes:73, loc:'Kalibata, Jaksel', dist:5.9, cod:true,
+    desc:'Warna merah pekat, cocok untuk aquascape. Bonus moss. Ambil sendiri lebih aman untuk udangnya!' },
+  { id:8, cat:'elektronik', emoji:'🎧', g:'g-4', name:'TWS Earbuds ANC — Baru Segel', price:299000, stock:23, cond:'baru',
+    seller:'GadgetKu Second', ava:'🤖', ac:'#ece7ff', verified:true, time:'12 jam lalu', likes:198, loc:'Tebet, Jaksel', dist:1.2, cod:true,
+    desc:'Baru & bersegel, garansi resmi 1 tahun. ANC, baterai 30 jam, BT 5.3.' },
+  { id:9, cat:'makanan', emoji:'🍗', g:'g-1', name:'Ayam Geprek Sambal Bawang', price:18000, stock:30, cond:'baru',
+    seller:'Geprek Mantap', ava:'🔥', ac:'#ffe0ec', verified:false, time:'1 hari lalu', likes:158, loc:'Cikini, Jakpus', dist:8.3, cod:false,
+    desc:'Ayam crispy + sambal bawang level 1-10. Khusus diantar driver / ambil sendiri — masih anget!' },
+  { id:10, cat:'fashion', emoji:'👟', g:'g-1', name:'Sepatu Lari Second — 8/10', price:250000, stock:1, cond:'bekas',
+    seller:'Lari Yuk Store', ava:'🏃', ac:'#d9f8ea', verified:false, time:'1 hari lalu', likes:87, loc:'Depok', dist:19.5, cod:true,
+    desc:'Size 42, dipakai 5x, sol masih tebal. Jual karena kegedean. Boleh COD area Depok-Jaksel.' },
+  { id:11, cat:'ikan', emoji:'🐡', g:'g-4', name:'Guppy Albino Full Red (Pasang)', price:35000, stock:10, cond:'baru',
+    seller:'Guppy Bekasi', ava:'🐟', ac:'#d8f3ff', verified:true, time:'2 hari lalu', likes:112, loc:'Bekasi', dist:28.4, cod:true,
+    desc:'Sepasang indukan bagus, siap breeding, sehat makan lahap. Luar kota dikirim packing oksigen.' },
+  { id:12, cat:'jasa', emoji:'📱', g:'g-1', name:'Desain UI/UX Aplikasi (per screen)', price:100000, stock:99, cond:'baru',
+    seller:'MONGG.studio', ava:'🎨', ac:'#ffe0ec', verified:true, time:'2 hari lalu', likes:87, loc:'Online', dist:0, cod:false,
     desc:'Mockup high-fidelity di Figma + prototype interaktif. Clean, konsisten, developer-friendly.' },
-  { id:6, cat:'ikan', emoji:'🦐', g:'g-5', name:'Udang Hias Red Cherry (10 ekor)', price:50000, stock:12,
-    seller:'Aquascape Corner', ava:'🌿', ac:'#d9f8ea', verified:false, time:'12 jam lalu', likes:73,
-    desc:'Red cherry shrimp warna merah pekat, cocok untuk aquascape. Bonus tanaman moss!' },
-  { id:7, cat:'makanan', emoji:'🍗', g:'g-1', name:'Ayam Geprek Sambal Bawang', price:18000, stock:30,
-    seller:'Geprek Mantap', ava:'🔥', ac:'#ffe0ec', verified:false, time:'1 hari lalu', likes:158,
-    desc:'Ayam crispy + sambal bawang level 1-10. Gratis es teh untuk pembelian 2 porsi. Area kota saja ya!' },
-  { id:8, cat:'elektronik', emoji:'⌨️', g:'g-3', name:'Keyboard Mechanical RGB 65%', price:450000, stock:8,
-    seller:'GadgetKu Official', ava:'🤖', ac:'#ece7ff', verified:true, time:'1 hari lalu', likes:265,
-    desc:'Switch red hot-swappable, keycap PBT, RGB per-key. Cocok buat kerja & gaming.' },
-  { id:9, cat:'fashion', emoji:'🧢', g:'g-2', name:'Topi Corduroy Vintage Wash', price:65000, stock:20,
-    seller:'Thrift & Co', ava:'🧥', ac:'#fff3c4', verified:false, time:'2 hari lalu', likes:59,
-    desc:'Topi corduroy premium, adjustable strap, warna earth tone. Stok terbatas per warna!' },
-  { id:10, cat:'ikan', emoji:'🐡', g:'g-4', name:'Guppy Albino Full Red (Pasang)', price:35000, stock:10,
-    seller:'Betta House', ava:'🐟', ac:'#d8f3ff', verified:true, time:'2 hari lalu', likes:112,
-    desc:'Sepasang guppy albino full red indukan bagus. Siap breeding, sehat, makan lahap.' },
 ];
 
 const PAY_METHODS = [
-  { id:'qris',  name:'QRIS',                 ic:'🔳', pc:'#fff3c4', fee:s=>Math.round(s*0.007), feeLabel:'Biaya 0,7%',  desc:'Scan sekali dari semua e-wallet & m-banking' },
-  { id:'va',    name:'Virtual Account Bank', ic:'🏦', pc:'#d8f3ff', fee:()=>4000,               feeLabel:'Biaya Rp4.000', desc:'BCA, BRI, Mandiri, BNI — transfer manual/otomatis' },
-  { id:'ewal',  name:'E-Wallet',             ic:'📲', pc:'#d9f8ea', fee:s=>Math.round(s*0.015), feeLabel:'Biaya 1,5%',  desc:'GoPay, OVO, DANA, ShopeePay — langsung terpotong' },
-  { id:'cc',    name:'Kartu Kredit/Debit',   ic:'💳', pc:'#ece7ff', fee:s=>Math.round(s*0.029)+2000, feeLabel:'Biaya 2,9% + Rp2.000', desc:'Visa, Mastercard, JCB — bisa cicilan' },
+  { id:'qris',  name:'QRIS',                 ic:'🔳', pc:'#fff3c4', fee:s=>Math.round(s*0.007), feeLabel:'Biaya 0,7%',  desc:'Scan dari semua e-wallet & m-banking' },
+  { id:'va',    name:'Virtual Account Bank', ic:'🏦', pc:'#d8f3ff', fee:()=>4000,               feeLabel:'Biaya Rp4.000', desc:'BCA, BRI, Mandiri, BNI' },
+  { id:'ewal',  name:'E-Wallet',             ic:'📲', pc:'#d9f8ea', fee:s=>Math.round(s*0.015), feeLabel:'Biaya 1,5%',  desc:'GoPay, OVO, DANA, ShopeePay' },
 ];
 
-/* ---------- STATE (localStorage) ---------- */
+const MEET_POINTS = ['Minimarket / Indomaret terdekat', 'Halaman kantor polisi (paling aman)', 'Food court mall', 'Halte / stasiun ramai', 'Kampus / area kantor'];
+
+/* ---------- STATE ---------- */
 const store = {
   get(k, d){ try { return JSON.parse(localStorage.getItem('mongg_'+k)) ?? d; } catch { return d; } },
   set(k, v){ localStorage.setItem('mongg_'+k, JSON.stringify(v)); }
 };
 let products  = [...SEED, ...store.get('products', [])];
-let cart      = store.get('cart', {});          // {productId: qty}
-let orders    = store.get('orders', []);        // [{...}]
-let likes     = new Set(store.get('likes', [])); // [productId]
+let favs      = new Set(store.get('favs', []));
+let orders    = store.get('orders', []);
+let likes     = new Set(store.get('likes', []));
 let activeCat = 'all';
-let payTimers = {};
+let radiusKm  = Infinity;
 
 const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
 const uid = () => 'INV-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
+const km = d => d === 0 ? 'Online' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
+const driverFee = d => Math.max(10000, Math.round(d * 3000 / 1000) * 1000);
 
-/* ---------- TOAST ---------- */
 function toast(msg){
   const t = document.createElement('div');
   t.className = 'toast'; t.textContent = msg;
   document.getElementById('toasts').appendChild(t);
-  setTimeout(() => t.remove(), 3200);
+  setTimeout(() => t.remove(), 3400);
 }
 
 /* ---------- VIEWS ---------- */
@@ -515,37 +549,53 @@ function showView(v){
   window.scrollTo({ top: 0 });
 }
 
-/* ---------- CATEGORY & STORIES ---------- */
+/* ---------- BARS ---------- */
 function renderCats(){
   document.getElementById('catScroll').innerHTML = CATS.map(c =>
     `<button class="chip ${activeCat===c.id?'active':''}" onclick="setCat('${c.id}')">${c.label}</button>`
   ).join('');
+  document.getElementById('radiusChips').innerHTML = RADII.map(r =>
+    `<button class="chip mini ${radiusKm===r.v?'active':''}" onclick="setRadius(${r.v === Infinity ? 'Infinity' : r.v})">${r.l}</button>`
+  ).join(' ');
 }
 function setCat(id){ activeCat = id; renderCats(); renderFeed(); }
+function setRadius(v){ radiusKm = v; renderCats(); renderFeed(); toast(v===Infinity ? '📍 Menampilkan semua jarak' : '📍 Hanya penjual dalam ' + v + ' km'); }
 
 function renderStories(){
-  const sellers = [...new Map(products.map(p => [p.seller, p])).values()];
+  const sellers = [...new Map(products.map(p => [p.seller, p])).values()].sort((a,b) => a.dist - b.dist);
   document.getElementById('stories').innerHTML = sellers.map(p => `
-    <div class="story" title="${p.seller}">
+    <div class="story" title="${p.seller} · ${km(p.dist)}">
       <div class="ring"><div class="ava" style="background:${p.ac||'#fff'}">${p.ava}</div></div>
       <span>${p.seller}</span>
     </div>`).join('');
 }
 
 /* ---------- FEED ---------- */
+function perks(p){
+  const out = [];
+  if (p.cod && p.dist <= COD_MAX_KM) out.push('<span class="perk pk-cod">🤝 Bisa COD</span>');
+  out.push('<span class="perk pk-rekber">🛡️ Rekber</span>');
+  if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">🛵 Driver instan</span>');
+  if (p.dist > COD_MAX_KM) out.push('<span class="perk pk-far">📦 Kirim ekspedisi saja</span>');
+  return out.join('');
+}
+
 function renderFeed(){
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  const list = products.filter(p =>
-    (activeCat === 'all' || p.cat === activeCat) &&
-    (!q || p.name.toLowerCase().includes(q) || p.seller.toLowerCase().includes(q) || (CAT_LABEL[p.cat]||'').toLowerCase().includes(q))
-  );
+  const list = products
+    .filter(p =>
+      (activeCat === 'all' || p.cat === activeCat) &&
+      (p.dist <= radiusKm) &&
+      (!q || p.name.toLowerCase().includes(q) || p.seller.toLowerCase().includes(q) || (CAT_LABEL[p.cat]||'').toLowerCase().includes(q)))
+    .sort((a,b) => radiusKm !== Infinity ? a.dist - b.dist : 0);
   const feed = document.getElementById('feed');
   if (!list.length){
-    feed.innerHTML = `<div class="empty-feed"><span class="big">🔍</span><h3>Belum ada yang cocok</h3><p style="color:var(--muted);font-size:14px">Coba kata kunci atau kategori lain ya!</p></div>`;
+    feed.innerHTML = `<div class="empty-feed"><span class="big">📍</span><h3>Tidak ada di radius ini</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori ya!</p></div>`;
     return;
   }
   feed.innerHTML = list.map(p => {
     const liked = likes.has(p.id);
+    const faved = favs.has(p.id);
     const out = p.stock <= 0;
     return `
     <article class="post">
@@ -553,28 +603,29 @@ function renderFeed(){
         <span class="ava" style="--ac:${p.ac||'#fff3c4'}">${p.ava}</span>
         <div class="who">
           <b>${p.seller} ${p.verified?'<span class="verif">✔️</span>':''}</b>
-          <span>${p.time} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
+          <span>${p.time} · 📍 ${p.loc} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
         </div>
         <button class="act" onclick="toast('Fitur ikuti penjual — coming soon!')">+ Ikuti</button>
       </div>
       <div class="post-media ${p.g}">
         <span>${p.emoji}</span>
+        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}" style="border-width:2px">${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'}</span>
         <span class="price-tag">${rupiah(p.price)}</span>
-        <span class="stock-tag">${out?'Habis':'Stok: '+p.stock}</span>
+        <span class="dist-tag">📍 ${km(p.dist)}</span>
         ${out?'<div class="sold-out"><b>SOLD OUT</b></div>':''}
       </div>
       <div class="post-body">
         <div class="post-actions">
-          <button class="act ${liked?'liked':''}" onclick="toggleLike(${p.id})">${liked?'❤️':'🤍'} ${p.likes + (liked?1:0)}</button>
+          <button class="act ${liked?'liked':''}" onclick="toggleLike(${p.id})">${liked?'👍':'👍🏻'} ${p.likes + (liked?1:0)}</button>
           <button class="act" onclick="toast('Kolom komentar — coming soon!')">💬 ${(p.id*7)%40+3}</button>
           <button class="act" onclick="toast('Link produk disalin! 🔗')">↗️</button>
-          <span class="spacer"></span>
         </div>
         <div class="post-title">${p.name}</div>
         <div class="post-desc">${p.desc}</div>
+        <div class="post-perks">${perks(p)}</div>
         <div class="post-cta">
-          <button class="btn btn-yellow" ${out?'disabled':''} onclick="addToCart(${p.id})">🛒 + Keranjang</button>
-          <button class="btn btn-coral" ${out?'disabled':''} onclick="buyNow(${p.id})">⚡ Beli Langsung</button>
+          <button class="btn btn-yellow fav-btn ${faved?'on':''}" onclick="toggleFav(${p.id})">${faved?'💖 Tersimpan':'🤍 Favorit'}</button>
+          <button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">⚡ Beli</button>
         </div>
       </div>
     </article>`;
@@ -586,156 +637,212 @@ function toggleLike(id){
   store.set('likes', [...likes]);
   renderFeed();
 }
+function toggleFav(id){
+  if (favs.has(id)) { favs.delete(id); toast('Dihapus dari favorit'); }
+  else { favs.add(id); toast('💖 Masuk favorit! Cek kapan aja di menu atas'); }
+  store.set('favs', [...favs]);
+  updateBadges(); renderFeed();
+}
 
 function renderTrending(){
-  const top = [...products].sort((a,b) => b.likes - a.likes).slice(0,4);
+  const top = [...products].filter(p => p.dist <= 10).sort((a,b) => b.likes - a.likes).slice(0,4);
   document.getElementById('trending').innerHTML = top.map(p => `
     <div class="mini-row">
       <span class="em ${p.g}">${p.emoji}</span>
-      <div><b>${p.name}</b><span>${rupiah(p.price)} · ❤️ ${p.likes}</span></div>
+      <div><b>${p.name}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)} · 👍 ${p.likes}</span></div>
     </div>`).join('');
 }
 
-/* ---------- CART ---------- */
-function cartItems(){ return Object.entries(cart).map(([id,qty]) => ({ p: products.find(x => x.id == id), qty })).filter(x => x.p); }
-function cartTotal(){ return cartItems().reduce((s,{p,qty}) => s + p.price*qty, 0); }
-
 function updateBadges(){
-  const n = Object.values(cart).reduce((a,b) => a+b, 0);
-  const cc = document.getElementById('cartCount');
-  cc.textContent = n; cc.classList.toggle('hidden', !n);
+  const fc = document.getElementById('favCount');
+  fc.textContent = favs.size; fc.classList.toggle('hidden', !favs.size);
   const oc = document.getElementById('orderCount');
-  const active = orders.filter(o => o.status !== 'Selesai').length;
+  const active = orders.filter(o => !['Selesai — Dana Cair','Selesai'].includes(o.status)).length;
   oc.textContent = active; oc.classList.toggle('hidden', !active);
 }
 
-function addToCart(id, silent){
-  const p = products.find(x => x.id === id);
-  if (!p || p.stock <= 0) return;
-  const inCart = cart[id] || 0;
-  if (inCart >= p.stock) { toast('Stok tinggal ' + p.stock + ' — sudah maksimal di keranjang'); return; }
-  cart[id] = inCart + 1;
-  store.set('cart', cart); updateBadges();
-  if (!silent) toast('Masuk keranjang! 🛒 ' + p.name);
-}
-function buyNow(id){ addToCart(id, true); openCart(); }
-
-function changeQty(id, d){
-  const p = products.find(x => x.id == id);
-  cart[id] = (cart[id]||0) + d;
-  if (p && cart[id] > p.stock) cart[id] = p.stock;
-  if (cart[id] <= 0) delete cart[id];
-  store.set('cart', cart); updateBadges(); openCart();
-}
-
-function openCart(){
-  const items = cartItems();
-  const root = document.getElementById('modalRoot');
-  root.innerHTML = `
+/* ---------- FAVORIT ---------- */
+function openFavs(){
+  const items = [...favs].map(id => products.find(p => p.id === id)).filter(Boolean);
+  document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="drawer">
-      <div class="drawer-head"><h3>🛒 Keranjang</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="drawer-head"><h3>💖 Favorit Kamu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="drawer-body">
-        ${items.length ? items.map(({p,qty}) => `
-          <div class="cart-row">
+        ${items.length ? items.map(p => `
+          <div class="fav-row">
             <span class="em ${p.g}">${p.emoji}</span>
-            <div class="inf"><b>${p.name}</b><span>${rupiah(p.price)}</span></div>
-            <div class="qty">
-              <button onclick="changeQty(${p.id},-1)">−</button><b>${qty}</b><button onclick="changeQty(${p.id},1)">+</button>
-            </div>
+            <div class="inf"><b>${p.name}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)}${p.stock<=0?' · <b style=color:var(--coral)>Habis</b>':''}</span></div>
+            <button class="btn btn-sm btn-coral" ${p.stock<=0?'disabled':''} onclick="openBuy(${p.id})">⚡ Beli</button>
+            <button class="x-btn" style="width:30px;height:30px;font-size:12px" onclick="toggleFav(${p.id});openFavs()">✕</button>
           </div>`).join('')
-        : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">🫗</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Keranjangnya masih kosong nih</p></div>`}
-      </div>
-      <div class="drawer-foot">
-        <div class="sum-row total"><span>Subtotal</span><span>${rupiah(cartTotal())}</span></div>
-        <button class="btn btn-coral" style="width:100%;margin-top:12px" ${items.length?'':'disabled'} onclick="openCheckout()">Checkout →</button>
+        : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">🤍</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Belum ada favorit.<br>Tap 🤍 di barang yang kamu incar!</p></div>`}
       </div>
     </div>
   </div>`;
 }
-
 function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
 
-/* ---------- CHECKOUT ---------- */
-let coState = {};
-function openCheckout(){
-  coState = { step:1, method:null, name:'', addr:'' };
-  renderCheckout();
+/* ---------- BELI (rekber / driver / COD) ---------- */
+let buy = {};
+function openBuy(id){
+  const p = products.find(x => x.id === id);
+  if (!p || p.stock <= 0) return;
+  buy = { pid: id, step: 1, mode: null, pay: null, name:'', addr:'', meet: MEET_POINTS[0], time:'' };
+  renderBuy();
 }
-function renderCheckout(){
-  const sub = cartTotal();
-  const ship = 12000;
-  const m = PAY_METHODS.find(x => x.id === coState.method);
-  const fee = m ? m.fee(sub + ship) : 0;
-  const total = sub + ship + fee;
-  const stepDots = `<div class="steps-ind">${[1,2].map(i => `<i class="${coState.step>=i?'on':''}"></i>`).join('')}</div>`;
+function buyItemHTML(p){
+  return `<div class="buy-item"><span class="em ${p.g}">${p.emoji}</span>
+    <div><b>${p.name}</b><span>${rupiah(p.price)} · ${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'} · 📍 ${km(p.dist)} (${p.loc})</span></div></div>`;
+}
+function renderBuy(){
+  const p = products.find(x => x.id === buy.pid);
+  const codOk = p.cod && p.dist > 0 && p.dist <= COD_MAX_KM;
+  const drvOk = p.dist > 0 && p.dist <= DRIVER_MAX_KM;
+  const isJasa = p.dist === 0;
+  const stepDots = `<div class="steps-ind">${[1,2,3].map(i => `<i class="${buy.step>=i?'on':''}"></i>`).join('')}</div>`;
+  let body = '';
 
-  const body = coState.step === 1 ? `
-    ${stepDots}
-    <label class="f">Nama penerima</label>
-    <input class="f" id="coName" value="${coState.name}" placeholder="cth: Mongg Ganteng">
-    <label class="f">Alamat lengkap</label>
-    <textarea class="f" id="coAddr" placeholder="Jalan, RT/RW, kecamatan, kota, kode pos...">${coState.addr}</textarea>
-    <label class="f">Kurir</label>
-    <select class="f" id="coShip">
-      <option>Reguler (2-4 hari) — Rp12.000</option>
-      <option>Instan/Sameday (khusus makanan & area kota)</option>
-    </select>
-    <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="coNext()">Lanjut pilih pembayaran →</button>
-  ` : `
-    ${stepDots}
-    <p style="font-size:13px;font-weight:800;margin-bottom:12px">Pilih metode pembayaran:</p>
-    ${PAY_METHODS.map(pm => `
-      <div class="pay-opt ${coState.method===pm.id?'sel':''}" onclick="coState.method='${pm.id}';renderCheckout()">
-        <span class="ic" style="--pc:${pm.pc}">${pm.ic}</span>
-        <div><b>${pm.name}</b><span>${pm.desc} · ${pm.feeLabel}</span></div>
+  if (buy.step === 1){
+    body = `${stepDots}${buyItemHTML(p)}
+      <p style="font-size:13px;font-weight:800;margin-bottom:12px">Mau transaksi dengan cara apa?</p>
+      <div class="pay-opt ${buy.mode==='rekber'?'sel':''}" onclick="buy.mode='rekber';renderBuy()">
+        <span class="ic" style="--pc:#fff3c4">🛡️</span>
+        <div><b>Rekber + ${isJasa?'Pengerjaan Online':'Kirim Ekspedisi'}</b>
+        <span>Dana ditahan sistem sampai kamu konfirmasi ${isJasa?'hasil':'barang'} sesuai. Paling aman untuk jarak jauh.</span></div>
         <span class="rad"></span>
-      </div>`).join('')}
-    <div style="background:#fff;border:2px dashed var(--ink);border-radius:16px;padding:14px 18px;margin-top:16px">
-      <div class="sum-row"><span>Subtotal produk</span><span>${rupiah(sub)}</span></div>
-      <div class="sum-row"><span>Ongkir</span><span>${rupiah(ship)}</span></div>
-      <div class="sum-row"><span>Biaya layanan${m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
-      <div class="sum-row total"><span>Total bayar</span><span>${rupiah(total)}</span></div>
-    </div>
-    <button class="btn btn-coral" style="width:100%;margin-top:18px" ${coState.method?'':'disabled'} onclick="placeOrder()">🔒 Bayar Sekarang</button>
-    <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Dana kamu ditahan sistem (escrow) & baru diteruskan ke penjual setelah pesanan selesai ✔️</p>
-  `;
+      </div>
+      <div class="pay-opt ${drvOk ? (buy.mode==='driver'?'sel':'') : 'off'}" ${drvOk?`onclick="buy.mode='driver';renderBuy()"`:''}>
+        <span class="ic" style="--pc:#d8f3ff">🛵</span>
+        <div><b>Rekber + Antar Driver Instan</b>
+        <span>${drvOk ? 'Diantar hari ini juga (± ' + km(p.dist) + ', ongkos ' + rupiah(driverFee(p.dist)) + '). Malas keluar rumah? Ini jawabannya 😌'
+                      : isJasa ? 'Tidak relevan untuk jasa online' : 'Terlalu jauh (maks ' + DRIVER_MAX_KM + ' km dari lokasimu)'}</span></div>
+        <span class="rad"></span>
+      </div>
+      <div class="pay-opt ${codOk ? (buy.mode==='cod'?'sel':'') : 'off'}" ${codOk?`onclick="buy.mode='cod';renderBuy()"`:''}>
+        <span class="ic" style="--pc:#d9f8ea">🤝</span>
+        <div><b>COD Ketemuan</b>
+        <span>${codOk ? 'Gratis biaya! Ketemu langsung, cek barang di tempat, bayar kalau cocok. Jarak penjual ' + km(p.dist) + '.'
+                      : isJasa ? 'Tidak tersedia untuk jasa online' : !p.cod ? 'Penjual tidak membuka COD' : 'Di luar jangkauan COD (maks ' + COD_MAX_KM + ' km)'}</span></div>
+        <span class="rad"></span>
+      </div>
+      ${p.cond==='bekas' ? `<div class="warn-note">🏷️ <b>Barang bekas?</b> Selalu cek: kelengkapan, fungsi semua tombol/fitur, dan minus yang disebut di deskripsi. Di rekber, kamu punya waktu cek sebelum dana cair.</div>` : ''}
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.mode?'':'disabled'} onclick="buyNext()">Lanjut →</button>`;
+  }
+  else if (buy.step === 2 && buy.mode === 'cod'){
+    body = `${stepDots}${buyItemHTML(p)}
+      <label class="f">Titik temu (pilih tempat ramai & aman)</label>
+      <select class="f" id="bMeet">${MEET_POINTS.map(m => `<option ${buy.meet===m?'selected':''}>${m}</option>`).join('')}</select>
+      <label class="f">Waktu janjian</label>
+      <input class="f" id="bTime" type="text" placeholder="cth: Sabtu, 15.00 WIB" value="${buy.time}">
+      <div class="safe-note">🛡️ <b>Tips COD aman:</b> ajak teman, ketemu di tempat ramai/siang hari, cek barang sampai puas <b>sebelum</b> uang berpindah, dan jangan transfer DP apa pun sebelum ketemu.</div>
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="placeCod()">🤝 Buat Janjian COD</button>`;
+  }
+  else if (buy.step === 2){
+    body = `${stepDots}${buyItemHTML(p)}
+      <label class="f">Nama penerima</label>
+      <input class="f" id="bName" value="${buy.name}" placeholder="cth: Mongg Ganteng">
+      <label class="f">${buy.mode==='driver' ? 'Alamat antar (driver instan)' : isJasa ? 'Kontak (email/WA) untuk hasil kerja' : 'Alamat lengkap'}</label>
+      <textarea class="f" id="bAddr" placeholder="${isJasa ? 'cth: ini.mongg@gmail.com / 08xx' : 'Jalan, RT/RW, kecamatan, kota, kode pos...'}">${buy.addr}</textarea>
+      ${buy.mode==='driver' ? `<div class="safe-note">🛵 Estimasi driver: <b>${rupiah(driverFee(p.dist))}</b> untuk ${km(p.dist)} — barang tiba hari ini. Dana tetap lewat rekber, jadi tetap aman.</div>` : ''}
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="buyNext()">Pilih pembayaran →</button>`;
+  }
+  else {
+    const ship = buy.mode === 'driver' ? driverFee(p.dist) : (isJasa ? 0 : 12000);
+    const m = PAY_METHODS.find(x => x.id === buy.pay);
+    const fee = m ? m.fee(p.price + ship) : 0;
+    body = `${stepDots}
+      <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
+      ${PAY_METHODS.map(pm => `
+        <div class="pay-opt ${buy.pay===pm.id?'sel':''}" onclick="buy.pay='${pm.id}';renderBuy()">
+          <span class="ic" style="--pc:${pm.pc}">${pm.ic}</span>
+          <div><b>${pm.name}</b><span>${pm.desc} · ${pm.feeLabel}</span></div>
+          <span class="rad"></span>
+        </div>`).join('')}
+      <div style="background:#fff;border:2px dashed var(--ink);border-radius:16px;padding:14px 18px;margin-top:16px">
+        <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
+        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos driver instan':isJasa?'Ongkir':'Ongkir ekspedisi'}</span><span>${rupiah(ship)}</span></div>
+        <div class="sum-row"><span>Biaya layanan${m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
+        <div class="sum-row total"><span>Total ke rekber</span><span>${rupiah(p.price + ship + fee)}</span></div>
+      </div>
+      <div class="safe-note">🛡️ Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai. Kalau bermasalah, dana bisa dikembalikan.</div>
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">🔒 Bayar ke Rekber</button>`;
+  }
 
+  const titles = { 1:'🧾 Cara Transaksi', 2: buy.mode==='cod' ? '🤝 Atur Janjian COD' : '📮 Data Pengiriman', 3:'💳 Pembayaran Rekber' };
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>${coState.step===1?'📮 Alamat Pengiriman':'💳 Pembayaran'}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>${titles[buy.step]}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">${body}</div>
     </div>
   </div>`;
 }
-function coNext(){
-  coState.name = document.getElementById('coName').value.trim();
-  coState.addr = document.getElementById('coAddr').value.trim();
-  if (!coState.name || !coState.addr) { toast('Isi dulu nama & alamatnya ya 🙏'); return; }
-  coState.step = 2; renderCheckout();
+function buyNext(){
+  if (buy.step === 2){
+    buy.name = document.getElementById('bName').value.trim();
+    buy.addr = document.getElementById('bAddr').value.trim();
+    if (!buy.name || !buy.addr) { toast('Isi dulu nama & alamat/kontaknya ya 🙏'); return; }
+    buy.step = 3;
+  } else buy.step = 2;
+  renderBuy();
 }
 
-/* ---------- ORDER + SIMULASI PAYMENT GATEWAY ---------- */
-function placeOrder(){
-  const m = PAY_METHODS.find(x => x.id === coState.method);
-  const sub = cartTotal(), ship = 12000, fee = m.fee(sub + ship);
-  const order = {
-    id: uid(),
-    items: cartItems().map(({p,qty}) => ({ id:p.id, name:p.name, emoji:p.emoji, g:p.g, price:p.price, qty, seller:p.seller })),
-    name: coState.name, addr: coState.addr,
-    method: m.name, methodId: m.id,
-    sub, ship, fee, total: sub + ship + fee,
-    status: 'Menunggu Pembayaran',
-    va: '8808' + String(Math.floor(1e11 + Math.random()*9e11)),
-    createdAt: Date.now(),
-    timeline: [{ t: Date.now(), s: 'Pesanan dibuat', d: 'Invoice diterbitkan, menunggu pembayaran (kedaluwarsa 24 jam)' }],
-  };
-  orders.unshift(order);
-  cart = {};
-  store.set('cart', cart); store.set('orders', orders);
+/* ---------- ORDERS ---------- */
+function baseOrder(p, extra){
+  return Object.assign({
+    id: uid(), pid: p.id,
+    item: { name:p.name, emoji:p.emoji, g:p.g, price:p.price, seller:p.seller, cond:p.cond, dist:p.dist },
+    createdAt: Date.now(), timeline: [],
+  }, extra);
+}
+function pushOrder(o){ orders.unshift(o); store.set('orders', orders); updateBadges(); }
+function setStatus(orderId, status, note){
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+  o.status = status;
+  o.timeline.push({ t: Date.now(), s: status, d: note });
+  store.set('orders', orders);
   updateBadges();
-  openPayment(order.id);
+  if (!document.getElementById('view-orders').classList.contains('hidden')) renderOrders();
+}
+function cutStock(pid){
+  const p = products.find(x => x.id === pid);
+  if (p) p.stock = Math.max(0, p.stock - 1);
+  store.set('products', products.filter(x => !SEED.find(s => s.id === x.id)));
+  renderFeed(); renderTrending();
+}
+
+function placeCod(){
+  const p = products.find(x => x.id === buy.pid);
+  buy.meet = document.getElementById('bMeet').value;
+  buy.time = document.getElementById('bTime').value.trim();
+  if (!buy.time) { toast('Isi waktu janjiannya dulu ya 🙏'); return; }
+  const o = baseOrder(p, {
+    mode:'cod', method:'Bayar di tempat', total:p.price, meet:buy.meet, time:buy.time,
+    status:'Janjian COD',
+  });
+  o.timeline.push({ t:Date.now(), s:'Janjian COD dibuat', d:`${buy.meet} · ${buy.time}. Kontak penjual terbuka di chat (demo). Bayar HANYA setelah cek barang!` });
+  pushOrder(o); cutStock(p.id);
+  closeModal(); showView('orders');
+  toast('🤝 Janjian COD dibuat! Penjual sudah dinotifikasi');
+}
+
+function placeRekber(){
+  const p = products.find(x => x.id === buy.pid);
+  const isJasa = p.dist === 0;
+  const ship = buy.mode === 'driver' ? driverFee(p.dist) : (isJasa ? 0 : 12000);
+  const m = PAY_METHODS.find(x => x.id === buy.pay);
+  const fee = m.fee(p.price + ship);
+  const o = baseOrder(p, {
+    mode:buy.mode, method:m.name, methodId:m.id, ship, fee, total:p.price + ship + fee,
+    name:buy.name, addr:buy.addr,
+    va:'8808' + String(Math.floor(1e11 + Math.random()*9e11)),
+    status:'Menunggu Pembayaran',
+  });
+  o.timeline.push({ t:Date.now(), s:'Pesanan dibuat', d:'Invoice rekber diterbitkan — bayar sebelum 24 jam' });
+  pushOrder(o);
+  openPayment(o.id);
 }
 
 function qrisHTML(){
@@ -754,63 +861,72 @@ function openPayment(orderId){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>💸 Selesaikan Pembayaran</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>💸 Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
         <div class="pay-box">
-          <span class="count-pill">⏳ Bayar sebelum <b id="payTimer">23:59:59</b></span>
+          <span class="count-pill">⏳ Bayar sebelum <b>23:59:59</b></span>
           <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
-          ${isQr ? qrisHTML() + `<p style="font-size:12.5px;color:var(--muted)">Scan pakai aplikasi e-wallet / m-banking apa pun</p>`
+          ${isQr ? qrisHTML() + `<p style="font-size:12.5px;color:var(--muted)">Scan pakai e-wallet / m-banking apa pun</p>`
                  : `<div class="va-num">${o.va.replace(/(\d{4})(?=\d)/g,'$1 ')}</div><p style="font-size:12.5px;color:var(--muted)">Salin nomor VA lalu transfer dari m-banking</p>`}
           <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-          <p style="font-size:12px;color:var(--muted)">Transfer harus sama persis sampai digit terakhir</p>
+          <p style="font-size:12px;color:var(--muted)">Dana masuk ke rekening bersama (escrow), bukan ke penjual</p>
         </div>
         <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">✅ [DEMO] Simulasikan Pembayaran Berhasil</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Di versi live, tombol ini tidak ada — begitu kamu bayar, payment gateway mengirim <b>webhook</b> ke server dan status berubah otomatis dalam hitungan detik.
+          Di versi live tombol ini tidak ada — payment gateway mengirim <b>webhook</b> ke server begitu kamu bayar, dan status berubah otomatis.
         </p>
       </div>
     </div>
   </div>`;
 }
 
-function setStatus(orderId, status, note){
-  const o = orders.find(x => x.id === orderId);
-  if (!o) return;
-  o.status = status;
-  o.timeline.push({ t: Date.now(), s: status, d: note });
-  store.set('orders', orders);
-  updateBadges();
-  if (!document.getElementById('view-orders').classList.contains('hidden')) renderOrders();
-}
-
 function simulatePaid(orderId){
   const o = orders.find(x => x.id === orderId);
   if (!o || o.status !== 'Menunggu Pembayaran') return;
-  // Kurangi stok saat pembayaran terkonfirmasi
-  o.items.forEach(it => {
-    const p = products.find(x => x.id === it.id);
-    if (p) p.stock = Math.max(0, p.stock - it.qty);
-  });
-  store.set('products', products.filter(p => !SEED.find(s => s.id === p.id)));
-  setStatus(orderId, 'Dibayar', 'Webhook payment gateway diterima — dana masuk escrow, penjual dinotifikasi otomatis 🔔');
-  closeModal();
-  showView('orders');
-  toast('💰 Pembayaran terverifikasi otomatis!');
-  renderFeed(); renderTrending();
-  // Simulasi perjalanan pesanan
-  payTimers[orderId] = [
-    setTimeout(() => { setStatus(orderId, 'Diproses', 'Penjual mengonfirmasi & menyiapkan pesananmu 📦'); toast('📦 ' + orderId + ' sedang diproses penjual'); }, 6000),
-    setTimeout(() => { setStatus(orderId, 'Dikirim', 'Paket diserahkan ke kurir — resi otomatis terbit 🚚'); toast('🚚 ' + orderId + ' dalam pengiriman'); }, 14000),
-    setTimeout(() => { setStatus(orderId, 'Selesai', 'Pesanan diterima. Dana escrow otomatis diteruskan ke penjual ✅'); toast('🎉 ' + orderId + ' selesai! Dana diteruskan ke penjual'); }, 24000),
-  ];
+  cutStock(o.pid);
+  setStatus(orderId, 'Dana Ditahan (Rekber)', 'Webhook diterima — dana aman di rekening bersama, penjual dinotifikasi otomatis 🔔');
+  closeModal(); showView('orders');
+  toast('🛡️ Dana masuk rekber — penjual tidak menerima uang sebelum kamu konfirmasi');
+  const isJasa = o.item.dist === 0;
+  if (o.mode === 'driver'){
+    setTimeout(() => { setStatus(orderId, 'Driver Menjemput', 'Driver menuju lokasi penjual untuk ambil barang 🛵'); toast('🛵 Driver menjemput barangmu'); }, 6000);
+    setTimeout(() => { setStatus(orderId, 'Diantar Driver', 'Barang di tangan driver, menuju alamatmu — live tracking (demo)'); toast('🛵 Barang sedang diantar!'); }, 13000);
+    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Barang sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair ke penjual'); toast('📬 Barang tiba — cek dulu sebelum konfirmasi ya'); }, 20000);
+  } else if (isJasa){
+    setTimeout(() => { setStatus(orderId, 'Dikerjakan', 'Penjual mulai mengerjakan pesananmu 🎨'); toast('🎨 Jasa mulai dikerjakan'); }, 6000);
+    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Hasil kerja dikirim! Review dulu, minta revisi bila perlu, lalu konfirmasi agar dana cair'); toast('📬 Hasil kerja diterima — silakan review'); }, 15000);
+  } else {
+    setTimeout(() => { setStatus(orderId, 'Dikirim', 'Penjual menyerahkan paket ke ekspedisi — resi otomatis terbit 📦'); toast('📦 ' + orderId + ' dikirim'); }, 6000);
+    setTimeout(() => { setStatus(orderId, 'Tiba — Cek Barang', 'Paket sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair ke penjual'); toast('📬 Paket tiba — cek dulu sebelum konfirmasi ya'); }, 16000);
+  }
+}
+
+function confirmDone(orderId){
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+  if (o.mode === 'cod'){
+    setStatus(orderId, 'Selesai', 'Ketemuan sukses — barang oke, pembayaran langsung di tempat. Win-win! 🎉');
+    toast('🎉 Transaksi COD selesai!');
+  } else {
+    setStatus(orderId, 'Selesai — Dana Cair', 'Kamu konfirmasi barang sesuai → sistem otomatis meneruskan dana ke penjual. Win-win! 💸');
+    toast('💸 Dana diteruskan ke penjual. Makasih sudah jujur & cepat konfirmasi!');
+  }
+}
+function complain(orderId){
+  toast('⚖️ Komplain dibuka (demo) — dana tetap ditahan, CS menengahi dengan bukti foto/video');
 }
 
 /* ---------- ORDERS VIEW ---------- */
-const STAT_CLASS = { 'Menunggu Pembayaran':'sb-unpaid', 'Dibayar':'sb-paid', 'Diproses':'sb-process', 'Dikirim':'sb-ship', 'Selesai':'sb-done' };
+const STAT_CLASS = {
+  'Menunggu Pembayaran':'sb-unpaid', 'Dana Ditahan (Rekber)':'sb-held',
+  'Dikirim':'sb-move','Diantar Driver':'sb-move','Driver Menjemput':'sb-move','Dikerjakan':'sb-move',
+  'Tiba — Cek Barang':'sb-check', 'Janjian COD':'sb-cod',
+  'Selesai — Dana Cair':'sb-done','Selesai':'sb-done',
+};
 function renderOrders(){
   const el = document.getElementById('ordersList');
   if (!orders.length){
-    el.innerHTML = `<div class="empty-feed"><span class="big">🧾</span><h3>Belum ada pesanan</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Yuk mulai belanja dari feed!</p><button class="btn btn-coral" onclick="showView('feed')">Ke Feed →</button></div>`;
+    el.innerHTML = `<div class="empty-feed"><span class="big">🧾</span><h3>Belum ada transaksi</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Yuk cari barang incaran di feed!</p><button class="btn btn-coral" onclick="showView('feed')">Ke Feed →</button></div>`;
     return;
   }
   el.innerHTML = orders.map(o => `
@@ -819,20 +935,28 @@ function renderOrders(){
         <code>${o.id}</code>
         <span class="stat-badge ${STAT_CLASS[o.status]||''}">${o.status}</span>
       </div>
-      ${o.items.map(it => `
-        <div class="mini-row">
-          <span class="em ${it.g}">${it.emoji}</span>
-          <div><b>${it.name}</b><span>${it.qty} × ${rupiah(it.price)} · ${it.seller}</span></div>
-        </div>`).join('')}
+      <div class="mini-row">
+        <span class="em ${o.item.g}">${o.item.emoji}</span>
+        <div><b>${o.item.name}</b><span>${rupiah(o.item.price)} · ${o.item.seller} · ${o.mode==='cod'?'🤝 COD':o.mode==='driver'?'🛵 Driver + Rekber':'🛡️ Rekber'}</span></div>
+      </div>
+      ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📍 ${o.meet} · 🕐 ${o.time}</p>` : ''}
       <div class="sum-row total" style="margin-top:10px"><span>Total (${o.method})</span><span>${rupiah(o.total)}</span></div>
       <div class="status-line" style="margin-top:16px">
         ${o.timeline.map((tl,i) => `
-          <div class="st-item ${i < o.timeline.length-1 ? 'done' : (o.status==='Selesai' ? 'done' : 'now')}">
-            <span class="dotp">${i < o.timeline.length-1 || o.status==='Selesai' ? '✓' : '•'}</span>
+          <div class="st-item ${i < o.timeline.length-1 || o.status.startsWith('Selesai') ? 'done' : 'now'}">
+            <span class="dotp">${i < o.timeline.length-1 || o.status.startsWith('Selesai') ? '✓' : '•'}</span>
             <div><b>${tl.s}</b><span>${tl.d}</span></div>
           </div>`).join('')}
       </div>
-      ${o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" style="margin-top:8px" onclick="openPayment('${o.id}')">💸 Bayar Sekarang</button>` : ''}
+      <div class="order-btns">
+        ${o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick="openPayment('${o.id}')">💸 Bayar Sekarang</button>` : ''}
+        ${o.status === 'Tiba — Cek Barang' ? `
+          <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Barang Sesuai — Cairkan Dana</button>
+          <button class="btn btn-sm" onclick="complain('${o.id}')">⚖️ Ajukan Komplain</button>` : ''}
+        ${o.status === 'Janjian COD' ? `
+          <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Sudah Ketemu & Barang Oke</button>
+          <button class="btn btn-sm" onclick="toast('Janjian dibatalkan (demo) — stok dikembalikan')">✕ Batalkan</button>` : ''}
+      </div>
     </div>`).join('');
 }
 
@@ -849,16 +973,21 @@ function openSell(){
         <select class="f" id="sCat">
           ${CATS.filter(c => c.id!=='all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
         </select>
+        <label class="f">Kondisi</label>
+        <select class="f" id="sCond"><option value="baru">✨ Baru</option><option value="bekas">🏷️ Bekas</option></select>
         <label class="f">Harga (Rp)</label>
         <input class="f" id="sPrice" type="number" min="1000" placeholder="cth: 50000">
         <label class="f">Stok</label>
         <input class="f" id="sStock" type="number" min="1" value="1">
-        <label class="f">Emoji produk (jadi foto sementara)</label>
+        <label class="f">Lokasi (kelurahan/kota)</label>
+        <input class="f" id="sLoc" placeholder="cth: Tebet, Jaksel" value="Tebet, Jaksel">
+        <label class="f">Emoji produk (foto sementara)</label>
         <input class="f" id="sEmoji" placeholder="cth: 🐠" maxlength="4" value="📦">
-        <label class="f">Deskripsi</label>
-        <textarea class="f" id="sDesc" placeholder="Ceritakan produkmu semenarik mungkin..."></textarea>
+        <label class="f">Deskripsi (untuk barang bekas: jujur soal minus ya!)</label>
+        <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
+        <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">🤝 Buka COD ketemuan (radius ${COD_MAX_KM} km)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">🚀 Posting Sekarang</button>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Di versi live: upload foto asli, verifikasi penjual, dan rekening pencairan dana.</p>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Di versi live: upload foto asli, verifikasi KTP penjual & rekening pencairan rekber.</p>
       </div>
     </div>
   </div>`;
@@ -870,10 +999,14 @@ function submitSell(){
   const emoji = document.getElementById('sEmoji').value.trim() || '📦';
   const desc  = document.getElementById('sDesc').value.trim();
   const cat   = document.getElementById('sCat').value;
+  const cond  = document.getElementById('sCond').value;
+  const loc   = document.getElementById('sLoc').value.trim() || 'Tebet, Jaksel';
+  const cod   = document.getElementById('sCod').checked;
   if (!name || !price || price < 1000 || !stock) { toast('Lengkapi nama, harga (min Rp1.000) & stok ya 🙏'); return; }
   const p = {
     id: Date.now(), cat, emoji, g: 'g-' + (Math.floor(Math.random()*6)+1),
-    name, price, stock, seller: 'Toko Kamu', ava: '🙋', ac: '#fff3c4',
+    name, price, stock, cond, loc, dist: 0.5, cod,
+    seller: 'Toko Kamu', ava: '🙋', ac: '#fff3c4',
     verified: false, time: 'baru saja', likes: 0, desc: desc || 'Tanpa deskripsi.',
   };
   products.unshift(p);
