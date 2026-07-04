@@ -1,69 +1,63 @@
-# 🌾 Lebak.market — Sosmed Jualan & Kuliner Lebak
+# 🌾 Lebak.market — Sosmed Jualan & Kuliner Lebak (Fullstack)
 
-Marketplace bergaya **media sosial** khusus **Kabupaten Lebak, Banten**: feed seperti Instagram tapi semua postingan adalah jualan. Penjual lokal Lebak **selalu diprioritaskan** — lokal pride! Dilengkapi rekber (escrow), COD radius terdekat, driver resmi, chat penjual-pembeli, dan direktori kuliner lengkap dengan menu.
+Marketplace bergaya **media sosial** khusus **Kabupaten Lebak, Banten**: feed seperti Instagram tapi semua postingan adalah jualan. Penjual lokal Lebak **selalu diprioritaskan** — lokal pride! Kini **fullstack**: frontend + backend API sungguhan.
 
-> ⚠️ **Status: demo front-end.** Semua fitur berjalan di browser (data di `localStorage`). Pembayaran, webhook, dan balasan chat adalah **simulasi** — untuk versi live dibutuhkan backend (lihat "Menuju Produksi").
-
-## ✨ Fitur
-
-### 🔐 Akun (register & login)
-- Daftar dengan nama, email, no. HP, **kecamatan di Lebak**, dan password (validasi lengkap)
-- **Email wajib valid**: format diperiksa ketat, typo domain umum dikoreksi (mis. `gmail.con` → saran `gmail.com`), email sekali-pakai (mailinator dkk.) ditolak, lalu **verifikasi kode OTP 6 digit** — di demo kode tampil sebagai notifikasi; di versi live dikirim server ke inbox (email palsu tidak akan menerima kode)
-- **1 akun = penjual + pembeli** — tanpa daftar toko terpisah; posting jualan memakai identitas & kecamatan akun
-- Modal sambutan saat kunjungan pertama; aksi beli/jual/chat/favorit otomatis minta login dulu
-
-### 📱 Responsif penuh
-- Desktop: layout 2 kolom + sidebar; Mobile (≤680px): **bottom navigation ala aplikasi** (Beranda · Kuliner · ＋Jual · Transaksi · Chat) dengan badge notifikasi, drawer & modal layar penuh, ukuran teks/tombol ramah jempol, aman untuk notch (safe-area)
-
-### 🌾 Lokal Pride Lebak
-- Post penjual Lebak diberi strip **"LOKAL PRIDE"** + badge 🌾 dan **selalu tampil paling atas** di feed
-- Filter radius (≤5/10/25 km) + urutan berdasarkan jarak terdekat
-- Kategori: Jasa · Makanan · Elektronik · Ikan Hias · Fashion · **Kriya Lebak** (gula aren, anyaman, sale pisang, emping...)
-
-### 💬 Chat penjual ↔ pembeli
-- Tombol chat di setiap post & kartu transaksi, daftar percakapan, bubble chat, badge pesan belum dibaca
-- Balasan penjual disimulasikan (di versi live: WebSocket real-time)
-
-### 🛡️ Transaksi (3 cara)
-1. **Rekber + Ekspedisi** — dana ditahan, cair setelah pembeli konfirmasi; tombol komplain menahan dana
-2. **Rekber + Driver Lebak (RESMI)** — tarif: **Rp10.000 (0–3 km) + Rp2.500/km** berikutnya, maks 15 km, sampai hari itu juga
-3. **COD Ketemuan** — ≤25 km, titik temu aman khas Lebak (alun-alun Rangkasbitung, stasiun, Polres) + tips keamanan
-
-### 🍽️ Kuliner Lebak (direktori, bukan pesan-antar)
-- Resto/warung/cafe/coffeeshop terdekat, diurut berdasarkan jarak
-- **Menu + harga selalu ditampilkan** (ringkas di kartu, lengkap di modal), plus alamat, jam buka, rating, WiFi
-- Tombol petunjuk arah (demo) — pesan langsung di tempat
-
-### 💰 Monetisasi platform (pendapatan developer, transparan di tombol "ℹ️ Biaya & Komisi")
-| Sumber | Besaran | Ditanggung |
-|---|---|---|
-| Biaya aplikasi | Rp1.000/transaksi rekber | Pembeli (tertera di checkout) |
-| Komisi penjual | 3% saat dana cair | Penjual |
-| Komisi driver | 10% dari ongkos antar | Mitra driver |
-| Program Gratis Ongkir | +4% komisi | Penjual (opt-in) |
-| Slot promosi feed & kuliner | (rencana) | Penjual/resto |
-
-### 🚚 Strategi gratis ongkir antar kota/pulau
-Ongkir bertingkat (12rb/18rb/38rb) + program ditanggung penjual (badge 🚚) + voucher subsidi (min. belanja Rp100rb, plafon Rp20rb).
+```
+ratecard/
+├── index.html      ← frontend (terhubung ke API)
+└── server/         ← backend Node.js + Express + SQLite
+    ├── server.js   ← semua endpoint API
+    ├── db.js       ← skema database (node:sqlite bawaan Node 22+)
+    └── seed.js     ← produk contoh + direktori kuliner
+```
 
 ## 🚀 Menjalankan
-Buka `index.html` di browser — tanpa build, tanpa dependency. Bisa deploy ke GitHub Pages.
 
-## 🏗️ Menuju Produksi
-1. **Backend + database** (akun ter-enkripsi + OTP, produk, pesanan, chat WebSocket)
-2. **Payment gateway** Midtrans/Xendit + webhook + escrow/split payment + verifikasi KTP penjual
-3. **Geolokasi asli** (GPS + Haversine + index geospasial) untuk radius & urutan jarak
-4. **Driver**: rekrut mitra driver lokal Lebak dengan aplikasi sederhana, atau integrasi kurir instan pihak ketiga
-5. **Data kuliner**: pendaftaran mandiri pemilik resto (gratis tayang, bayar untuk slot promosi) — sekaligus sumber pendapatan
-6. Upload foto asli, rating & ulasan, moderasi konten, resolusi sengketa
+```bash
+cd server
+npm install
+npm start
+# buka http://localhost:3000
+```
 
-## ✏️ Kustomisasi Cepat
-| Bagian | Lokasi di `index.html` |
+Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset total.
+
+## 🧩 Arsitektur & Endpoint
+
+| Endpoint | Fungsi |
 |---|---|
-| Kategori & kecamatan | `CATS`, `KECAMATAN` |
-| Produk contoh | `SEED` |
-| Tempat kuliner & menu | `RESTOS` |
-| Tarif driver | `driverFee` |
-| Biaya & komisi platform | `APP_FEE`, `SELLER_COMMISSION`, `DRIVER_COMMISSION`, `FREESHIP_EXTRA` |
-| Titik temu COD | `MEET_POINTS` |
-| Warna tema | Variabel CSS di `:root` |
+| `POST /api/auth/register` | Validasi ketat (email typo/sekali-pakai ditolak) → kirim OTP (dev: kode ikut di respons & log server) |
+| `POST /api/auth/verify` | Cek OTP (kedaluwarsa 10 mnt, maks 5 percobaan) → buat akun → JWT 30 hari |
+| `POST /api/auth/login` · `GET /api/me` | Login (password bcrypt) · profil dari token |
+| `GET /api/products` | Filter `cat`/`radius`/`q`, urut **Lebak dulu** lalu jarak terdekat |
+| `POST /api/products` | Posting jualan (auth) — 1 akun otomatis bisa jual & beli |
+| `POST /api/orders` | Buat order rekber/driver/COD — **semua biaya dihitung server** (anti manipulasi) |
+| `POST /api/payments/webhook` | Jalur notifikasi gateway (persis pola Midtrans) → dana ditahan, stok dipotong, status berjalan otomatis |
+| `POST /api/orders/:id/confirm` | Escrow release: komisi 3% (+4% freeship) dipotong, sisanya "dicairkan" ke penjual |
+| `POST /api/orders/:id/complain` | Tahan dana, tandai sengketa |
+| `GET/POST /api/chats/:peer` | Chat pembeli↔penjual (balasan penjual disimulasikan server; frontend polling) |
+| `GET /api/restos` | Direktori kuliner Lebak + menu & harga |
+| `GET /api/revenue` | **Buku kas pendapatan platform** (biaya aplikasi, komisi penjual/driver) — tampil live di modal "ℹ️ Biaya & Komisi" |
+| `GET /api/config` | Konstanta bisnis (tarif driver, batas COD, biaya) — satu sumber kebenaran |
+
+**Keamanan yang sudah diterapkan:** password di-bcrypt, sesi JWT, harga/ongkir/komisi dihitung ulang di server (input frontend tidak dipercaya), OTP dibatasi umur & percobaan, escape output di frontend.
+
+## 💳 Menghubungkan Midtrans Asli (produksi)
+
+Alurnya sudah 1:1 dengan gateway sungguhan — tinggal ganti modul `gateway` di `server.js`:
+1. Daftar [Midtrans](https://midtrans.com) → ambil **Server Key** (mode sandbox dulu)
+2. `npm i midtrans-client`, buat transaksi Snap di `POST /api/orders` (contoh kode sudah dikomentari di `server.js`)
+3. Set URL webhook di dashboard Midtrans ke `https://domainmu.com/api/payments/webhook` + verifikasi signature SHA-512
+4. Tombol "[SANDBOX] Simulasikan Pembayaran" dihapus — webhook asli yang menembak
+
+## 🏗️ Menuju Produksi Penuh
+
+- Deploy: **Railway / Render / Fly.io / VPS** (GitHub Pages tidak bisa — perlu server). Ganti `JWT_SECRET` via env!
+- Email OTP asli: nodemailer / Resend / Mailgun di fungsi `sendOtpEmail`
+- Chat real-time: WebSocket (socket.io) menggantikan polling; pesan diteruskan ke akun penjual sungguhan
+- Geolokasi GPS + Haversine; upload foto (S3/R2); verifikasi KTP penjual; rating & ulasan; panel admin sengketa
+- Status pesanan digerakkan aksi penjual/kurir (timer simulasi di webhook diganti endpoint penjual)
+
+## ✨ Fitur Produk (ringkas)
+
+Register/login + OTP email valid · 1 akun jual & beli · feed prioritas Lebak + kategori & radius · favorit · chat · rekber escrow win-win (barang bekas aman) · COD titik temu aman · Driver Lebak resmi (Rp10rb + Rp2.500/km, ≤15 km) · strategi gratis ongkir (ditanggung penjual / voucher plafon) · direktori kuliner + menu wajib tampil · monetisasi transparan · responsif penuh dengan bottom nav mobile.
