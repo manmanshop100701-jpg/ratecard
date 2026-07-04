@@ -13,6 +13,16 @@
  *
  * Jalankan:  cd server && npm install && npm start
  */
+/* Muat server/.env bila ada (KEY=VALUE per baris) — untuk kredensial
+   lokal seperti GMAIL_APP_PASSWORD tanpa memasukkannya ke git. */
+try {
+  require('fs').readFileSync(require('path').join(__dirname, '.env'), 'utf8')
+    .split('\n').forEach(line => {
+      const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/.exec(line);
+      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2];
+    });
+} catch {}
+
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -37,12 +47,14 @@ const OTP_IN_RESPONSE = process.env.OTP_IN_RESPONSE ? process.env.OTP_IN_RESPONS
 let mailer = null;
 if (SMTP_READY) {
   const nodemailer = require('nodemailer');
+  const tuning = { connectionTimeout: 15000, greetingTimeout: 15000, socketTimeout: 20000 };
   mailer = process.env.GMAIL_USER
-    ? nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } })
+    ? nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD }, ...tuning })
     : nodemailer.createTransport({
         host: process.env.SMTP_HOST, port: +(process.env.SMTP_PORT || 587),
         secure: +(process.env.SMTP_PORT || 587) === 465,
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        ...tuning,
       });
 }
 
@@ -171,7 +183,9 @@ async function sendOtpEmail(email, code){
     });
     console.log(`[email→${email}] OTP terkirim via ${process.env.GMAIL_USER ? 'Gmail' : 'SMTP'}`);
   } catch (e) {
-    console.error(`[email→${email}] GAGAL kirim OTP: ${e.message}`);
+    // Penyelamat: catat kodenya di log server agar admin bisa membantu
+    // pendaftar yang emailnya tidak sampai (mis. SMTP diblokir jaringan).
+    console.error(`[email→${email}] GAGAL kirim OTP (${e.message}) — kode: ${code}`);
   }
 }
 
