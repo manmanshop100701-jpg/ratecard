@@ -18,20 +18,42 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const fs = require('fs');
 const db = require('./db');
 const { RESTOS } = require('./seed');
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'lebak-market-dev-secret-ganti-di-produksi';
 const IS_DEV = process.env.NODE_ENV !== 'production';
-/* Mode pilot: kode OTP ikut dibalas di respons API karena belum ada
-   pengirim email sungguhan. Setel OTP_IN_RESPONSE=0 begitu SMTP
-   (nodemailer/Resend) terpasang di sendOtpEmail(). */
-const OTP_IN_RESPONSE = process.env.OTP_IN_RESPONSE !== '0';
+
+/* ---- Email OTP sungguhan ----
+ * Cara termudah (Gmail): set env GMAIL_USER + GMAIL_APP_PASSWORD
+ *   (buat App Password di myaccount.google.com/apppasswords — wajib 2FA aktif)
+ * Atau SMTP umum (Brevo/Mailgun/dll): SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
+ * Selama belum diisi → mode pilot: kode OTP ikut dibalas di respons API
+ * agar pendaftaran tetap bisa jalan. */
+const SMTP_READY = !!(process.env.GMAIL_USER || process.env.SMTP_HOST);
+const OTP_IN_RESPONSE = process.env.OTP_IN_RESPONSE ? process.env.OTP_IN_RESPONSE !== '0' : !SMTP_READY;
+let mailer = null;
+if (SMTP_READY) {
+  const nodemailer = require('nodemailer');
+  mailer = process.env.GMAIL_USER
+    ? nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } })
+    : nodemailer.createTransport({
+        host: process.env.SMTP_HOST, port: +(process.env.SMTP_PORT || 587),
+        secure: +(process.env.SMTP_PORT || 587) === 465,
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      });
+}
+
+/* ---- Penyimpanan foto produk ---- */
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '8mb' })); // foto dikirim sebagai data URL terkompresi
+app.use('/uploads', express.static(UPLOAD_DIR));
 app.use(express.static(path.join(__dirname, '..')));
 
 /* ================= KONSTANTA BISNIS ================= */
@@ -128,8 +150,41 @@ function emailProblem(email){
   if (DISPOSABLE.includes(domain)) return 'Email sekali-pakai tidak diizinkan — pakai email aktifmu';
   return null;
 }
-function sendOtpEmail(email, code){
-  console.log(`[email→${email}] Kode verifikasi Lebak.market: ${code}`);
+async function sendOtpEmail(email, code){
+  if (!mailer){
+    console.log(`[email→${email}] Kode verifikasi Lebak.market: ${code} (mode pilot — SMTP belum dikonfigurasi)`);
+    return;
+  }
+  try {
+    await mailer.sendMail({
+      from: process.env.MAIL_FROM || `"Lebak.market" <${process.env.GMAIL_USER || process.env.SMTP_USER}>`,
+      to: email,
+      subject: `${code} — Kode Verifikasi Lebak.market`,
+      html: `
+        <div style="font-family:sans-serif;max-width:440px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:12px">
+          <h2 style="color:#2b2440;margin:0 0 4px">Lebak.market</h2>
+          <p style="color:#6f6787;margin:0 0 20px">Marketplace-nya urang Lebak</p>
+          <p>Masukkan kode berikut untuk memverifikasi emailmu:</p>
+          <p style="font-size:34px;font-weight:800;letter-spacing:8px;text-align:center;background:#fff9f2;border-radius:10px;padding:16px;color:#2b2440">${code}</p>
+          <p style="color:#6f6787;font-size:13px">Kode berlaku 10 menit. Abaikan email ini jika kamu tidak mendaftar.</p>
+        </div>`,
+    });
+    console.log(`[email→${email}] OTP terkirim via ${process.env.GMAIL_USER ? 'Gmail' : 'SMTP'}`);
+  } catch (e) {
+    console.error(`[email→${email}] GAGAL kirim OTP: ${e.message}`);
+  }
+}
+
+/* ---- Simpan foto produk (data URL → file di UPLOAD_DIR) ---- */
+function saveImage(dataUrl){
+  const m = /^data:image\/(jpeg|jpg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
+  if (!m) return null;
+  const buf = Buffer.from(m[2], 'base64');
+  if (buf.length < 100 || buf.length > 5 * 1024 * 1024) return null;
+  const ext = m[1] === 'png' ? 'png' : m[1] === 'webp' ? 'webp' : 'jpg';
+  const name = Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + '.' + ext;
+  fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
+  return '/uploads/' + name;
 }
 function auth(req, res, next){
   const h = req.headers.authorization || '';
@@ -256,19 +311,24 @@ app.get('/api/products', optionalAuth, (req, res) => {
 });
 
 app.post('/api/products', auth, (req, res) => {
-  const { name = '', cat, cond = 'baru', price, stock, emoji = '📦', descr = '', cod = true, freeship = false } = req.body;
+  const { name = '', cat, cond = 'baru', price, stock, descr = '', cod = true, freeship = false, img } = req.body;
   if (!name.trim()) return bad(res, 400, 'Nama produk wajib diisi');
   if (!CATS.includes(cat)) return bad(res, 400, 'Kategori tidak dikenal');
   const pr = parseInt(price, 10), st = parseInt(stock, 10);
   if (!pr || pr < 1000) return bad(res, 400, 'Harga minimal Rp1.000');
   if (!st || st < 1) return bad(res, 400, 'Stok minimal 1');
+  let imgPath = null;
+  if (img){
+    imgPath = saveImage(img);
+    if (!imgPath) return bad(res, 400, 'Foto tidak valid (maks 5MB, format JPG/PNG/WebP)');
+  }
   const g = 'g-' + (1 + Math.floor(Math.random() * 6));
   const r = db.prepare(`INSERT INTO products
-    (seller_id, cat, name, price, stock, cond, loc, dist, cod, freeship, lebak, emoji, g, descr, created_at)
-    VALUES (?,?,?,?,?,?,?,0.5,?,?,1,?,?,?,?)`)
+    (seller_id, cat, name, price, stock, cond, loc, dist, cod, freeship, lebak, emoji, g, img, descr, created_at)
+    VALUES (?,?,?,?,?,?,?,0.5,?,?,1,'',?,?,?,?)`)
     .run(req.user.id, cat, name.trim(), pr, st, cond === 'bekas' ? 'bekas' : 'baru',
          req.user.kec + ', Lebak', cod ? 1 : 0, freeship ? 1 : 0,
-         String(emoji).slice(0, 4) || '📦', g, String(descr).trim() || 'Tanpa deskripsi.', now());
+         g, imgPath, String(descr).trim() || 'Tanpa deskripsi.', now());
   const prod = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(Number(r.lastInsertRowid));
   sseBroadcast('product', { id: prod.id, name: prod.name, seller: prod.seller_name }, req.user.id);
   res.json({ ok: true, product: prod });
@@ -327,7 +387,7 @@ app.post('/api/orders', auth, (req, res) => {
 });
 
 function getOrder(id){
-  const o = db.prepare(`SELECT o.*, p.name pname, p.emoji, p.g, p.cond, p.dist,
+  const o = db.prepare(`SELECT o.*, p.name pname, p.emoji, p.g, p.img, p.cond, p.dist,
       su.name seller_name, bu.name buyer_name
     FROM orders o
     JOIN products p ON p.id = o.product_id

@@ -537,6 +537,34 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;
   border:2px solid var(--ink);border-radius:999px;padding:6px 15px;background:#ece7ff;
 }
+
+/* ============ v4: FOTO PRODUK & IKON SVG (tampilan dewasa) ============ */
+svg.ic{display:block;flex:none;width:16px;height:16px}
+.fab svg.ic{width:18px;height:18px}
+.icon-btn svg.ic{width:19px;height:19px}
+.bn-item svg.ic{width:22px;height:22px;margin-bottom:2px}
+.bn-sell svg.ic{width:24px;height:24px}
+.act svg.ic{width:14px;height:14px}
+.btn svg.ic{width:16px;height:16px}
+.chip svg.ic{width:14px;height:14px}
+.logo .mark{font-weight:800;font-size:18px;color:var(--ink);font-family:Georgia,serif}
+.ava,.story .ava{font-weight:800;font-family:inherit}
+.post-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.letter{font-size:56px;font-weight:800;color:rgba(43,36,64,.28);letter-spacing:1px;font-family:Georgia,serif}
+.resto-media .letter{font-size:38px}
+.em .letter-s,.buy-item .letter-s,.fav-row .letter-s{font-size:17px;font-weight:800;color:rgba(43,36,64,.5);font-family:Georgia,serif}
+.em img,.thumb-img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.photo-drop{
+  border:2.5px dashed var(--ink);border-radius:16px;padding:20px;text-align:center;
+  cursor:pointer;background:#fff;font-weight:700;font-size:13.5px;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .15s;
+}
+.photo-drop:hover{background:#fffdf6}
+.photo-drop svg.ic{width:26px;height:26px;color:var(--ink)}
+.photo-prev{position:relative;margin-top:10px}
+.photo-prev img{width:100%;max-height:230px;object-fit:cover;border-radius:14px;border:2.5px solid var(--ink);display:block}
+.photo-prev .x-btn{position:absolute;top:9px;right:9px}
+.stat-badge{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -545,30 +573,41 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 <header>
   <div class="wrap head-inner">
     <a href="#" class="logo" onclick="showView('feed');return false">
-      <span class="mark">🌾</span>
+      <span class="mark">L</span>
       <span class="word">Lebak<em>.</em>market</span>
     </a>
     <div class="search">
-      <span>🔍</span>
-      <input id="searchInput" type="text" placeholder="Cari di Lebak: barang, jasa, ikan hias..." oninput="renderFeed()">
+      <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Cari barang, jasa, atau penjual di Lebak...">
     </div>
     <div class="head-actions">
-      <button class="icon-btn hide-mobile" onclick="showView('kuliner')" title="Kuliner Lebak">🍽️</button>
-      <button class="icon-btn hide-mobile" onclick="openChatList()" title="Chat">💬<span id="chatCount" class="count hidden">0</span></button>
-      <button class="icon-btn hide-mobile" onclick="showView('orders')" title="Transaksi Saya">📦<span id="orderCount" class="count hidden">0</span></button>
-      <button class="icon-btn" onclick="openFavs()" title="Favorit">💖<span id="favCount" class="count hidden">0</span></button>
+      <button class="icon-btn hide-mobile" onclick="showView('kuliner')" title="Kuliner Lebak">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg>
+      </button>
+      <button class="icon-btn hide-mobile" onclick="openChatList()" title="Chat">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg>
+        <span id="chatCount" class="count hidden">0</span>
+      </button>
+      <button class="icon-btn hide-mobile" onclick="showView('orders')" title="Transaksi Saya">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <span id="orderCount" class="count hidden">0</span>
+      </button>
+      <button class="icon-btn" onclick="openFavs()" title="Favorit">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        <span id="favCount" class="count hidden">0</span>
+      </button>
       <span id="authSlot"></span>
     </div>
   </div>
 </header>
 
 <div class="wrap hero-strip" id="heroStrip">
-  <h1>🌾 Bangga Belanja <span class="hl">Produk Lebak</span></h1>
-  <p>Marketplace-nya urang Lebak — penjual sekitarmu tampil paling atas. Rekber aman, COD dekat, driver siap antar!</p>
+  <h1>Bangga Belanja <span class="hl">Produk Lebak</span></h1>
+  <p>Marketplace warga Kabupaten Lebak — penjual terdekat tampil paling atas. Rekber aman, bisa COD, driver siap antar.</p>
   <div class="quick-row">
-    <button class="chip" onclick="showView('kuliner')">🍽️ Kuliner Lebak Terdekat</button>
-    <button class="chip" onclick="openSell()">＋ Jual Barangmu</button>
-    <button class="chip" onclick="openInfoBiaya()">ℹ️ Biaya & Komisi</button>
+    <button class="chip" onclick="showView('kuliner')">Kuliner Terdekat</button>
+    <button class="chip" onclick="openSell()">+ Jual Barangmu</button>
+    <button class="chip" onclick="openInfoBiaya()">Biaya &amp; Komisi</button>
   </div>
   <div class="stories" id="stories"></div>
 </div>
@@ -578,7 +617,7 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   <div class="wrap">
     <div class="cat-scroll" id="catScroll"></div>
     <div class="radius-row">
-      <span class="loc">📍 <b id="locLabel" style="color:var(--ink)">Rangkasbitung, Lebak</b> · Radius:</span>
+      <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink)">Rangkasbitung, Lebak</b> · Radius:</span>
       <span id="radiusChips"></span>
     </div>
   </div>
@@ -590,20 +629,17 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
     <div id="view-feed">
       <div class="feed" id="feed"></div>
     </div>
-
     <div id="view-orders" class="hidden">
       <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
-      <h2 style="margin-bottom:18px">📦 Transaksi Saya</h2>
+      <h2 style="margin-bottom:18px">Transaksi Saya</h2>
       <div id="ordersList"></div>
     </div>
-
     <div id="view-kuliner" class="hidden">
       <div class="view-tabs">
         <button class="chip" onclick="showView('feed')">← Kembali belanja</button>
-        <span class="chip" style="background:#ffe8d9">🍽️ Cek menu & lokasi — pesannya langsung ke tempatnya ya!</span>
       </div>
-      <h2 style="margin-bottom:6px">🍽️ Kuliner & Nongkrong di Lebak</h2>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:22px">Resto, warung, cafe & coffeeshop terdekat dari lokasimu — lengkap dengan menu dan harga.</p>
+      <h2 style="margin-bottom:6px">Kuliner &amp; Nongkrong di Lebak</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:22px">Resto, warung, dan coffeeshop terdekat — lengkap dengan menu &amp; harga. Datang dan pesan langsung di tempatnya.</p>
       <div class="resto-grid" id="restoGrid"></div>
     </div>
   </main>
@@ -611,39 +647,58 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
   <!-- SIDEBAR -->
   <aside class="side">
     <div class="side-card" style="background:linear-gradient(150deg,#d9f8ea,#fff3c4)">
-      <h3>🌾 Lokal Pride Lebak</h3>
-      <p style="font-size:13px;color:#4d5f52;margin-bottom:10px">Penjual dari Lebak selalu <b>diprioritaskan di feed</b>. Belanja tetangga sendiri = ekonomi Lebak muter di Lebak! 💪</p>
-      <div class="how-step"><span class="n">✓</span><span>Gratis ongkir? Nggak perlu — COD-an aja, deket!</span></div>
+      <h3>Lokal Pride Lebak</h3>
+      <p style="font-size:13px;color:#4d5f52;margin-bottom:10px">Penjual dari Lebak selalu <b>diprioritaskan di feed</b>. Belanja tetangga sendiri = ekonomi Lebak muter di Lebak.</p>
+      <div class="how-step"><span class="n">✓</span><span>COD-an aja kalau dekat — gratis</span></div>
       <div class="how-step"><span class="n">✓</span><span>Driver lokal antar mulai Rp10rb</span></div>
     </div>
     <div class="side-card">
-      <h3>🛡️ Transaksi aman (win-win)</h3>
+      <h3>Transaksi aman (win-win)</h3>
       <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber)</span></div>
       <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan</span></div>
-      <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi ✅ → dana cair</span></div>
+      <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi → dana cair</span></div>
       <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan sampai beres</span></div>
     </div>
     <div class="side-card">
-      <h3>🔥 Terdekat & banyak dicari</h3>
+      <h3>Terdekat &amp; banyak dicari</h3>
       <div id="trending"></div>
     </div>
     <div class="side-card" style="background:#fff3c4">
-      <h3>💡 1 akun = jual & beli</h3>
+      <h3>Satu akun, jual &amp; beli</h3>
       <p style="font-size:13px;color:#5d5470;margin-bottom:14px">Tanpa daftar toko terpisah — akunmu otomatis bisa posting jualan sekaligus belanja.</p>
       <button class="btn btn-coral btn-sm" onclick="openSell()">+ Posting Jualan</button>
     </div>
   </aside>
 </div>
 
-<button class="fab" onclick="openSell()">＋ Jual</button>
+<button class="fab" onclick="openSell()">
+  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  Jual
+</button>
 
 <!-- Bottom nav (mobile) -->
 <nav class="bottom-nav">
-  <button class="bn-item" onclick="showView('feed')"><span class="bico">🏠</span>Beranda</button>
-  <button class="bn-item" onclick="showView('kuliner')"><span class="bico">🍽️</span>Kuliner</button>
-  <button class="bn-sell" onclick="openSell()" title="Jual">＋</button>
-  <button class="bn-item" onclick="showView('orders')"><span class="bico">📦</span><span id="bnOrderCount" class="count hidden">0</span>Transaksi</button>
-  <button class="bn-item" onclick="openChatList()"><span class="bico">💬</span><span id="bnChatCount" class="count hidden">0</span>Chat</button>
+  <button class="bn-item" onclick="showView('feed')">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+    Beranda
+  </button>
+  <button class="bn-item" onclick="showView('kuliner')">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg>
+    Kuliner
+  </button>
+  <button class="bn-sell" onclick="openSell()" title="Jual">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button class="bn-item" onclick="showView('orders')">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+    <span id="bnOrderCount" class="count hidden">0</span>
+    Transaksi
+  </button>
+  <button class="bn-item" onclick="openChatList()">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg>
+    <span id="bnChatCount" class="count hidden">0</span>
+    Chat
+  </button>
 </nav>
 
 <div id="toasts"></div>
@@ -651,23 +706,33 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 
 <script>
 /* ================================================================
-   Lebak.market — frontend 100% REAL & REALTIME.
-   - Feed hanya berisi postingan pengguna asli (tanpa seed/bot)
-   - Chat sungguhan antar akun; status pesanan digerakkan penjual asli
-   - Update realtime via Server-Sent Events (/api/events)
+   Lebak.market — frontend v4: foto produk asli, ikon SVG bersih,
+   avatar inisial. 100% postingan pengguna asli + realtime (SSE).
    Jalankan:  cd server && npm install && npm start
-   lalu buka  http://localhost:3000
    ================================================================ */
 
-/* ---------- KONSTANTA UI (nilai resmi dari /api/config) ---------- */
+/* ---------- IKON SVG (pengganti emoji) ---------- */
+const icon = (p, s = 15) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const IC = {
+  like:  icon('<path d="M7 10v11"/><path d="M14.7 3.2 14 10h5.4a2 2 0 0 1 2 2.5l-1.7 6A2 2 0 0 1 17.8 20H7V10l3.6-7a2.4 2.4 0 0 1 4.1.2z"/>'),
+  heart: icon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>'),
+  heartF:`<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`,
+  share: icon('<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/>'),
+  chat:  icon('<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/>'),
+  send:  icon('<path d="m22 2-7 20-4-9-9-4z"/>', 17),
+  camera:icon('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 26),
+  bolt:  icon('<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/>'),
+};
+
+/* ---------- KONSTANTA UI ---------- */
 const CATS = [
-  { id:'all',        label:'✨ Semua' },
-  { id:'jasa',       label:'🛠️ Jasa' },
-  { id:'makanan',    label:'🍜 Makanan' },
-  { id:'elektronik', label:'📱 Elektronik' },
-  { id:'ikan',       label:'🐠 Ikan Hias' },
-  { id:'fashion',    label:'👕 Fashion' },
-  { id:'kriya',      label:'🧺 Kriya Lebak' },
+  { id:'all',        label:'Semua' },
+  { id:'jasa',       label:'Jasa' },
+  { id:'makanan',    label:'Makanan' },
+  { id:'elektronik', label:'Elektronik' },
+  { id:'ikan',       label:'Ikan Hias' },
+  { id:'fashion',    label:'Fashion' },
+  { id:'kriya',      label:'Kriya Lebak' },
 ];
 const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ikan:'b-ikan', fashion:'b-fashion', kriya:'b-kriya' };
 const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ikan:'Ikan Hias', fashion:'Fashion', kriya:'Kriya Lebak' };
@@ -676,10 +741,11 @@ let COD_MAX_KM = 25, DRIVER_MAX_KM = 15, APP_FEE = 1000, FREESHIP_CAP = 20000, F
 let KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
 const MEET_POINTS = ['Alun-alun Rangkasbitung', 'Depan Stasiun Rangkasbitung', 'Minimarket terdekat (sebut di chat)', 'Halaman Polres Lebak (paling aman)', 'Kampus / area kantor'];
 const PAY_METHODS = [
-  { id:'qris', name:'QRIS',                 ic:'🔳', pc:'#fff3c4', fee:s=>Math.round(s*0.007), feeLabel:'Biaya 0,7%',  desc:'Scan dari semua e-wallet & m-banking' },
-  { id:'va',   name:'Virtual Account Bank', ic:'🏦', pc:'#d8f3ff', fee:()=>4000,               feeLabel:'Biaya Rp4.000', desc:'BCA, BRI, Mandiri, BNI' },
-  { id:'ewal', name:'E-Wallet',             ic:'📲', pc:'#d9f8ea', fee:s=>Math.round(s*0.015), feeLabel:'Biaya 1,5%',  desc:'GoPay, OVO, DANA, ShopeePay' },
+  { id:'qris', name:'QRIS',                 pc:'#fff3c4', fee:s=>Math.round(s*0.007), feeLabel:'Biaya 0,7%',  desc:'Scan dari semua e-wallet & m-banking' },
+  { id:'va',   name:'Virtual Account Bank', pc:'#d8f3ff', fee:()=>4000,               feeLabel:'Biaya Rp4.000', desc:'BCA, BRI, Mandiri, BNI' },
+  { id:'ewal', name:'E-Wallet',             pc:'#d9f8ea', fee:s=>Math.round(s*0.015), feeLabel:'Biaya 1,5%',  desc:'GoPay, OVO, DANA, ShopeePay' },
 ];
+const PAY_IC = { qris:'QR', va:'VA', ewal:'E' };
 const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
 function shipBreakdown(p, mode){
@@ -689,10 +755,9 @@ function shipBreakdown(p, mode){
   const subsidy = p.price >= FREESHIP_MIN ? Math.min(FREESHIP_CAP, base) : 0;
   return { base, seller: 0, subsidy };
 }
-const SELLER_AVA = ['🌾','🌻','🍯','🐟','🧺','🔧','🎨','☕','🥭','🦜'];
-const SELLER_AC  = ['#fff3c4','#ffe0ec','#d8f3ff','#d9f8ea','#ece7ff','#ffe8d9'];
-const avaOf = id => SELLER_AVA[id % SELLER_AVA.length];
-const acOf  = id => SELLER_AC[id % SELLER_AC.length];
+const AC = ['#fff3c4','#ffe0ec','#d8f3ff','#d9f8ea','#ece7ff','#ffe8d9'];
+const acOf = id => AC[(id||0) % AC.length];
+const initOf = n => (String(n||'?').trim()[0] || '?').toUpperCase();
 
 /* ---------- API CLIENT ---------- */
 const store = {
@@ -708,7 +773,7 @@ async function api(path, { method = 'GET', body } = {}){
   try {
     res = await fetch('/api' + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
   } catch {
-    throw new Error('⚠️ Backend tidak terhubung — jalankan: cd server && npm start');
+    throw new Error('Backend tidak terhubung — jalankan: cd server && npm start');
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok){
@@ -721,14 +786,15 @@ async function api(path, { method = 'GET', body } = {}){
 /* ---------- STATE ---------- */
 let products  = [];
 let lastOrders = [], lastSales = [];
-let ordTab = 'beli'; // beli | jual
+let ordTab = 'beli';
 let favs      = new Set(store.get('favs', []));
 let activeCat = 'all';
 let radiusKm  = Infinity;
-let openThread = null;     // { id, name }
+let openThread = null;
 let chatPoll = null;
 let pendingReg = null;
-let es = null;             // EventSource realtime
+let es = null;
+let sellImg = null; // data URL foto produk yang akan diposting
 
 const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
 const km = d => d === 0 ? 'Online' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
@@ -749,6 +815,11 @@ function toast(msg){
 }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+/* thumbnail kecil: foto asli bila ada, kalau tidak inisial nama produk */
+const thumb = (img, name) => img
+  ? `<img class="thumb-img" src="${esc(img)}" alt="">`
+  : `<span class="letter-s">${initOf(name)}</span>`;
+
 /* ---------- REALTIME (SSE) ---------- */
 function connectSSE(){
   if (es) { es.close(); es = null; }
@@ -757,18 +828,18 @@ function connectSSE(){
   es.addEventListener('chat', e => {
     const m = JSON.parse(e.data);
     if (openThread && openThread.id === m.from.id) renderThread();
-    else toast('💬 ' + m.from.name + ': ' + (m.text.length > 42 ? m.text.slice(0,42) + '…' : m.text));
+    else toast('Pesan baru dari ' + m.from.name + ': ' + (m.text.length > 40 ? m.text.slice(0,40) + '…' : m.text));
     refreshBadges();
   });
   es.addEventListener('order', e => {
     const d = JSON.parse(e.data);
-    toast('🔔 ' + d.orderId + ' → ' + d.status);
+    toast(d.orderId + ' → ' + d.status);
     if (!document.getElementById('view-orders').classList.contains('hidden')) renderOrders();
     refreshBadges();
   });
   es.addEventListener('product', e => {
     const d = JSON.parse(e.data);
-    toast('🆕 ' + d.seller + ' baru posting: ' + d.name);
+    toast('Jualan baru dari ' + d.seller + ': ' + d.name);
     if (!document.getElementById('view-feed').classList.contains('hidden')) loadFeed();
   });
 }
@@ -777,12 +848,12 @@ function connectSSE(){
 function renderAuthSlot(){
   const slot = document.getElementById('authSlot');
   slot.innerHTML = user
-    ? `<button class="ava-btn" onclick="openProfile()" title="${esc(user.name)}">${esc(user.name.trim()[0].toUpperCase())}</button>`
+    ? `<button class="ava-btn" onclick="openProfile()" title="${esc(user.name)}">${initOf(user.name)}</button>`
     : `<button class="login-btn" onclick="openAuth('login')">Masuk</button>`;
 }
 function needLogin(action){
   if (user && token) return false;
-  toast('🔐 Masuk dulu untuk ' + action + ' ya!');
+  toast('Masuk dulu untuk ' + action);
   openAuth('login');
   return true;
 }
@@ -791,13 +862,13 @@ function openAuth(tab, first){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>${first ? '👋 Wilujeng sumping!' : isReg ? '📝 Daftar Akun' : '🔑 Masuk'}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>${first ? 'Wilujeng sumping' : isReg ? 'Daftar Akun' : 'Masuk'}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
         <div class="auth-hero">
-          <span class="big">🌾</span>
+          <span class="big" style="font-family:Georgia,serif;font-weight:800">L</span>
           <b>Lebak.market — marketplace-nya urang Lebak</b>
           <p>Satu akun untuk semua: belanja, jualan, chat, sampai cek kuliner terdekat.</p>
-          <span class="dual-badge">🛍️ Pembeli ✔ &nbsp;·&nbsp; 🏪 Penjual ✔ &nbsp;·&nbsp; 1 akun aja</span>
+          <span class="dual-badge">Pembeli ✓ &nbsp;·&nbsp; Penjual ✓ &nbsp;·&nbsp; 1 akun saja</span>
         </div>
         <div class="auth-tabs">
           <button class="chip ${!isReg?'active':''}" onclick="openAuth('login')">Masuk</button>
@@ -806,7 +877,7 @@ function openAuth(tab, first){
         ${isReg ? `
           <label class="f">Nama lengkap</label>
           <input class="f" id="aName" placeholder="cth: Mongg Saputra">
-          <label class="f">Email (harus aktif — akan diverifikasi)</label>
+          <label class="f">Email aktif (kode verifikasi dikirim ke sini)</label>
           <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
           <label class="f">No. HP / WhatsApp</label>
           <input class="f" id="aPhone" type="tel" placeholder="08xxxxxxxxxx">
@@ -816,16 +887,16 @@ function openAuth(tab, first){
           <input class="f" id="aPass" type="password" placeholder="••••••••">
           <label class="f">Ulangi password</label>
           <input class="f" id="aPass2" type="password" placeholder="••••••••">
-          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doRegister()">🚀 Daftar & Verifikasi Email</button>
-          <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Password di-enkripsi (bcrypt) di server. Kode OTP dikirim ke emailmu.</p>
+          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doRegister()">Daftar &amp; Verifikasi Email</button>
+          <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Password dienkripsi (bcrypt) di server.</p>
         ` : `
           <label class="f">Email</label>
           <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
           <label class="f">Password</label>
           <input class="f" id="aPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doLogin()">🔑 Masuk</button>
+          <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doLogin()">Masuk</button>
           <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">Belum punya akun? <a href="#" style="font-weight:800;color:var(--coral)" onclick="openAuth('register');return false">Daftar gratis →</a></p>
-          ${first ? `<button class="btn btn-sm" style="width:100%;margin-top:10px" onclick="closeModal()">👀 Lihat-lihat dulu aja</button>` : ''}
+          ${first ? `<button class="btn btn-sm" style="width:100%;margin-top:10px" onclick="closeModal()">Lihat-lihat dulu saja</button>` : ''}
         `}
       </div>
     </div>
@@ -839,12 +910,12 @@ async function doRegister(){
     kec: document.getElementById('aKec').value,
     password: document.getElementById('aPass').value,
   };
-  if (body.password !== document.getElementById('aPass2').value) return toast('Ulangan password tidak sama 🙈');
+  if (body.password !== document.getElementById('aPass2').value) return toast('Ulangan password tidak sama');
   try {
     const r = await api('/auth/register', { method:'POST', body });
     pendingReg = { email: body.email };
     openOtp();
-    if (r.devCode) setTimeout(() => toast('📧 [DEV] Kode verifikasimu: ' + r.devCode), 700);
+    if (r.devCode) setTimeout(() => toast('[Mode pilot] Kode verifikasimu: ' + r.devCode), 700);
   } catch (e) { toast(e.message); }
 }
 function openOtp(){
@@ -852,18 +923,17 @@ function openOtp(){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>📧 Verifikasi Email</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>Verifikasi Email</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
         <div class="auth-hero">
-          <span class="big">✉️</span>
-          <b>Kode verifikasi dikirim!</b>
-          <p>Server mengirim 6 digit kode ke <b>${esc(pendingReg.email)}</b> (berlaku 10 menit, maks. 5 percobaan).</p>
+          <b>Cek inbox emailmu</b>
+          <p>Kode 6 digit dikirim ke <b>${esc(pendingReg.email)}</b> — berlaku 10 menit, maks. 5 percobaan. Tidak ada di inbox? Cek folder spam.</p>
         </div>
         <label class="f">Kode verifikasi (6 digit)</label>
         <input class="f" id="aOtp" inputmode="numeric" maxlength="6" placeholder="______"
           style="text-align:center;font-size:24px;font-weight:800;letter-spacing:10px"
           onkeydown="if(event.key==='Enter')verifyOtp()">
-        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">✅ Verifikasi & Buat Akun</button>
+        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">Verifikasi &amp; Buat Akun</button>
         <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
           Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="resendOtp();return false">Kirim ulang</a>
           · <a href="#" style="font-weight:800" onclick="openAuth('register');return false">Ganti email</a>
@@ -877,7 +947,7 @@ async function resendOtp(){
   if (!pendingReg) return;
   try {
     const r = await api('/auth/resend', { method:'POST', body:{ email: pendingReg.email } });
-    toast(r.devCode ? '📧 [DEV] Kode baru: ' + r.devCode : '📧 Kode baru dikirim!');
+    toast(r.devCode ? '[Mode pilot] Kode baru: ' + r.devCode : 'Kode baru dikirim ke emailmu');
   } catch (e) { toast(e.message); }
 }
 async function verifyOtp(){
@@ -887,7 +957,7 @@ async function verifyOtp(){
     token = r.token; user = r.user; pendingReg = null;
     store.set('token', token); store.set('user', user);
     renderAuthSlot(); closeModal(); afterLogin();
-    toast('🎉 Email terverifikasi! Wilujeng sumping, ' + user.name.split(' ')[0] + '! 🌾');
+    toast('Email terverifikasi — wilujeng sumping, ' + user.name.split(' ')[0] + '!');
   } catch (e) { toast(e.message); }
 }
 async function doLogin(){
@@ -899,7 +969,7 @@ async function doLogin(){
     token = r.token; user = r.user;
     store.set('token', token); store.set('user', user);
     renderAuthSlot(); closeModal(); afterLogin();
-    toast('👋 Halo lagi, ' + user.name.split(' ')[0] + '!');
+    toast('Halo lagi, ' + user.name.split(' ')[0] + '!');
   } catch (e) { toast(e.message); }
 }
 function doLogout(){
@@ -907,7 +977,7 @@ function doLogout(){
   store.set('token', null); store.set('user', null);
   if (es) { es.close(); es = null; }
   renderAuthSlot(); closeModal(); updateBadges(); loadFeed();
-  toast('Sampai jumpa lagi! 👋');
+  toast('Sampai jumpa lagi!');
 }
 function afterLogin(){
   document.getElementById('locLabel').textContent = user.kec + ', Lebak';
@@ -921,25 +991,25 @@ async function openProfile(){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>👤 Akun Saya</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>Akun Saya</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
         <div class="auth-hero">
-          <span class="big">🙋</span>
+          <span class="big" style="font-family:Georgia,serif;font-weight:800">${initOf(user.name)}</span>
           <b>${esc(user.name)}</b>
-          <p>${esc(user.email)} · 📱 ${esc(user.phone)}<br>📍 ${esc(user.kec)}, Kab. Lebak, Banten · ✔️ Email terverifikasi</p>
-          <span class="dual-badge">🛍️ Pembeli ✔ · 🏪 Penjual ✔ — satu akun untuk semua</span>
+          <p>${esc(user.email)} · ${esc(user.phone)}<br>${esc(user.kec)}, Kab. Lebak, Banten · Email terverifikasi ✓</p>
+          <span class="dual-badge">Pembeli ✓ · Penjual ✓ — satu akun untuk semua</span>
         </div>
-        <div class="mini-row"><span class="em g-1">🏪</span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan ＋ Jual untuk menambah</span></div></div>
-        <div class="mini-row"><span class="em g-3">📦</span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
-        <div class="mini-row"><span class="em g-5">🔔</span><div><b>Realtime aktif</b><span>Chat, pesanan & jualan baru terdorong langsung tanpa refresh</span></div></div>
-        <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">＋ Posting Jualan Baru</button>
-        <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">🚪 Keluar Akun</button>
+        <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan + Jual untuk menambah</span></div></div>
+        <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
+        <div class="mini-row"><span class="em g-5"><span class="letter-s">R</span></span><div><b>Realtime aktif</b><span>Chat, pesanan &amp; jualan baru terdorong langsung tanpa refresh</span></div></div>
+        <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">+ Posting Jualan Baru</button>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">Keluar Akun</button>
       </div>
     </div>
   </div>`;
 }
 
-/* ---------- INFO BIAYA + PENDAPATAN PLATFORM ---------- */
+/* ---------- INFO BIAYA ---------- */
 async function openInfoBiaya(){
   let rev = { total: 0, byKind: [] };
   try { rev = await api('/revenue'); } catch {}
@@ -947,19 +1017,19 @@ async function openInfoBiaya(){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>ℹ️ Biaya & Komisi Lebak.market</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>Biaya &amp; Komisi</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Kami transparan soal biaya — dari sinilah platform ini hidup & terus dikembangkan:</p>
-        <div class="mini-row"><span class="em g-1">🧾</span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
-        <div class="mini-row"><span class="em g-5">🏪</span><div><b>Komisi penjual — 3%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
-        <div class="mini-row"><span class="em g-3">🛵</span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
-        <div class="mini-row"><span class="em g-6">🚚</span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge & prioritas feed</span></div></div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Kami transparan soal biaya — dari sinilah platform ini hidup &amp; terus dikembangkan:</p>
+        <div class="mini-row"><span class="em g-1"><span class="letter-s">A</span></span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
+        <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — 3%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
+        <div class="mini-row"><span class="em g-3"><span class="letter-s">D</span></span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
+        <div class="mini-row"><span class="em g-6"><span class="letter-s">G</span></span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge &amp; prioritas feed</span></div></div>
         <div class="menu-mini" style="margin-top:14px">
-          <div class="mtitle">📊 Pendapatan platform tercatat di server (live)</div>
+          <div class="mtitle">Pendapatan platform tercatat di server (live)</div>
           ${rev.byKind.length ? rev.byKind.map(r => `<div class="menu-line"><span>${kindLabel[r.kind]||r.kind} (${r.n}×)</span><b>${rupiah(r.amount)}</b></div>`).join('') : '<div class="menu-line"><span>Belum ada transaksi</span><b>Rp0</b></div>'}
           <div class="menu-line" style="font-weight:800"><span>TOTAL</span><b>${rupiah(rev.total)}</b></div>
         </div>
-        <div class="safe-note">🤝 Gratis: daftar akun, posting jualan, chat, COD ketemuan, dan lihat kuliner. Biaya hanya muncul saat transaksi terjadi.</div>
+        <div class="safe-note">Gratis: daftar akun, posting jualan, chat, COD ketemuan, dan lihat kuliner. Biaya hanya muncul saat transaksi terjadi.</div>
       </div>
     </div>
   </div>`;
@@ -985,7 +1055,7 @@ function renderCats(){
   ).join('');
 }
 function setCat(id){ activeCat = id; renderCats(); loadFeed(); }
-function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); toast(v===Infinity ? '📍 Menampilkan semua jarak' : '📍 Hanya penjual dalam ' + v + ' km'); }
+function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); toast(v===Infinity ? 'Menampilkan semua jarak' : 'Hanya penjual dalam ' + v + ' km'); }
 
 function renderStories(){
   const el = document.getElementById('stories');
@@ -994,20 +1064,20 @@ function renderStories(){
   el.style.display = '';
   el.innerHTML = sellers.map(p => `
     <div class="story" title="${esc(p.seller_name)} · ${km(p.dist)}">
-      <div class="ring"><div class="ava" style="background:${acOf(p.seller_id)}">${avaOf(p.seller_id)}</div></div>
-      <span>🌾 ${esc(p.seller_name)}</span>
+      <div class="ring"><div class="ava" style="background:${acOf(p.seller_id)};font-size:22px">${initOf(p.seller_name)}</div></div>
+      <span>${esc(p.seller_name)}</span>
     </div>`).join('');
 }
 
-/* ---------- FEED (100% postingan pengguna asli) ---------- */
+/* ---------- FEED ---------- */
 function perks(p){
   const out = [];
-  if (p.lebak) out.push('<span class="perk pk-lokal">🌾 Lokal Lebak</span>');
-  if (p.freeship) out.push('<span class="perk pk-cod">🚚 GRATIS ONGKIR</span>');
-  else if (p.dist > 0 && p.price >= FREESHIP_MIN) out.push('<span class="perk pk-driver">🎟️ Voucher ongkir s.d. ' + rupiah(FREESHIP_CAP) + '</span>');
-  if (p.cod && p.dist <= COD_MAX_KM && p.dist > 0) out.push('<span class="perk pk-cod">🤝 Bisa COD</span>');
-  out.push('<span class="perk pk-rekber">🛡️ Rekber</span>');
-  if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">🛵 Driver mulai 10rb</span>');
+  if (p.lebak) out.push('<span class="perk pk-lokal">Lokal Lebak</span>');
+  if (p.freeship) out.push('<span class="perk pk-cod">GRATIS ONGKIR</span>');
+  else if (p.dist > 0 && p.price >= FREESHIP_MIN) out.push('<span class="perk pk-driver">Voucher ongkir s.d. ' + rupiah(FREESHIP_CAP) + '</span>');
+  if (p.cod && p.dist <= COD_MAX_KM && p.dist > 0) out.push('<span class="perk pk-cod">Bisa COD</span>');
+  out.push('<span class="perk pk-rekber">Rekber</span>');
+  if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">Driver mulai 10rb</span>');
   return out.join('');
 }
 
@@ -1026,7 +1096,7 @@ async function loadFeed(){
     renderFeed(); renderStories(); renderTrending();
   } catch (e) {
     document.getElementById('feed').innerHTML =
-      `<div class="empty-feed"><span class="big">🔌</span><h3>Backend belum jalan</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)}</p></div>`;
+      `<div class="empty-feed"><h3>Backend belum jalan</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)}</p></div>`;
   }
 }
 
@@ -1035,11 +1105,11 @@ function renderFeed(){
   if (!products.length){
     const filtered = activeCat !== 'all' || radiusKm !== Infinity || document.getElementById('searchInput').value.trim();
     feed.innerHTML = filtered
-      ? `<div class="empty-feed"><span class="big">🔍</span><h3>Tidak ada yang cocok</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori/kata kunci ya!</p></div>`
-      : `<div class="empty-feed"><span class="big">🌾</span><h3>Feed masih kosong — 100% asli!</h3>
+      ? `<div class="empty-feed"><h3>Tidak ada yang cocok</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori/kata kunci.</p></div>`
+      : `<div class="empty-feed"><h3>Feed masih kosong — 100% asli</h3>
           <p style="color:var(--muted);font-size:14px;margin:8px 0 20px">Tidak ada postingan bot atau contoh di sini.<br>Semua jualan berasal dari warga sungguhan. Jadilah yang pertama!</p>
-          <button class="btn btn-coral" onclick="openSell()">🚀 Posting Jualan Pertamamu</button>
-          <p style="font-size:11.5px;color:var(--muted);margin-top:14px">Gratis, cuma butuh akun terverifikasi ✔️</p>
+          <button class="btn btn-coral" onclick="openSell()">Posting Jualan Pertamamu</button>
+          <p style="font-size:11.5px;color:var(--muted);margin-top:14px">Gratis, cukup akun terverifikasi</p>
         </div>`;
     return;
   }
@@ -1049,35 +1119,35 @@ function renderFeed(){
     const out = p.stock <= 0;
     return `
     <article class="post ${p.lebak?'lokal':''}">
-      ${p.lebak ? '<div class="lokal-strip">🌾 LOKAL PRIDE — penjual dari Kab. Lebak, diprioritaskan untukmu</div>' : ''}
+      ${p.lebak ? '<div class="lokal-strip">LOKAL PRIDE — penjual dari Kab. Lebak, diprioritaskan untukmu</div>' : ''}
       <div class="post-head">
-        <span class="ava" style="--ac:${acOf(p.seller_id)}">${avaOf(p.seller_id)}</span>
+        <span class="ava" style="--ac:${acOf(p.seller_id)};font-size:18px">${initOf(p.seller_name)}</span>
         <div class="who">
-          <b>${esc(p.seller_name)} <span class="verif">✔️</span></b>
-          <span>${ago(p.created_at)} · 📍 ${esc(p.loc)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
+          <b>${esc(p.seller_name)} <span class="verif">✓</span></b>
+          <span>${ago(p.created_at)} · ${esc(p.loc)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
         </div>
-        ${mine ? '<span class="mine-pill">✏️ Postinganmu</span>'
-               : `<button class="act" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">💬 Chat</button>`}
+        ${mine ? '<span class="mine-pill">Postinganmu</span>'
+               : `<button class="act" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>`}
       </div>
       <div class="post-media ${p.g}">
-        <span>${p.emoji}</span>
-        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'}</span>
+        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
         <span class="price-tag">${rupiah(p.price)}</span>
-        <span class="dist-tag">📍 ${km(p.dist)}</span>
+        <span class="dist-tag">${km(p.dist)}</span>
         ${out?'<div class="sold-out"><b>SOLD OUT</b></div>':''}
       </div>
       <div class="post-body">
         <div class="post-actions">
-          <button class="act ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">👍 ${p.likes}</button>
-          <button class="act" onclick="toast('Link produk disalin! 🔗')">↗️ Bagikan</button>
+          <button class="act ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">${IC.like} ${p.likes}</button>
+          <button class="act" onclick="toast('Link produk disalin')">${IC.share} Bagikan</button>
         </div>
         <div class="post-title">${esc(p.name)}</div>
         <div class="post-desc">${esc(p.descr)}</div>
         <div class="post-perks">${perks(p)}</div>
         <div class="post-cta">
-          <button class="btn btn-yellow fav-btn ${faved?'on':''}" onclick="toggleFav(${p.id})">${faved?'💖 Tersimpan':'🤍 Favorit'}</button>
-          ${mine ? `<button class="btn" disabled>🏪 Jualanmu (stok ${p.stock})</button>`
-                 : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">⚡ Beli</button>`}
+          <button class="btn btn-yellow fav-btn ${faved?'on':''}" onclick="toggleFav(${p.id})">${faved?IC.heartF+' Tersimpan':IC.heart+' Favorit'}</button>
+          ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>`
+                 : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli</button>`}
         </div>
       </div>
     </article>`;
@@ -1096,7 +1166,7 @@ async function toggleLike(id){
 function toggleFav(id){
   if (needLogin('menyimpan favorit')) return;
   if (favs.has(id)) { favs.delete(id); toast('Dihapus dari favorit'); }
-  else { favs.add(id); toast('💖 Masuk favorit!'); }
+  else { favs.add(id); toast('Masuk favorit'); }
   store.set('favs', [...favs]);
   updateBadges(); renderFeed();
 }
@@ -1106,10 +1176,10 @@ function renderTrending(){
   const top = [...products].sort((a,b) => b.likes - a.likes).slice(0,4);
   el.innerHTML = top.length ? top.map(p => `
     <div class="mini-row">
-      <span class="em ${p.g}">${p.emoji}</span>
-      <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)} · 👍 ${p.likes}</span></div>
+      <span class="em ${p.g}">${thumb(p.img, p.name)}</span>
+      <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${km(p.dist)} · ${p.likes} suka</span></div>
     </div>`).join('')
-  : `<p style="font-size:13px;color:var(--muted)">Belum ada — postingan pertama otomatis jadi tren! 😄</p>`;
+  : `<p style="font-size:13px;color:var(--muted)">Belum ada — postingan pertama otomatis jadi tren.</p>`;
 }
 
 function updateBadges(){
@@ -1144,16 +1214,16 @@ function openFavs(){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="drawer">
-      <div class="drawer-head"><h3>💖 Favorit Kamu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="drawer-head"><h3>Favorit Kamu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="drawer-body">
         ${items.length ? items.map(p => `
           <div class="fav-row">
-            <span class="em ${p.g}">${p.emoji}</span>
-            <div class="inf"><b>${esc(p.name)}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)}${p.stock<=0?' · <b style=color:var(--coral)>Habis</b>':''}</span></div>
-            <button class="btn btn-sm btn-coral" ${p.stock<=0 || (user && p.seller_id===user.id) ?'disabled':''} onclick="openBuy(${p.id})">⚡</button>
+            <span class="em ${p.g}">${thumb(p.img, p.name)}</span>
+            <div class="inf"><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${km(p.dist)}${p.stock<=0?' · <b style=color:var(--coral)>Habis</b>':''}</span></div>
+            <button class="btn btn-sm btn-coral" ${p.stock<=0 || (user && p.seller_id===user.id) ?'disabled':''} onclick="openBuy(${p.id})">Beli</button>
             <button class="x-btn" style="width:30px;height:30px;font-size:12px" onclick="toggleFav(${p.id});openFavs()">✕</button>
           </div>`).join('')
-        : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">🤍</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Belum ada favorit di daftar produk yang tampil.<br>Tap 🤍 di barang yang kamu incar!</p></div>`}
+        : `<div style="text-align:center;padding:50px 10px"><p style="color:var(--muted);font-weight:700">Belum ada favorit di daftar produk yang tampil.<br>Tekan tombol Favorit di barang yang kamu incar.</p></div>`}
       </div>
     </div>
   </div>`;
@@ -1164,7 +1234,7 @@ function closeModal(){
   document.getElementById('modalRoot').innerHTML = '';
 }
 
-/* ---------- CHAT NYATA antar pengguna ---------- */
+/* ---------- CHAT ---------- */
 async function openChatWith(peerId, peerName){
   if (needLogin('chat dengan penjual')) return;
   openThread = { id: peerId, name: peerName };
@@ -1174,7 +1244,7 @@ async function openChatWith(peerId, peerName){
       <div class="drawer-head">
         <button class="x-btn" onclick="openChatList()" title="Semua chat">←</button>
         <h3 style="flex:1;display:flex;align-items:center;gap:9px">
-          <span class="ava" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:16px;background:${acOf(peerId)}">${avaOf(peerId)}</span>
+          <span class="ava" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:800;background:${acOf(peerId)}">${initOf(peerName)}</span>
           ${esc(peerName)} <span class="live-pill"><i></i> live</span>
         </h3>
         <button class="x-btn" onclick="closeModal()">✕</button>
@@ -1182,15 +1252,15 @@ async function openChatWith(peerId, peerName){
       <div class="drawer-body"><div class="chat-thread" id="thread"></div></div>
       <div class="drawer-foot">
         <div class="chat-input">
-          <input id="chatMsg" placeholder="Tulis pesan... (cth: masih ada kak?)" onkeydown="if(event.key==='Enter')sendMsg()">
-          <button onclick="sendMsg()">➤</button>
+          <input id="chatMsg" placeholder="Tulis pesan..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <button onclick="sendMsg()" title="Kirim">${IC.send}</button>
         </div>
       </div>
     </div>
   </div>`;
   await renderThread();
   clearInterval(chatPoll);
-  chatPoll = setInterval(renderThread, 8000); // cadangan bila SSE putus
+  chatPoll = setInterval(renderThread, 8000);
 }
 async function renderThread(){
   const el = document.getElementById('thread');
@@ -1200,7 +1270,7 @@ async function renderThread(){
     const stick = el.parentElement.scrollTop + el.parentElement.clientHeight >= el.parentElement.scrollHeight - 40;
     el.innerHTML = r.messages.length
       ? r.messages.map(m => `<div class="bubble ${m.from_me?'me':'them'}">${esc(m.text)}<small>${clock(m.at)}</small></div>`).join('')
-      : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan dengan ${esc(openThread.name)} 💬<br><span style="font-size:11.5px;font-weight:600">Pesanmu terkirim langsung ke akun aslinya — realtime ⚡</span></div>`;
+      : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan dengan ${esc(openThread.name)}.<br><span style="font-size:11.5px;font-weight:600">Pesan terkirim langsung ke akunnya — realtime.</span></div>`;
     if (stick) el.parentElement.scrollTop = el.parentElement.scrollHeight;
   } catch {}
 }
@@ -1224,15 +1294,15 @@ async function openChatList(){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="drawer">
-      <div class="drawer-head"><h3>💬 Chat Kamu <span class="live-pill"><i></i> realtime</span></h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="drawer-head"><h3>Chat Kamu <span class="live-pill"><i></i> realtime</span></h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="drawer-body">
         ${chats.length ? chats.map(c => `
           <div class="chat-list-row" onclick="openChatWith(${c.peer.id}, '${esc(c.peer.name)}')">
-            <span class="ava" style="--ac:${acOf(c.peer.id)}">${avaOf(c.peer.id)}</span>
-            <div class="inf"><b>${esc(c.peer.name)} · 📍 ${esc(c.peer.kec)}</b><span>${c.last.from_me?'Kamu: ':''}${esc(c.last.text)}</span></div>
+            <span class="ava" style="--ac:${acOf(c.peer.id)};font-weight:800">${initOf(c.peer.name)}</span>
+            <div class="inf"><b>${esc(c.peer.name)} · ${esc(c.peer.kec)}</b><span>${c.last.from_me?'Kamu: ':''}${esc(c.last.text)}</span></div>
             ${c.unread ? '<span class="dot-unread"></span>' : ''}
           </div>`).join('')
-        : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">💬</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Belum ada obrolan.<br>Tekan "💬 Chat" di post penjual untuk mulai!</p></div>`}
+        : `<div style="text-align:center;padding:50px 10px"><p style="color:var(--muted);font-weight:700">Belum ada obrolan.<br>Tekan tombol Chat di post penjual untuk mulai.</p></div>`}
       </div>
     </div>
   </div>`;
@@ -1244,13 +1314,13 @@ function openBuy(id){
   if (needLogin('membeli')) return;
   const p = products.find(x => x.id === id);
   if (!p || p.stock <= 0) return;
-  if (p.seller_id === user.id) return toast('Ini postinganmu sendiri 😄');
+  if (p.seller_id === user.id) return toast('Ini postinganmu sendiri');
   buy = { pid: id, step: 1, mode: null, pay: null, name: user.name, addr:'', meet: MEET_POINTS[0], time:'' };
   renderBuy();
 }
 function buyItemHTML(p){
-  return `<div class="buy-item"><span class="em ${p.g}">${p.emoji}</span>
-    <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${p.cond==='bekas'?'🏷️ Bekas':'✨ Baru'} · 📍 ${km(p.dist)} (${esc(p.loc)})</span></div></div>`;
+  return `<div class="buy-item"><span class="em ${p.g}">${thumb(p.img, p.name)}</span>
+    <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${p.cond==='bekas'?'Bekas':'Baru'} · ${km(p.dist)} (${esc(p.loc)})</span></div></div>`;
 }
 function renderBuy(){
   const p = products.find(x => x.id === buy.pid);
@@ -1264,36 +1334,36 @@ function renderBuy(){
     body = `${stepDots}${buyItemHTML(p)}
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Mau transaksi dengan cara apa?</p>
       <div class="pay-opt ${buy.mode==='rekber'?'sel':''}" onclick="buy.mode='rekber';renderBuy()">
-        <span class="ic" style="--pc:#fff3c4">🛡️</span>
+        <span class="ic" style="--pc:#fff3c4;font-weight:800;font-size:13px">RK</span>
         <div><b>Rekber + ${isJasa?'Pengerjaan Online':'Kirim Ekspedisi'}</b>
         <span>Dana ditahan sistem sampai kamu konfirmasi ${isJasa?'hasil':'barang'} sesuai. Paling aman untuk jarak jauh.</span></div>
         <span class="rad"></span>
       </div>
       <div class="pay-opt ${drvOk ? (buy.mode==='driver'?'sel':'') : 'off'}" ${drvOk?`onclick="buy.mode='driver';renderBuy()"`:''}>
-        <span class="ic" style="--pc:#d8f3ff">🛵</span>
+        <span class="ic" style="--pc:#d8f3ff;font-weight:800;font-size:13px">DR</span>
         <div><b>Rekber + Driver Lebak <span class="badge" style="background:#d9f8ea;font-size:9.5px;vertical-align:middle">RESMI</span></b>
         <span>${drvOk ? 'Diantar driver lokal hari ini (± ' + km(p.dist) + ', ongkos ' + rupiah(driverFee(p.dist)) + ' — tarif resmi mulai Rp10rb)'
                       : isJasa ? 'Tidak relevan untuk jasa online' : 'Terlalu jauh (maks ' + DRIVER_MAX_KM + ' km)'}</span></div>
         <span class="rad"></span>
       </div>
       <div class="pay-opt ${codOk ? (buy.mode==='cod'?'sel':'') : 'off'}" ${codOk?`onclick="buy.mode='cod';renderBuy()"`:''}>
-        <span class="ic" style="--pc:#d9f8ea">🤝</span>
+        <span class="ic" style="--pc:#d9f8ea;font-weight:800;font-size:13px">CO</span>
         <div><b>COD Ketemuan</b>
-        <span>${codOk ? 'Gratis biaya! Ketemu langsung, cek barang, bayar kalau cocok. Jarak penjual ' + km(p.dist) + '.'
+        <span>${codOk ? 'Gratis biaya. Ketemu langsung, cek barang, bayar kalau cocok. Jarak penjual ' + km(p.dist) + '.'
                       : isJasa ? 'Tidak tersedia untuk jasa online' : !p.cod ? 'Penjual tidak membuka COD' : 'Di luar jangkauan COD (maks ' + COD_MAX_KM + ' km)'}</span></div>
         <span class="rad"></span>
       </div>
-      ${p.cond==='bekas' ? `<div class="warn-note">🏷️ <b>Barang bekas?</b> Cek kelengkapan, fungsi, dan minus yang disebut deskripsi. Di rekber kamu punya waktu cek sebelum dana cair.</div>` : ''}
+      ${p.cond==='bekas' ? `<div class="warn-note"><b>Barang bekas?</b> Cek kelengkapan, fungsi, dan minus yang disebut deskripsi. Di rekber kamu punya waktu cek sebelum dana cair.</div>` : ''}
       <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.mode?'':'disabled'} onclick="buyNext()">Lanjut →</button>`;
   }
   else if (buy.step === 2 && buy.mode === 'cod'){
     body = `${stepDots}${buyItemHTML(p)}
-      <label class="f">Titik temu (pilih tempat ramai & aman)</label>
+      <label class="f">Titik temu (pilih tempat ramai &amp; aman)</label>
       <select class="f" id="bMeet">${MEET_POINTS.map(m => `<option ${buy.meet===m?'selected':''}>${m}</option>`).join('')}</select>
       <label class="f">Waktu janjian</label>
       <input class="f" id="bTime" type="text" placeholder="cth: Sabtu, 15.00 WIB" value="${esc(buy.time)}">
-      <div class="safe-note">🛡️ <b>Tips COD aman:</b> ajak teman, ketemu di tempat ramai/siang hari, cek barang sampai puas <b>sebelum</b> uang berpindah, jangan transfer DP sebelum ketemu. Atur detailnya lewat 💬 chat!</div>
-      <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="placeCod()">🤝 Buat Janjian COD</button>`;
+      <div class="safe-note"><b>Tips COD aman:</b> ajak teman, ketemu di tempat ramai/siang hari, cek barang sampai puas <b>sebelum</b> uang berpindah, jangan transfer DP sebelum ketemu. Atur detailnya lewat chat.</div>
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="placeCod()">Buat Janjian COD</button>`;
   }
   else if (buy.step === 2){
     body = `${stepDots}${buyItemHTML(p)}
@@ -1301,7 +1371,7 @@ function renderBuy(){
       <input class="f" id="bName" value="${esc(buy.name)}">
       <label class="f">${buy.mode==='driver' ? 'Alamat antar (driver)' : isJasa ? 'Kontak (email/WA) untuk hasil kerja' : 'Alamat lengkap'}</label>
       <textarea class="f" id="bAddr" placeholder="${isJasa ? 'cth: email / 08xx' : 'Jalan, kampung/perum, kecamatan, kode pos...'}">${esc(buy.addr)}</textarea>
-      ${buy.mode==='driver' ? `<div class="safe-note">🛵 <b>Tarif resmi Driver Lebak:</b> Rp10.000 (0–3 km) + Rp2.500/km berikutnya. Jarak ${km(p.dist)} = <b>${rupiah(driverFee(p.dist))}</b>, tiba hari ini. Dana tetap lewat rekber.</div>` : ''}
+      ${buy.mode==='driver' ? `<div class="safe-note"><b>Tarif resmi Driver Lebak:</b> Rp10.000 (0–3 km) + Rp2.500/km berikutnya. Jarak ${km(p.dist)} = <b>${rupiah(driverFee(p.dist))}</b>, tiba hari ini. Dana tetap lewat rekber.</div>` : ''}
       <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="buyNext()">Pilih pembayaran →</button>`;
   }
   else {
@@ -1313,24 +1383,24 @@ function renderBuy(){
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
       ${PAY_METHODS.map(pm => `
         <div class="pay-opt ${buy.pay===pm.id?'sel':''}" onclick="buy.pay='${pm.id}';renderBuy()">
-          <span class="ic" style="--pc:${pm.pc}">${pm.ic}</span>
+          <span class="ic" style="--pc:${pm.pc};font-weight:800;font-size:13px">${PAY_IC[pm.id]}</span>
           <div><b>${pm.name}</b><span>${pm.desc} · ${pm.feeLabel}</span></div>
           <span class="rad"></span>
         </div>`).join('')}
       <div style="background:#fff;border:2px dashed var(--ink);border-radius:16px;padding:14px 18px;margin-top:16px">
         <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
         <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
-        ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>🚚 Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
-        ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>🎟️ Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
+        ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
+        ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
         <div class="sum-row"><span>Biaya layanan${m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
         <div class="sum-row total"><span>Estimasi total (final dihitung server)</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
       </div>
-      <div class="safe-note">🛡️ Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
-      <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">🔒 Bayar ke Rekber</button>`;
+      <div class="safe-note">Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
+      <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">Bayar ke Rekber</button>`;
   }
 
-  const titles = { 1:'🧾 Cara Transaksi', 2: buy.mode==='cod' ? '🤝 Atur Janjian COD' : '📮 Data Pengiriman', 3:'💳 Pembayaran Rekber' };
+  const titles = { 1:'Cara Transaksi', 2: buy.mode==='cod' ? 'Atur Janjian COD' : 'Data Pengiriman', 3:'Pembayaran Rekber' };
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
@@ -1343,7 +1413,7 @@ function buyNext(){
   if (buy.step === 2){
     buy.name = document.getElementById('bName').value.trim();
     buy.addr = document.getElementById('bAddr').value.trim();
-    if (!buy.name || !buy.addr) { toast('Isi dulu nama & alamat/kontaknya ya 🙏'); return; }
+    if (!buy.name || !buy.addr) { toast('Isi dulu nama & alamat/kontaknya'); return; }
     buy.step = 3;
   } else buy.step = 2;
   renderBuy();
@@ -1351,11 +1421,11 @@ function buyNext(){
 async function placeCod(){
   buy.meet = document.getElementById('bMeet').value;
   buy.time = document.getElementById('bTime').value.trim();
-  if (!buy.time) { toast('Isi waktu janjiannya dulu ya 🙏'); return; }
+  if (!buy.time) { toast('Isi waktu janjiannya dulu'); return; }
   try {
     await api('/orders', { method:'POST', body:{ productId: buy.pid, mode:'cod', meetPoint: buy.meet, meetTime: buy.time } });
     closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
-    toast('🤝 Janjian COD dibuat! Penjual langsung dapat notifikasi realtime');
+    toast('Janjian COD dibuat — penjual langsung dapat notifikasi');
   } catch (e) { toast(e.message); }
 }
 async function placeRekber(){
@@ -1382,19 +1452,19 @@ function openPayment(o){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>💸 Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
         <div class="pay-box">
-          <span class="count-pill">⏳ Bayar sebelum <b>23:59:59</b></span>
+          <span class="count-pill">Bayar sebelum <b>23:59:59</b></span>
           <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
           ${isQr ? qrisHTML() + `<p style="font-size:12.5px;color:var(--muted)">Scan pakai e-wallet / m-banking apa pun</p>`
                  : `<div class="va-num">${String(o.va).replace(/(\d{4})(?=\d)/g,'$1 ')}</div><p style="font-size:12.5px;color:var(--muted)">Salin nomor VA lalu transfer dari m-banking</p>`}
           <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
           <p style="font-size:12px;color:var(--muted)">Dana masuk rekening bersama (escrow), bukan ke penjual</p>
         </div>
-        <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">✅ [SANDBOX] Simulasikan Pembayaran Berhasil</button>
+        <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">[SANDBOX] Simulasikan Pembayaran Berhasil</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Satu-satunya bagian simulasi yang tersisa — tombol ini menembak <b>/api/payments/webhook</b>, jalur yang sama persis dengan Midtrans/Xendit asli.
+          Satu-satunya bagian simulasi yang tersisa — tombol ini menembak <b>/api/payments/webhook</b>, jalur yang sama dengan Midtrans/Xendit asli.
         </p>
       </div>
     </div>
@@ -1404,7 +1474,7 @@ async function simulatePaid(orderId){
   try {
     await api('/payments/webhook', { method:'POST', body:{ order_id: orderId, transaction_status:'settlement' } });
     closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
-    toast('🛡️ Dana masuk rekber — penjual dapat notifikasi realtime untuk memproses!');
+    toast('Dana masuk rekber — penjual dapat notifikasi untuk memproses');
   } catch (e) { toast(e.message); }
 }
 
@@ -1412,27 +1482,27 @@ async function simulatePaid(orderId){
 async function shipOrder(orderId){
   try {
     await api('/orders/' + orderId + '/ship', { method:'POST' });
-    toast('📦 Status terkirim — pembeli langsung dapat notifikasi realtime!');
+    toast('Status terkirim — pembeli langsung dapat notifikasi');
     await refreshBadges(); renderOrders();
   } catch (e) { toast(e.message); }
 }
 async function confirmDone(orderId){
   try {
     const r = await api('/orders/' + orderId + '/confirm', { method:'POST' });
-    if (r.payout) toast('💸 Dana cair ke penjual ' + rupiah(r.payout.net) + ' (komisi platform dipotong otomatis)');
-    else toast('🎉 Transaksi COD selesai!');
+    if (r.payout) toast('Dana cair ke penjual ' + rupiah(r.payout.net) + ' (komisi platform dipotong otomatis)');
+    else toast('Transaksi COD selesai');
     await refreshBadges(); renderOrders();
   } catch (e) { toast(e.message); }
 }
 async function complain(orderId){
   try {
     await api('/orders/' + orderId + '/complain', { method:'POST' });
-    toast('⚖️ Komplain dibuka — dana tetap ditahan, CS menengahi dengan bukti foto/video');
+    toast('Komplain dibuka — dana tetap ditahan, CS menengahi dengan bukti');
     renderOrders();
   } catch (e) { toast(e.message); }
 }
 
-/* ---------- ORDERS VIEW: Pembelian & Penjualan ---------- */
+/* ---------- ORDERS VIEW ---------- */
 const STAT_CLASS = {
   'Menunggu Pembayaran':'sb-unpaid', 'Dana Ditahan (Rekber)':'sb-held',
   'Dikirim':'sb-move','Diantar Driver':'sb-move','Hasil Dikirim':'sb-move',
@@ -1452,13 +1522,13 @@ function orderCard(o, asSeller){
       <span class="stat-badge ${STAT_CLASS[o.status]||''}">${o.status}</span>
     </div>
     <div class="mini-row">
-      <span class="em ${o.g}">${o.emoji}</span>
+      <span class="em ${o.g}">${thumb(o.img, o.pname)}</span>
       <div><b>${esc(o.pname)}</b>
-        <span>${rupiah(o.price)} · ${asSeller ? 'Pembeli: ' + esc(o.buyer_name) : 'Penjual: ' + esc(o.seller_name)} · ${o.mode==='cod'?'🤝 COD':o.mode==='driver'?'🛵 Driver + Rekber':'🛡️ Rekber'}</span></div>
-      <button class="btn btn-sm" onclick="openChatWith(${asSeller ? o.buyer_id : o.seller_id}, '${esc(asSeller ? o.buyer_name : o.seller_name)}')">💬</button>
+        <span>${rupiah(o.price)} · ${asSeller ? 'Pembeli: ' + esc(o.buyer_name) : 'Penjual: ' + esc(o.seller_name)} · ${o.mode==='cod'?'COD':o.mode==='driver'?'Driver + Rekber':'Rekber'}</span></div>
+      <button class="btn btn-sm" onclick="openChatWith(${asSeller ? o.buyer_id : o.seller_id}, '${esc(asSeller ? o.buyer_name : o.seller_name)}')">Chat</button>
     </div>
-    ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📍 ${esc(o.meet_point)} · 🕐 ${esc(o.meet_time)}</p>` : ''}
-    ${asSeller && o.recv_addr ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📮 Kirim ke: ${esc(o.recv_name)} — ${esc(o.recv_addr)}</p>` : ''}
+    ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Titik temu: ${esc(o.meet_point)} · ${esc(o.meet_time)}</p>` : ''}
+    ${asSeller && o.recv_addr ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Kirim ke: ${esc(o.recv_name)} — ${esc(o.recv_addr)}</p>` : ''}
     <div class="sum-row total" style="margin-top:10px"><span>Total (${o.method})</span><span>${rupiah(o.total)}</span></div>
     <div class="status-line" style="margin-top:16px">
       ${o.events.map((tl,i) => `
@@ -1468,62 +1538,62 @@ function orderCard(o, asSeller){
         </div>`).join('')}
     </div>
     <div class="order-btns">
-      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va})})'>💸 Bayar Sekarang</button>` : ''}
-      ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? '🛵 Serahkan ke Driver' : isJasa ? '🎨 Kirim Hasil Kerja' : '📦 Tandai Dikirim'}</button>` : ''}
+      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va})})'>Bayar Sekarang</button>` : ''}
+      ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? 'Serahkan ke Driver' : isJasa ? 'Kirim Hasil Kerja' : 'Tandai Dikirim'}</button>` : ''}
       ${asSeller && o.status === 'Menunggu Pembayaran' ? `<span class="live-pill"><i></i> menunggu pembeli bayar</span>` : ''}
       ${!asSeller && CONFIRMABLE.includes(o.status) ? `
-        <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Diterima & Sesuai — Cairkan Dana</button>
-        <button class="btn btn-sm" onclick="complain('${o.id}')">⚖️ Ajukan Komplain</button>` : ''}
-      ${!asSeller && o.status === 'Janjian COD' ? `<button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Sudah Ketemu & Barang Oke</button>` : ''}
-      ${asSeller && o.status === 'Janjian COD' ? `<span class="live-pill"><i></i> tunggu ketemuan — hubungi via 💬</span>` : ''}
+        <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">Diterima &amp; Sesuai — Cairkan Dana</button>
+        <button class="btn btn-sm" onclick="complain('${o.id}')">Ajukan Komplain</button>` : ''}
+      ${!asSeller && o.status === 'Janjian COD' ? `<button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">Sudah Ketemu &amp; Barang Oke</button>` : ''}
+      ${asSeller && o.status === 'Janjian COD' ? `<span class="live-pill"><i></i> tunggu ketemuan — hubungi via chat</span>` : ''}
     </div>
   </div>`;
 }
 
 async function renderOrders(){
   const el = document.getElementById('ordersList');
-  if (!token){ el.innerHTML = `<div class="empty-feed"><span class="big">🔐</span><h3>Masuk dulu yuk</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Transaksimu tersimpan aman di server.</p><button class="btn btn-coral" onclick="openAuth('login')">Masuk / Daftar</button></div>`; return; }
+  if (!token){ el.innerHTML = `<div class="empty-feed"><h3>Masuk dulu yuk</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Transaksimu tersimpan aman di server.</p><button class="btn btn-coral" onclick="openAuth('login')">Masuk / Daftar</button></div>`; return; }
   try {
     const [o, s] = await Promise.all([api('/orders'), api('/sales')]);
     lastOrders = o.orders; lastSales = s.sales;
-  } catch (e) { el.innerHTML = `<div class="empty-feed"><span class="big">🔌</span><h3>${esc(e.message)}</h3></div>`; return; }
+  } catch (e) { el.innerHTML = `<div class="empty-feed"><h3>${esc(e.message)}</h3></div>`; return; }
   updateBadges();
   const needShip = lastSales.filter(x => x.status === 'Dana Ditahan (Rekber)').length;
   const tabs = `
     <div class="seg-tabs">
-      <button class="${ordTab==='beli'?'active':''}" onclick="setOrdTab('beli')">🛍️ Pembelian (${lastOrders.length})</button>
-      <button class="${ordTab==='jual'?'active':''}" onclick="setOrdTab('jual')">🏪 Penjualan (${lastSales.length})${needShip?`<span class="count">${needShip}</span>`:''}</button>
+      <button class="${ordTab==='beli'?'active':''}" onclick="setOrdTab('beli')">Pembelian (${lastOrders.length})</button>
+      <button class="${ordTab==='jual'?'active':''}" onclick="setOrdTab('jual')">Penjualan (${lastSales.length})${needShip?`<span class="count">${needShip}</span>`:''}</button>
     </div>`;
   const list = ordTab === 'beli' ? lastOrders : lastSales;
   el.innerHTML = tabs + (list.length
     ? list.map(x => orderCard(x, ordTab === 'jual')).join('')
-    : `<div class="empty-feed"><span class="big">${ordTab==='beli'?'🧾':'🏪'}</span>
+    : `<div class="empty-feed">
         <h3>${ordTab==='beli'?'Belum ada pembelian':'Belum ada yang membeli daganganmu'}</h3>
-        <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">${ordTab==='beli'?'Yuk cari barang incaran di feed!':'Posting jualan & bagikan ke tetangga — notifikasi pembeli masuk realtime ke sini.'}</p>
-        <button class="btn btn-coral" onclick="${ordTab==='beli'?`showView('feed')`:'openSell()'}">${ordTab==='beli'?'Ke Feed →':'＋ Posting Jualan'}</button>
+        <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">${ordTab==='beli'?'Yuk cari barang incaran di feed.':'Posting jualan & bagikan ke tetangga — notifikasi pembeli masuk realtime ke sini.'}</p>
+        <button class="btn btn-coral" onclick="${ordTab==='beli'?`showView('feed')`:'openSell()'}">${ordTab==='beli'?'Ke Feed →':'+ Posting Jualan'}</button>
       </div>`);
 }
 
-/* ---------- KULINER LEBAK ---------- */
+/* ---------- KULINER ---------- */
 let restos = [];
 async function renderRestos(){
   try { restos = (await api('/restos')).restos; }
-  catch (e) { document.getElementById('restoGrid').innerHTML = `<div class="empty-feed"><span class="big">🔌</span><h3>${esc(e.message)}</h3></div>`; return; }
+  catch (e) { document.getElementById('restoGrid').innerHTML = `<div class="empty-feed"><h3>${esc(e.message)}</h3></div>`; return; }
   document.getElementById('restoGrid').innerHTML = restos.map(r => `
     <div class="resto-card">
       <div class="resto-media ${r.g}">
-        <span>${r.emoji}</span>
-        <span class="type-tag">${r.type}${r.wifi?' · 📶':''}</span>
-        <span class="dist-tag">📍 ${km(r.dist)}</span>
+        <span class="letter">${initOf(r.name)}</span>
+        <span class="type-tag">${r.type}${r.wifi?' · WiFi':''}</span>
+        <span class="dist-tag">${km(r.dist)}</span>
       </div>
       <div class="resto-body">
         <h4>${esc(r.name)}</h4>
-        <div class="resto-meta">⭐ ${r.rating} · 🕐 ${r.open} · ${esc(r.addr)}</div>
+        <div class="resto-meta">★ ${r.rating} · ${r.open} · ${esc(r.addr)}</div>
         <div class="menu-mini">
-          <div class="mtitle">🍽️ Menu andalan</div>
+          <div class="mtitle">Menu andalan</div>
           ${r.menu.slice(0,3).map(([n,h]) => `<div class="menu-line"><span>${esc(n)}</span><b>${rupiah(h)}</b></div>`).join('')}
         </div>
-        <button class="btn btn-yellow btn-sm" onclick="openResto(${r.id})">📖 Menu Lengkap & Lokasi</button>
+        <button class="btn btn-yellow btn-sm" onclick="openResto(${r.id})">Menu Lengkap &amp; Lokasi</button>
       </div>
     </div>`).join('');
 }
@@ -1533,54 +1603,101 @@ function openResto(id){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>${r.emoji} ${esc(r.name)}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>${esc(r.name)}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <div class="resto-info-row">🏷️ <span><b>${r.type}</b> · ⭐ ${r.rating}${r.wifi?' · 📶 WiFi gratis':''}</span></div>
-        <div class="resto-info-row">📍 <span>${esc(r.addr)} — <b>${km(r.dist)} dari lokasimu</b></span></div>
-        <div class="resto-info-row">🕐 <span>Buka ${r.open}</span></div>
+        <div class="resto-info-row"><span><b>${r.type}</b> · ★ ${r.rating}${r.wifi?' · WiFi gratis':''}</span></div>
+        <div class="resto-info-row"><span>${esc(r.addr)} — <b>${km(r.dist)} dari lokasimu</b></span></div>
+        <div class="resto-info-row"><span>Buka ${r.open}</span></div>
         <div class="menu-mini" style="margin-top:14px">
-          <div class="mtitle">🍽️ Menu lengkap & harga</div>
+          <div class="mtitle">Menu lengkap &amp; harga</div>
           ${r.menu.map(([n,h]) => `<div class="menu-line"><span>${esc(n)}</span><b>${rupiah(h)}</b></div>`).join('')}
         </div>
-        <div class="warn-note">ℹ️ Lebak.market hanya menampilkan lokasi & menu — datang dan pesan langsung di tempatnya ya! Bukan layanan pesan-antar.</div>
-        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="toast('📍 Membuka petunjuk arah ke ${esc(r.name)} (demo peta)')">🗺️ Petunjuk Arah</button>
+        <div class="warn-note">Lebak.market hanya menampilkan lokasi &amp; menu — datang dan pesan langsung di tempatnya. Bukan layanan pesan-antar.</div>
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="toast('Membuka petunjuk arah ke ${esc(r.name)} (demo peta)')">Petunjuk Arah</button>
       </div>
     </div>
   </div>`;
 }
 
-/* ---------- SELL ---------- */
+/* ---------- SELL (dengan foto asli) ---------- */
 function openSell(){
   if (needLogin('posting jualan')) return;
+  sellImg = null;
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>＋ Posting Jualan Baru</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>Posting Jualan Baru</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <div class="safe-note" style="margin:0 0 6px">🏪 Posting sebagai <b>${esc(user.name)}</b> (📍 ${esc(user.kec)}, Lebak) — begitu tayang, semua pengguna online dapat notifikasi realtime ⚡</div>
+        <div class="safe-note" style="margin:0 0 14px">Posting sebagai <b>${esc(user.name)}</b> (${esc(user.kec)}, Lebak) — begitu tayang, pengguna online dapat notifikasi realtime.</div>
+        <label class="f">Foto barang</label>
+        <input type="file" id="sFile" accept="image/*" style="display:none" onchange="onPhoto(event)">
+        <div id="photoBox">
+          <div class="photo-drop" onclick="document.getElementById('sFile').click()">
+            ${IC.camera}
+            <span>Ambil foto / pilih dari galeri</span>
+            <span style="font-size:11.5px;font-weight:600">Foto asli bikin pembeli lebih percaya — dikompresi otomatis</span>
+          </div>
+        </div>
         <label class="f">Nama produk / jasa</label>
-        <input class="f" id="sName" placeholder="cth: Gula Aren Super">
+        <input class="f" id="sName" placeholder="cth: Gula Aren Cetak 1kg">
         <label class="f">Kategori</label>
         <select class="f" id="sCat">
           ${CATS.filter(c => c.id!=='all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
         </select>
         <label class="f">Kondisi</label>
-        <select class="f" id="sCond"><option value="baru">✨ Baru</option><option value="bekas">🏷️ Bekas</option></select>
+        <select class="f" id="sCond"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
         <label class="f">Harga (Rp)</label>
         <input class="f" id="sPrice" type="number" min="1000" placeholder="cth: 50000">
         <label class="f">Stok</label>
         <input class="f" id="sStock" type="number" min="1" value="1">
-        <label class="f">Emoji produk (foto sementara)</label>
-        <input class="f" id="sEmoji" placeholder="cth: 🍯" maxlength="4" value="📦">
-        <label class="f">Deskripsi (untuk barang bekas: jujur soal minus ya!)</label>
+        <label class="f">Deskripsi (untuk barang bekas: jujur soal minus)</label>
         <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
-        <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">🤝 Buka COD ketemuan (radius ${COD_MAX_KM} km)</label></div>
-        <div class="check-row"><input type="checkbox" id="sFreeship"><label for="sFreeship">🚚 Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge & prioritas (komisi +4%)</label></div>
-        <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">🚀 Posting Sekarang</button>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Komisi penjual 3% hanya dipotong saat transaksi sukses. Posting gratis!</p>
+        <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan (radius ${COD_MAX_KM} km)</label></div>
+        <div class="check-row"><input type="checkbox" id="sFreeship"><label for="sFreeship">Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge &amp; prioritas (komisi +4%)</label></div>
+        <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">Posting Sekarang</button>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Komisi penjual 3% hanya dipotong saat transaksi sukses. Posting gratis.</p>
       </div>
     </div>
   </div>`;
+}
+function compressImage(file){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 900;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src);
+      resolve(c.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = () => reject(new Error('File bukan gambar yang valid'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+async function onPhoto(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    sellImg = await compressImage(f);
+    document.getElementById('photoBox').innerHTML = `
+      <div class="photo-prev">
+        <img src="${sellImg}" alt="Pratinjau foto">
+        <button class="x-btn" onclick="removePhoto()" title="Hapus foto">✕</button>
+      </div>`;
+  } catch (err) { toast(err.message); }
+}
+function removePhoto(){
+  sellImg = null;
+  document.getElementById('sFile').value = '';
+  document.getElementById('photoBox').innerHTML = `
+    <div class="photo-drop" onclick="document.getElementById('sFile').click()">
+      ${IC.camera}
+      <span>Ambil foto / pilih dari galeri</span>
+      <span style="font-size:11.5px;font-weight:600">Foto asli bikin pembeli lebih percaya — dikompresi otomatis</span>
+    </div>`;
 }
 async function submitSell(){
   try {
@@ -1590,21 +1707,20 @@ async function submitSell(){
       cond: document.getElementById('sCond').value,
       price: document.getElementById('sPrice').value,
       stock: document.getElementById('sStock').value,
-      emoji: document.getElementById('sEmoji').value,
       descr: document.getElementById('sDesc').value,
       cod: document.getElementById('sCod').checked,
       freeship: document.getElementById('sFreeship').checked,
+      img: sellImg,
     }});
-    closeModal();
+    closeModal(); sellImg = null;
     activeCat = 'all'; renderCats(); await loadFeed();
-    toast('🎉 Jualanmu tayang & terdorong realtime ke semua pengguna! 🌾');
+    toast('Jualanmu tayang & terdorong realtime ke semua pengguna');
   } catch (e) { toast(e.message); }
 }
 
 /* ---------- INIT ---------- */
 async function init(){
   renderAuthSlot(); renderCats();
-  document.getElementById('searchInput').setAttribute('oninput', '');
   document.getElementById('searchInput').addEventListener('input', searchInput);
   try {
     const cfg = await api('/config');

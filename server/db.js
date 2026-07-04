@@ -46,6 +46,7 @@ db.exec(`
     lebak INTEGER NOT NULL DEFAULT 1,
     emoji TEXT NOT NULL DEFAULT '📦',
     g TEXT NOT NULL DEFAULT 'g-1',
+    img TEXT,                    -- path foto produk (/uploads/xxx.jpg), NULL = tanpa foto
     descr TEXT NOT NULL DEFAULT '',
     created_at INTEGER NOT NULL
   );
@@ -104,5 +105,8 @@ db.exec(`
     at INTEGER NOT NULL
   );
 `);
+
+// Migrasi ringan untuk database lama (sebelum kolom img ada)
+try { db.exec('ALTER TABLE products ADD COLUMN img TEXT'); } catch {}
 
 module.exports = db;

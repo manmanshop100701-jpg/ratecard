@@ -79,12 +79,22 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | Var | Fungsi |
 |---|---|
 | `JWT_SECRET` | **Wajib di produksi** — kunci sesi login |
-| `OTP_IN_RESPONSE` | `1` (default) = mode pilot, kode OTP tampil di aplikasi; `0` setelah SMTP dipasang |
+| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | **Email OTP sungguhan via Gmail** — begitu diisi, kode masuk ke inbox pendaftar (bukan tampil di layar) |
+| `SMTP_HOST/PORT/USER/PASS` | Alternatif SMTP umum (Brevo, Mailgun, dll.) |
+| `OTP_IN_RESPONSE` | Otomatis: `0` saat email terpasang, `1` (mode pilot, kode tampil di aplikasi) saat belum |
 | `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
+| `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |
 | `WEBHOOK_SECRET` | Kosong = tombol sandbox aktif; isi saat Midtrans asli terpasang |
 | `PORT` | Diisi otomatis oleh platform |
 
-> 🔐 **Mode pilot OTP**: karena belum ada pengirim email sungguhan, kode verifikasi ikut ditampilkan di aplikasi (`OTP_IN_RESPONSE=1`). Validasi email tetap jalan (format/typo/sekali-pakai), tapi kepemilikan email belum benar-benar dibuktikan. Pasang nodemailer/Resend di `sendOtpEmail()` lalu set `OTP_IN_RESPONSE=0` untuk verifikasi sejati.
+### 📧 Mengaktifkan email OTP via Gmail (5 menit)
+1. Aktifkan **verifikasi 2 langkah** di akun Google-mu (myaccount.google.com → Keamanan)
+2. Buka **myaccount.google.com/apppasswords** → buat App Password baru (nama bebas, mis. "lebak-market") → salin 16 karakternya
+3. Tambahkan 2 env var: `GMAIL_USER=emailmu@gmail.com` dan `GMAIL_APP_PASSWORD=16karakter-tadi`
+4. Restart — kode OTP kini terkirim ke inbox email pendaftar, dan tidak lagi tampil di layar. Email palsu otomatis tidak bisa daftar karena tidak pernah menerima kode
+
+### 📷 Foto produk
+Penjual mengunggah foto asli dari galeri/kamera saat posting; foto dikompresi otomatis di browser (maks 900px, JPEG) lalu disimpan server di `UPLOAD_DIR` dan tampil di feed, keranjang beli, dan kartu transaksi. Produk tanpa foto memakai tile inisial huruf yang bersih (bukan emoji).
 
 ## 🏗️ Menuju Produksi Penuh
 
