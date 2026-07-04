@@ -147,9 +147,12 @@ header{
 .radius-row{
   display:flex;align-items:center;gap:9px;overflow-x:auto;scrollbar-width:none;
   padding:10px 4px 2px;font-size:12.5px;font-weight:700;color:var(--muted);
+  flex-wrap:nowrap;white-space:nowrap;
 }
 .radius-row::-webkit-scrollbar{display:none}
-.radius-row .loc{white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+.radius-row .loc{white-space:nowrap;display:inline-flex;gap:6px;align-items:center;flex:none}
+#radiusChips{display:contents}
+.radius-row .chip{flex:none}
 
 /* ============ LAYOUT ============ */
 .main-grid{display:grid;grid-template-columns:1fr 320px;gap:28px;padding:26px 0 90px;align-items:start}
@@ -468,7 +471,12 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
     box-shadow:0 4px 0 var(--ink);flex:none;
   }
   .head-inner{gap:9px;height:62px}
-  .cat-bar{top:62px}
+  .cat-bar{top:62px;padding:9px 0 7px}
+  .cat-scroll .chip{padding:8px 16px;font-size:12.5px;box-shadow:0 2px 0 rgba(43,36,64,.15)}
+  .radius-row{padding:8px 4px 2px;font-size:12px}
+  .radius-row .chip.mini{padding:5px 13px;font-size:11.5px}
+  .hero-strip .quick-row .chip{padding:8px 15px;font-size:12.5px}
+  .stories{padding:16px 4px 8px}
   .search{padding:8px 14px}
   .icon-btn,.ava-btn{width:40px;height:40px;font-size:16px}
   .login-btn{padding:9px 16px;font-size:12.5px}
@@ -502,6 +510,33 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 }
 @keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
 .view-tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+
+/* segmented tabs Pembelian/Penjualan */
+.seg-tabs{
+  display:flex;background:#fff;border:2.5px solid var(--ink);border-radius:999px;
+  padding:5px;gap:5px;margin-bottom:22px;box-shadow:0 4px 0 rgba(43,36,64,.12);max-width:420px;
+}
+.seg-tabs button{
+  flex:1;border:none;background:transparent;border-radius:999px;padding:10px 14px;
+  font-weight:800;font-size:13.5px;color:var(--muted);transition:all .15s;position:relative;
+}
+.seg-tabs button.active{background:var(--ink);color:#fff}
+.seg-tabs button .count{
+  position:absolute;top:-4px;right:2px;min-width:19px;height:19px;border-radius:999px;
+  background:var(--coral);color:#fff;font-size:10.5px;font-weight:800;display:grid;place-items:center;
+  border:2px solid var(--ink);padding:0 4px;
+}
+
+/* indikator realtime */
+.live-pill{
+  display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;
+  border:2px solid var(--ink);border-radius:999px;padding:4px 13px;background:#d9f8ea;
+}
+.live-pill i{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 1.6s infinite}
+.mine-pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;
+  border:2px solid var(--ink);border-radius:999px;padding:6px 15px;background:#ece7ff;
+}
 </style>
 </head>
 <body>
@@ -616,14 +651,15 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 
 <script>
 /* ================================================================
-   Lebak.market — frontend tersambung ke BACKEND API (server/).
+   Lebak.market — frontend 100% REAL & REALTIME.
+   - Feed hanya berisi postingan pengguna asli (tanpa seed/bot)
+   - Chat sungguhan antar akun; status pesanan digerakkan penjual asli
+   - Update realtime via Server-Sent Events (/api/events)
    Jalankan:  cd server && npm install && npm start
    lalu buka  http://localhost:3000
-   Auth JWT, produk, order, webhook pembayaran, escrow, chat, dan
-   kuliner semuanya dari server; favorit & like disimpan lokal.
    ================================================================ */
 
-/* ---------- KONSTANTA UI (fallback; nilai resmi diambil dari /api/config) ---------- */
+/* ---------- KONSTANTA UI (nilai resmi dari /api/config) ---------- */
 const CATS = [
   { id:'all',        label:'✨ Semua' },
   { id:'jasa',       label:'🛠️ Jasa' },
@@ -653,6 +689,10 @@ function shipBreakdown(p, mode){
   const subsidy = p.price >= FREESHIP_MIN ? Math.min(FREESHIP_CAP, base) : 0;
   return { base, seller: 0, subsidy };
 }
+const SELLER_AVA = ['🌾','🌻','🍯','🐟','🧺','🔧','🎨','☕','🥭','🦜'];
+const SELLER_AC  = ['#fff3c4','#ffe0ec','#d8f3ff','#d9f8ea','#ece7ff','#ffe8d9'];
+const avaOf = id => SELLER_AVA[id % SELLER_AVA.length];
+const acOf  = id => SELLER_AC[id % SELLER_AC.length];
 
 /* ---------- API CLIENT ---------- */
 const store = {
@@ -680,19 +720,26 @@ async function api(path, { method = 'GET', body } = {}){
 
 /* ---------- STATE ---------- */
 let products  = [];
-let lastOrders = [];
+let lastOrders = [], lastSales = [];
+let ordTab = 'beli'; // beli | jual
 let favs      = new Set(store.get('favs', []));
-let likes     = new Set(store.get('likes', []));
 let activeCat = 'all';
 let radiusKm  = Infinity;
-let openThread = null;
-let orderPoll = null, chatPoll = null, badgePoll = null;
+let openThread = null;     // { id, name }
+let chatPoll = null;
 let pendingReg = null;
+let es = null;             // EventSource realtime
 
-const me = () => user;
 const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
 const km = d => d === 0 ? 'Online' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
 const clock = t => new Date(t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+const ago = t => {
+  const s = Math.floor((Date.now() - t)/1000);
+  if (s < 60) return 'baru saja';
+  if (s < 3600) return Math.floor(s/60) + ' mnt lalu';
+  if (s < 86400) return Math.floor(s/3600) + ' jam lalu';
+  return Math.floor(s/86400) + ' hari lalu';
+};
 
 function toast(msg){
   const t = document.createElement('div');
@@ -701,6 +748,30 @@ function toast(msg){
   setTimeout(() => t.remove(), 3600);
 }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- REALTIME (SSE) ---------- */
+function connectSSE(){
+  if (es) { es.close(); es = null; }
+  if (!token) return;
+  es = new EventSource('/api/events?token=' + encodeURIComponent(token));
+  es.addEventListener('chat', e => {
+    const m = JSON.parse(e.data);
+    if (openThread && openThread.id === m.from.id) renderThread();
+    else toast('💬 ' + m.from.name + ': ' + (m.text.length > 42 ? m.text.slice(0,42) + '…' : m.text));
+    refreshBadges();
+  });
+  es.addEventListener('order', e => {
+    const d = JSON.parse(e.data);
+    toast('🔔 ' + d.orderId + ' → ' + d.status);
+    if (!document.getElementById('view-orders').classList.contains('hidden')) renderOrders();
+    refreshBadges();
+  });
+  es.addEventListener('product', e => {
+    const d = JSON.parse(e.data);
+    toast('🆕 ' + d.seller + ' baru posting: ' + d.name);
+    if (!document.getElementById('view-feed').classList.contains('hidden')) loadFeed();
+  });
+}
 
 /* ---------- AUTH ---------- */
 function renderAuthSlot(){
@@ -797,7 +868,6 @@ function openOtp(){
           Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="resendOtp();return false">Kirim ulang</a>
           · <a href="#" style="font-weight:800" onclick="openAuth('register');return false">Ganti email</a>
         </p>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Mode dev: kode juga muncul sebagai notifikasi & log server. Produksi: hanya lewat email.</p>
       </div>
     </div>
   </div>`;
@@ -835,12 +905,15 @@ async function doLogin(){
 function doLogout(){
   token = null; user = null;
   store.set('token', null); store.set('user', null);
-  renderAuthSlot(); closeModal(); updateBadges();
+  if (es) { es.close(); es = null; }
+  renderAuthSlot(); closeModal(); updateBadges(); loadFeed();
   toast('Sampai jumpa lagi! 👋');
 }
 function afterLogin(){
   document.getElementById('locLabel').textContent = user.kec + ', Lebak';
+  connectSSE();
   refreshBadges();
+  loadFeed();
 }
 async function openProfile(){
   if (!user) return openAuth('login');
@@ -857,8 +930,8 @@ async function openProfile(){
           <span class="dual-badge">🛍️ Pembeli ✔ · 🏪 Penjual ✔ — satu akun untuk semua</span>
         </div>
         <div class="mini-row"><span class="em g-1">🏪</span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan ＋ Jual untuk menambah</span></div></div>
-        <div class="mini-row"><span class="em g-3">📦</span><div><b>Transaksiku</b><span>${lastOrders.length} transaksi tercatat di server</span></div></div>
-        <div class="mini-row"><span class="em g-5">🌾</span><div><b>Lokal Pride</b><span>Produkmu otomatis diprioritaskan untuk warga Lebak</span></div></div>
+        <div class="mini-row"><span class="em g-3">📦</span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
+        <div class="mini-row"><span class="em g-5">🔔</span><div><b>Realtime aktif</b><span>Chat, pesanan & jualan baru terdorong langsung tanpa refresh</span></div></div>
         <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">＋ Posting Jualan Baru</button>
         <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">🚪 Keluar Akun</button>
       </div>
@@ -897,8 +970,7 @@ function showView(v){
   ['feed','orders','kuliner'].forEach(x => document.getElementById('view-'+x).classList.toggle('hidden', v !== x));
   document.getElementById('heroStrip').style.display = v === 'feed' ? '' : 'none';
   document.getElementById('catBar').style.display = v === 'feed' ? '' : 'none';
-  clearInterval(orderPoll); orderPoll = null;
-  if (v === 'orders'){ renderOrders(); orderPoll = setInterval(renderOrders, 4000); }
+  if (v === 'orders') renderOrders();
   if (v === 'kuliner') renderRestos();
   window.scrollTo({ top: 0 });
 }
@@ -910,21 +982,24 @@ function renderCats(){
   ).join('');
   document.getElementById('radiusChips').innerHTML = RADII.map(r =>
     `<button class="chip mini ${radiusKm===r.v?'active':''}" onclick="setRadius(${r.v === Infinity ? 'Infinity' : r.v})">${r.l}</button>`
-  ).join(' ');
+  ).join('');
 }
 function setCat(id){ activeCat = id; renderCats(); loadFeed(); }
 function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); toast(v===Infinity ? '📍 Menampilkan semua jarak' : '📍 Hanya penjual dalam ' + v + ' km'); }
 
 function renderStories(){
-  const sellers = [...new Map(products.map(p => [p.seller_name, p])).values()];
-  document.getElementById('stories').innerHTML = sellers.map(p => `
+  const el = document.getElementById('stories');
+  const sellers = [...new Map(products.map(p => [p.seller_id, p])).values()];
+  if (!sellers.length){ el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = sellers.map(p => `
     <div class="story" title="${esc(p.seller_name)} · ${km(p.dist)}">
-      <div class="ring"><div class="ava" style="background:${p.ac||'#fff'}">${p.ava}</div></div>
-      <span>${p.lebak?'🌾 ':''}${esc(p.seller_name)}</span>
+      <div class="ring"><div class="ava" style="background:${acOf(p.seller_id)}">${avaOf(p.seller_id)}</div></div>
+      <span>🌾 ${esc(p.seller_name)}</span>
     </div>`).join('');
 }
 
-/* ---------- FEED (data dari server, prioritas Lebak di query) ---------- */
+/* ---------- FEED (100% postingan pengguna asli) ---------- */
 function perks(p){
   const out = [];
   if (p.lebak) out.push('<span class="perk pk-lokal">🌾 Lokal Lebak</span>');
@@ -933,7 +1008,6 @@ function perks(p){
   if (p.cod && p.dist <= COD_MAX_KM && p.dist > 0) out.push('<span class="perk pk-cod">🤝 Bisa COD</span>');
   out.push('<span class="perk pk-rekber">🛡️ Rekber</span>');
   if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">🛵 Driver mulai 10rb</span>');
-  if (p.dist > 100) out.push('<span class="perk pk-far">🚢 Antar pulau/kota</span>');
   return out.join('');
 }
 
@@ -959,23 +1033,31 @@ async function loadFeed(){
 function renderFeed(){
   const feed = document.getElementById('feed');
   if (!products.length){
-    feed.innerHTML = `<div class="empty-feed"><span class="big">📍</span><h3>Tidak ada di radius ini</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori ya!</p></div>`;
+    const filtered = activeCat !== 'all' || radiusKm !== Infinity || document.getElementById('searchInput').value.trim();
+    feed.innerHTML = filtered
+      ? `<div class="empty-feed"><span class="big">🔍</span><h3>Tidak ada yang cocok</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori/kata kunci ya!</p></div>`
+      : `<div class="empty-feed"><span class="big">🌾</span><h3>Feed masih kosong — 100% asli!</h3>
+          <p style="color:var(--muted);font-size:14px;margin:8px 0 20px">Tidak ada postingan bot atau contoh di sini.<br>Semua jualan berasal dari warga sungguhan. Jadilah yang pertama!</p>
+          <button class="btn btn-coral" onclick="openSell()">🚀 Posting Jualan Pertamamu</button>
+          <p style="font-size:11.5px;color:var(--muted);margin-top:14px">Gratis, cuma butuh akun terverifikasi ✔️</p>
+        </div>`;
     return;
   }
   feed.innerHTML = products.map(p => {
-    const liked = likes.has(p.id);
+    const mine = user && p.seller_id === user.id;
     const faved = favs.has(p.id);
     const out = p.stock <= 0;
     return `
     <article class="post ${p.lebak?'lokal':''}">
       ${p.lebak ? '<div class="lokal-strip">🌾 LOKAL PRIDE — penjual dari Kab. Lebak, diprioritaskan untukmu</div>' : ''}
       <div class="post-head">
-        <span class="ava" style="--ac:${p.ac||'#fff3c4'}">${p.ava}</span>
+        <span class="ava" style="--ac:${acOf(p.seller_id)}">${avaOf(p.seller_id)}</span>
         <div class="who">
-          <b>${esc(p.seller_name)} ${p.verified?'<span class="verif">✔️</span>':''}</b>
-          <span>📍 ${esc(p.loc)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
+          <b>${esc(p.seller_name)} <span class="verif">✔️</span></b>
+          <span>${ago(p.created_at)} · 📍 ${esc(p.loc)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
         </div>
-        <button class="act" onclick="openChatWith('${esc(p.seller_name)}')">💬 Chat</button>
+        ${mine ? '<span class="mine-pill">✏️ Postinganmu</span>'
+               : `<button class="act" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">💬 Chat</button>`}
       </div>
       <div class="post-media ${p.g}">
         <span>${p.emoji}</span>
@@ -986,26 +1068,30 @@ function renderFeed(){
       </div>
       <div class="post-body">
         <div class="post-actions">
-          <button class="act ${liked?'liked':''}" onclick="toggleLike(${p.id})">👍 ${p.likes + (liked?1:0)}</button>
-          <button class="act" onclick="toast('Kolom komentar — coming soon!')">💬 ${(p.id*7)%40+3}</button>
-          <button class="act" onclick="toast('Link produk disalin! 🔗')">↗️</button>
+          <button class="act ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">👍 ${p.likes}</button>
+          <button class="act" onclick="toast('Link produk disalin! 🔗')">↗️ Bagikan</button>
         </div>
         <div class="post-title">${esc(p.name)}</div>
         <div class="post-desc">${esc(p.descr)}</div>
         <div class="post-perks">${perks(p)}</div>
         <div class="post-cta">
           <button class="btn btn-yellow fav-btn ${faved?'on':''}" onclick="toggleFav(${p.id})">${faved?'💖 Tersimpan':'🤍 Favorit'}</button>
-          <button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">⚡ Beli</button>
+          ${mine ? `<button class="btn" disabled>🏪 Jualanmu (stok ${p.stock})</button>`
+                 : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">⚡ Beli</button>`}
         </div>
       </div>
     </article>`;
   }).join('');
 }
 
-function toggleLike(id){
-  likes.has(id) ? likes.delete(id) : likes.add(id);
-  store.set('likes', [...likes]);
-  renderFeed();
+async function toggleLike(id){
+  if (needLogin('menyukai postingan')) return;
+  try {
+    const r = await api('/products/' + id + '/like', { method:'POST' });
+    const p = products.find(x => x.id === id);
+    if (p){ p.liked = r.liked ? 1 : 0; p.likes = r.likes; }
+    renderFeed();
+  } catch (e) { toast(e.message); }
 }
 function toggleFav(id){
   if (needLogin('menyimpan favorit')) return;
@@ -1016,18 +1102,20 @@ function toggleFav(id){
 }
 
 function renderTrending(){
-  const top = [...products].filter(p => p.lebak).sort((a,b) => b.likes - a.likes).slice(0,4);
-  document.getElementById('trending').innerHTML = top.map(p => `
+  const el = document.getElementById('trending');
+  const top = [...products].sort((a,b) => b.likes - a.likes).slice(0,4);
+  el.innerHTML = top.length ? top.map(p => `
     <div class="mini-row">
       <span class="em ${p.g}">${p.emoji}</span>
       <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)} · 👍 ${p.likes}</span></div>
-    </div>`).join('');
+    </div>`).join('')
+  : `<p style="font-size:13px;color:var(--muted)">Belum ada — postingan pertama otomatis jadi tren! 😄</p>`;
 }
 
 function updateBadges(){
   const fc = document.getElementById('favCount');
   fc.textContent = favs.size; fc.classList.toggle('hidden', !favs.size);
-  const active = lastOrders.filter(o => !o.status.startsWith('Selesai')).length;
+  const active = [...lastOrders, ...lastSales].filter(o => !o.status.startsWith('Selesai')).length;
   ['orderCount','bnOrderCount'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = active; el.classList.toggle('hidden', !active); }
@@ -1042,9 +1130,9 @@ function setChatBadge(unread){
 async function refreshBadges(){
   if (!token) return;
   try {
-    const [o, c] = await Promise.all([api('/orders'), api('/chats')]);
-    lastOrders = o.orders;
-    setChatBadge(c.chats.reduce((s,x) => s + (x.unread||0), 0));
+    const [o, s, c] = await Promise.all([api('/orders'), api('/sales'), api('/chats')]);
+    lastOrders = o.orders; lastSales = s.sales;
+    setChatBadge(c.chats.reduce((sm,x) => sm + (x.unread||0), 0));
     updateBadges();
   } catch {}
 }
@@ -1062,7 +1150,7 @@ function openFavs(){
           <div class="fav-row">
             <span class="em ${p.g}">${p.emoji}</span>
             <div class="inf"><b>${esc(p.name)}</b><span>${rupiah(p.price)} · 📍 ${km(p.dist)}${p.stock<=0?' · <b style=color:var(--coral)>Habis</b>':''}</span></div>
-            <button class="btn btn-sm btn-coral" ${p.stock<=0?'disabled':''} onclick="openBuy(${p.id})">⚡</button>
+            <button class="btn btn-sm btn-coral" ${p.stock<=0 || (user && p.seller_id===user.id) ?'disabled':''} onclick="openBuy(${p.id})">⚡</button>
             <button class="x-btn" style="width:30px;height:30px;font-size:12px" onclick="toggleFav(${p.id});openFavs()">✕</button>
           </div>`).join('')
         : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">🤍</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Belum ada favorit di daftar produk yang tampil.<br>Tap 🤍 di barang yang kamu incar!</p></div>`}
@@ -1076,17 +1164,19 @@ function closeModal(){
   document.getElementById('modalRoot').innerHTML = '';
 }
 
-/* ---------- CHAT (server + polling) ---------- */
-async function openChatWith(seller){
+/* ---------- CHAT NYATA antar pengguna ---------- */
+async function openChatWith(peerId, peerName){
   if (needLogin('chat dengan penjual')) return;
-  openThread = seller;
-  const p = products.find(x => x.seller_name === seller);
+  openThread = { id: peerId, name: peerName };
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="drawer">
       <div class="drawer-head">
         <button class="x-btn" onclick="openChatList()" title="Semua chat">←</button>
-        <h3 style="flex:1;display:flex;align-items:center;gap:9px"><span class="ava" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:16px;background:${p?p.ac:'#fff3c4'}">${p?p.ava:'🙂'}</span> ${esc(seller)}</h3>
+        <h3 style="flex:1;display:flex;align-items:center;gap:9px">
+          <span class="ava" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:16px;background:${acOf(peerId)}">${avaOf(peerId)}</span>
+          ${esc(peerName)} <span class="live-pill"><i></i> live</span>
+        </h3>
         <button class="x-btn" onclick="closeModal()">✕</button>
       </div>
       <div class="drawer-body"><div class="chat-thread" id="thread"></div></div>
@@ -1100,19 +1190,18 @@ async function openChatWith(seller){
   </div>`;
   await renderThread();
   clearInterval(chatPoll);
-  chatPoll = setInterval(renderThread, 2500);
+  chatPoll = setInterval(renderThread, 8000); // cadangan bila SSE putus
 }
 async function renderThread(){
   const el = document.getElementById('thread');
   if (!el || !openThread) return;
   try {
-    const r = await api('/chats/' + encodeURIComponent(openThread));
+    const r = await api('/chats/' + openThread.id);
     const stick = el.parentElement.scrollTop + el.parentElement.clientHeight >= el.parentElement.scrollHeight - 40;
     el.innerHTML = r.messages.length
       ? r.messages.map(m => `<div class="bubble ${m.from_me?'me':'them'}">${esc(m.text)}<small>${clock(m.at)}</small></div>`).join('')
-      : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan — tanya stok, nego, atau atur COD di sini 💬<br><span style="font-size:11.5px;font-weight:600">(balasan penjual disimulasikan server untuk demo)</span></div>`;
+      : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan dengan ${esc(openThread.name)} 💬<br><span style="font-size:11.5px;font-weight:600">Pesanmu terkirim langsung ke akun aslinya — realtime ⚡</span></div>`;
     if (stick) el.parentElement.scrollTop = el.parentElement.scrollHeight;
-    refreshBadges();
   } catch {}
 }
 async function sendMsg(){
@@ -1121,7 +1210,7 @@ async function sendMsg(){
   if (!text || !openThread) return;
   inp.value = '';
   try {
-    await api('/chats/' + encodeURIComponent(openThread), { method:'POST', body:{ text } });
+    await api('/chats/' + openThread.id, { method:'POST', body:{ text } });
     await renderThread();
     const el = document.getElementById('thread');
     if (el) el.parentElement.scrollTop = el.parentElement.scrollHeight;
@@ -1135,29 +1224,27 @@ async function openChatList(){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="drawer">
-      <div class="drawer-head"><h3>💬 Chat Kamu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="drawer-head"><h3>💬 Chat Kamu <span class="live-pill"><i></i> realtime</span></h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="drawer-body">
-        ${chats.length ? chats.map(c => {
-          const p = products.find(x => x.seller_name === c.peer);
-          return `
-          <div class="chat-list-row" onclick="openChatWith('${esc(c.peer)}')">
-            <span class="ava" style="--ac:${p?p.ac:'#fff3c4'}">${p?p.ava:'🙂'}</span>
-            <div class="inf"><b>${esc(c.peer)}</b><span>${c.last.from_me?'Kamu: ':''}${esc(c.last.text)}</span></div>
+        ${chats.length ? chats.map(c => `
+          <div class="chat-list-row" onclick="openChatWith(${c.peer.id}, '${esc(c.peer.name)}')">
+            <span class="ava" style="--ac:${acOf(c.peer.id)}">${avaOf(c.peer.id)}</span>
+            <div class="inf"><b>${esc(c.peer.name)} · 📍 ${esc(c.peer.kec)}</b><span>${c.last.from_me?'Kamu: ':''}${esc(c.last.text)}</span></div>
             ${c.unread ? '<span class="dot-unread"></span>' : ''}
-          </div>`;
-        }).join('')
+          </div>`).join('')
         : `<div style="text-align:center;padding:50px 10px"><span style="font-size:50px">💬</span><p style="color:var(--muted);font-weight:700;margin-top:10px">Belum ada obrolan.<br>Tekan "💬 Chat" di post penjual untuk mulai!</p></div>`}
       </div>
     </div>
   </div>`;
 }
 
-/* ---------- BELI (order dibuat & dihitung di server) ---------- */
+/* ---------- BELI ---------- */
 let buy = {};
 function openBuy(id){
   if (needLogin('membeli')) return;
   const p = products.find(x => x.id === id);
   if (!p || p.stock <= 0) return;
+  if (p.seller_id === user.id) return toast('Ini postinganmu sendiri 😄');
   buy = { pid: id, step: 1, mode: null, pay: null, name: user.name, addr:'', meet: MEET_POINTS[0], time:'' };
   renderBuy();
 }
@@ -1261,18 +1348,16 @@ function buyNext(){
   } else buy.step = 2;
   renderBuy();
 }
-
 async function placeCod(){
   buy.meet = document.getElementById('bMeet').value;
   buy.time = document.getElementById('bTime').value.trim();
   if (!buy.time) { toast('Isi waktu janjiannya dulu ya 🙏'); return; }
   try {
     await api('/orders', { method:'POST', body:{ productId: buy.pid, mode:'cod', meetPoint: buy.meet, meetTime: buy.time } });
-    closeModal(); await loadFeed(); await refreshBadges(); showView('orders');
-    toast('🤝 Janjian COD dibuat! Penjual sudah dinotifikasi');
+    closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
+    toast('🤝 Janjian COD dibuat! Penjual langsung dapat notifikasi realtime');
   } catch (e) { toast(e.message); }
 }
-
 async function placeRekber(){
   try {
     const r = await api('/orders', { method:'POST', body:{
@@ -1292,7 +1377,6 @@ function qrisHTML(){
   }
   return `<div class="qris">${cells}</div>`;
 }
-
 function openPayment(o){
   const isQr = o.method_id === 'qris' || o.method_id === 'ewal';
   document.getElementById('modalRoot').innerHTML = `
@@ -1310,21 +1394,28 @@ function openPayment(o){
         </div>
         <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">✅ [SANDBOX] Simulasikan Pembayaran Berhasil</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Tombol ini menembak endpoint <b>/api/payments/webhook</b> di server — persis jalur yang dipakai Midtrans/Xendit saat pembayaran asli masuk.
+          Satu-satunya bagian simulasi yang tersisa — tombol ini menembak <b>/api/payments/webhook</b>, jalur yang sama persis dengan Midtrans/Xendit asli.
         </p>
       </div>
     </div>
   </div>`;
 }
-
 async function simulatePaid(orderId){
   try {
     await api('/payments/webhook', { method:'POST', body:{ order_id: orderId, transaction_status:'settlement' } });
-    closeModal(); await loadFeed(); await refreshBadges(); showView('orders');
-    toast('🛡️ Webhook diterima server — dana masuk rekber!');
+    closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
+    toast('🛡️ Dana masuk rekber — penjual dapat notifikasi realtime untuk memproses!');
   } catch (e) { toast(e.message); }
 }
 
+/* ---------- AKSI PESANAN ---------- */
+async function shipOrder(orderId){
+  try {
+    await api('/orders/' + orderId + '/ship', { method:'POST' });
+    toast('📦 Status terkirim — pembeli langsung dapat notifikasi realtime!');
+    await refreshBadges(); renderOrders();
+  } catch (e) { toast(e.message); }
+}
 async function confirmDone(orderId){
   try {
     const r = await api('/orders/' + orderId + '/confirm', { method:'POST' });
@@ -1341,51 +1432,76 @@ async function complain(orderId){
   } catch (e) { toast(e.message); }
 }
 
-/* ---------- ORDERS VIEW (polling saat dibuka) ---------- */
+/* ---------- ORDERS VIEW: Pembelian & Penjualan ---------- */
 const STAT_CLASS = {
   'Menunggu Pembayaran':'sb-unpaid', 'Dana Ditahan (Rekber)':'sb-held',
-  'Dikirim':'sb-move','Diantar Driver':'sb-move','Driver Menjemput':'sb-move','Dikerjakan':'sb-move',
-  'Tiba — Cek Barang':'sb-check', 'Janjian COD':'sb-cod', 'Komplain — Ditinjau':'sb-unpaid',
+  'Dikirim':'sb-move','Diantar Driver':'sb-move','Hasil Dikirim':'sb-move',
+  'Janjian COD':'sb-cod', 'Komplain — Ditinjau':'sb-unpaid',
   'Selesai — Dana Cair':'sb-done','Selesai':'sb-done',
 };
+const CONFIRMABLE = ['Dikirim','Diantar Driver','Hasil Dikirim'];
+function setOrdTab(t){ ordTab = t; renderOrders(); }
+
+function orderCard(o, asSeller){
+  const shippable = asSeller && o.status === 'Dana Ditahan (Rekber)';
+  const isJasa = o.dist === 0;
+  return `
+  <div class="order-card">
+    <div class="order-top">
+      <code>${o.id}</code>
+      <span class="stat-badge ${STAT_CLASS[o.status]||''}">${o.status}</span>
+    </div>
+    <div class="mini-row">
+      <span class="em ${o.g}">${o.emoji}</span>
+      <div><b>${esc(o.pname)}</b>
+        <span>${rupiah(o.price)} · ${asSeller ? 'Pembeli: ' + esc(o.buyer_name) : 'Penjual: ' + esc(o.seller_name)} · ${o.mode==='cod'?'🤝 COD':o.mode==='driver'?'🛵 Driver + Rekber':'🛡️ Rekber'}</span></div>
+      <button class="btn btn-sm" onclick="openChatWith(${asSeller ? o.buyer_id : o.seller_id}, '${esc(asSeller ? o.buyer_name : o.seller_name)}')">💬</button>
+    </div>
+    ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📍 ${esc(o.meet_point)} · 🕐 ${esc(o.meet_time)}</p>` : ''}
+    ${asSeller && o.recv_addr ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📮 Kirim ke: ${esc(o.recv_name)} — ${esc(o.recv_addr)}</p>` : ''}
+    <div class="sum-row total" style="margin-top:10px"><span>Total (${o.method})</span><span>${rupiah(o.total)}</span></div>
+    <div class="status-line" style="margin-top:16px">
+      ${o.events.map((tl,i) => `
+        <div class="st-item ${i < o.events.length-1 || o.status.startsWith('Selesai') ? 'done' : 'now'}">
+          <span class="dotp">${i < o.events.length-1 || o.status.startsWith('Selesai') ? '✓' : '•'}</span>
+          <div><b>${tl.status}</b><span>${tl.note}</span></div>
+        </div>`).join('')}
+    </div>
+    <div class="order-btns">
+      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va})})'>💸 Bayar Sekarang</button>` : ''}
+      ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? '🛵 Serahkan ke Driver' : isJasa ? '🎨 Kirim Hasil Kerja' : '📦 Tandai Dikirim'}</button>` : ''}
+      ${asSeller && o.status === 'Menunggu Pembayaran' ? `<span class="live-pill"><i></i> menunggu pembeli bayar</span>` : ''}
+      ${!asSeller && CONFIRMABLE.includes(o.status) ? `
+        <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Diterima & Sesuai — Cairkan Dana</button>
+        <button class="btn btn-sm" onclick="complain('${o.id}')">⚖️ Ajukan Komplain</button>` : ''}
+      ${!asSeller && o.status === 'Janjian COD' ? `<button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Sudah Ketemu & Barang Oke</button>` : ''}
+      ${asSeller && o.status === 'Janjian COD' ? `<span class="live-pill"><i></i> tunggu ketemuan — hubungi via 💬</span>` : ''}
+    </div>
+  </div>`;
+}
+
 async function renderOrders(){
   const el = document.getElementById('ordersList');
   if (!token){ el.innerHTML = `<div class="empty-feed"><span class="big">🔐</span><h3>Masuk dulu yuk</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Transaksimu tersimpan aman di server.</p><button class="btn btn-coral" onclick="openAuth('login')">Masuk / Daftar</button></div>`; return; }
-  try { lastOrders = (await api('/orders')).orders; } catch (e) { el.innerHTML = `<div class="empty-feed"><span class="big">🔌</span><h3>${esc(e.message)}</h3></div>`; return; }
+  try {
+    const [o, s] = await Promise.all([api('/orders'), api('/sales')]);
+    lastOrders = o.orders; lastSales = s.sales;
+  } catch (e) { el.innerHTML = `<div class="empty-feed"><span class="big">🔌</span><h3>${esc(e.message)}</h3></div>`; return; }
   updateBadges();
-  if (!lastOrders.length){
-    el.innerHTML = `<div class="empty-feed"><span class="big">🧾</span><h3>Belum ada transaksi</h3><p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Yuk cari barang incaran di feed!</p><button class="btn btn-coral" onclick="showView('feed')">Ke Feed →</button></div>`;
-    return;
-  }
-  el.innerHTML = lastOrders.map(o => `
-    <div class="order-card">
-      <div class="order-top">
-        <code>${o.id}</code>
-        <span class="stat-badge ${STAT_CLASS[o.status]||''}">${o.status}</span>
-      </div>
-      <div class="mini-row">
-        <span class="em ${o.g}">${o.emoji}</span>
-        <div><b>${esc(o.pname)}</b><span>${rupiah(o.price)} · ${esc(o.seller_name)} · ${o.mode==='cod'?'🤝 COD':o.mode==='driver'?'🛵 Driver + Rekber':'🛡️ Rekber'}</span></div>
-        <button class="btn btn-sm" onclick="openChatWith('${esc(o.seller_name)}')">💬</button>
-      </div>
-      ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">📍 ${esc(o.meet_point)} · 🕐 ${esc(o.meet_time)}</p>` : ''}
-      <div class="sum-row total" style="margin-top:10px"><span>Total (${o.method})</span><span>${rupiah(o.total)}</span></div>
-      <div class="status-line" style="margin-top:16px">
-        ${o.events.map((tl,i) => `
-          <div class="st-item ${i < o.events.length-1 || o.status.startsWith('Selesai') ? 'done' : 'now'}">
-            <span class="dotp">${i < o.events.length-1 || o.status.startsWith('Selesai') ? '✓' : '•'}</span>
-            <div><b>${tl.status}</b><span>${tl.note}</span></div>
-          </div>`).join('')}
-      </div>
-      <div class="order-btns">
-        ${o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va})})'>💸 Bayar Sekarang</button>` : ''}
-        ${o.status === 'Tiba — Cek Barang' ? `
-          <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Barang Sesuai — Cairkan Dana</button>
-          <button class="btn btn-sm" onclick="complain('${o.id}')">⚖️ Ajukan Komplain</button>` : ''}
-        ${o.status === 'Janjian COD' ? `
-          <button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">✅ Sudah Ketemu & Barang Oke</button>` : ''}
-      </div>
-    </div>`).join('');
+  const needShip = lastSales.filter(x => x.status === 'Dana Ditahan (Rekber)').length;
+  const tabs = `
+    <div class="seg-tabs">
+      <button class="${ordTab==='beli'?'active':''}" onclick="setOrdTab('beli')">🛍️ Pembelian (${lastOrders.length})</button>
+      <button class="${ordTab==='jual'?'active':''}" onclick="setOrdTab('jual')">🏪 Penjualan (${lastSales.length})${needShip?`<span class="count">${needShip}</span>`:''}</button>
+    </div>`;
+  const list = ordTab === 'beli' ? lastOrders : lastSales;
+  el.innerHTML = tabs + (list.length
+    ? list.map(x => orderCard(x, ordTab === 'jual')).join('')
+    : `<div class="empty-feed"><span class="big">${ordTab==='beli'?'🧾':'🏪'}</span>
+        <h3>${ordTab==='beli'?'Belum ada pembelian':'Belum ada yang membeli daganganmu'}</h3>
+        <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">${ordTab==='beli'?'Yuk cari barang incaran di feed!':'Posting jualan & bagikan ke tetangga — notifikasi pembeli masuk realtime ke sini.'}</p>
+        <button class="btn btn-coral" onclick="${ordTab==='beli'?`showView('feed')`:'openSell()'}">${ordTab==='beli'?'Ke Feed →':'＋ Posting Jualan'}</button>
+      </div>`);
 }
 
 /* ---------- KULINER LEBAK ---------- */
@@ -1441,7 +1557,7 @@ function openSell(){
     <div class="modal">
       <div class="modal-head"><h3>＋ Posting Jualan Baru</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <div class="safe-note" style="margin:0 0 6px">🏪 Posting sebagai <b>${esc(user.name)}</b> (📍 ${esc(user.kec)}, Lebak) — akunmu otomatis jadi penjual, tanpa daftar toko terpisah!</div>
+        <div class="safe-note" style="margin:0 0 6px">🏪 Posting sebagai <b>${esc(user.name)}</b> (📍 ${esc(user.kec)}, Lebak) — begitu tayang, semua pengguna online dapat notifikasi realtime ⚡</div>
         <label class="f">Nama produk / jasa</label>
         <input class="f" id="sName" placeholder="cth: Gula Aren Super">
         <label class="f">Kategori</label>
@@ -1480,9 +1596,8 @@ async function submitSell(){
       freeship: document.getElementById('sFreeship').checked,
     }});
     closeModal();
-    activeCat = document.getElementById('sCat')?.value || 'all';
     activeCat = 'all'; renderCats(); await loadFeed();
-    toast('🎉 Jualanmu tayang — diprioritaskan untuk warga Lebak! 🌾');
+    toast('🎉 Jualanmu tayang & terdorong realtime ke semua pengguna! 🌾');
   } catch (e) { toast(e.message); }
 }
 
@@ -1498,12 +1613,12 @@ async function init(){
     COD_MAX_KM = cfg.limits.codMaxKm; DRIVER_MAX_KM = cfg.limits.driverMaxKm;
     FREESHIP_CAP = cfg.limits.freeshipCap; FREESHIP_MIN = cfg.limits.freeshipMin;
   } catch (e) { toast(e.message); }
-  await loadFeed();
   if (token){
     try { user = (await api('/me')).user; store.set('user', user); afterLogin(); renderAuthSlot(); }
-    catch {}
+    catch { await loadFeed(); }
+  } else {
+    await loadFeed();
   }
-  badgePoll = setInterval(refreshBadges, 10000);
   if (!token && !store.get('welcomed', false)){
     store.set('welcomed', true);
     setTimeout(() => openAuth('login', true), 600);

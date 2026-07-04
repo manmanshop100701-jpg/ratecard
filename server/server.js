@@ -1,21 +1,17 @@
 /**
- * Lebak.market — Backend API
+ * Lebak.market — Backend API (v2: 100% real & realtime)
  * ---------------------------------------------------------------
  * Node.js + Express + SQLite (node:sqlite, bawaan Node 22+).
  *
- * Fitur:
- *  - Auth: register → OTP email → verify → JWT; login; password di-bcrypt
- *  - Produk: list (filter kategori/radius/cari, prioritas Lebak), posting
- *  - Order: rekber/driver/COD — biaya dihitung DI SERVER (anti manipulasi)
- *  - Pembayaran: endpoint webhook ala Midtrans (mode sandbox-sim);
- *    tinggal ganti modul `gateway` dengan midtrans-client saat punya key
- *  - Escrow: dana "ditahan", cair saat pembeli konfirmasi (komisi 3% dicatat)
- *  - Chat: kirim/terima pesan per penjual (balasan penjual disimulasikan)
- *  - Kuliner: direktori resto + menu
- *  - Revenue: buku kas pendapatan platform (biaya aplikasi, komisi, driver)
+ *  - Feed 100% postingan pengguna asli (tanpa seed, tanpa bot)
+ *  - Chat NYATA antar akun (pembeli ↔ penjual sungguhan)
+ *  - Status pesanan digerakkan aksi penjual asli (tanpa timer palsu)
+ *  - REALTIME via Server-Sent Events (/api/events): pesan masuk,
+ *    perubahan status pesanan, dan jualan baru terdorong seketika
+ *  - Auth OTP email, JWT, bcrypt; semua biaya dihitung server
+ *  - Webhook pembayaran pola Midtrans (sandbox-sim s.d. punya key)
  *
  * Jalankan:  cd server && npm install && npm start
- * Frontend disajikan otomatis di http://localhost:3000
  */
 const express = require('express');
 const cors = require('cors');
@@ -23,20 +19,18 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const db = require('./db');
-const { seedProducts, RESTOS } = require('./seed');
+const { RESTOS } = require('./seed');
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'lebak-market-dev-secret-ganti-di-produksi';
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
-seedProducts(db);
-
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..'))); // sajikan index.html dari root repo
+app.use(express.static(path.join(__dirname, '..')));
 
-/* ================= KONSTANTA BISNIS (satu sumber kebenaran: server) ================= */
+/* ================= KONSTANTA BISNIS ================= */
 const APP_FEE = 1000;
 const SELLER_COMMISSION = 0.03;
 const DRIVER_COMMISSION = 0.10;
@@ -62,12 +56,11 @@ const GATEWAY_FEES = {
 };
 
 /* ================= GATEWAY PEMBAYARAN =================
- * Mode sekarang: "sandbox-sim" — QR/VA dibuat lokal, webhook dipanggil manual.
  * Integrasi Midtrans asli (saat sudah punya Server Key):
  *   const midtrans = require('midtrans-client');
  *   const snap = new midtrans.Snap({ isProduction:false, serverKey:process.env.MIDTRANS_SERVER_KEY });
  *   const tx = await snap.createTransaction({ transaction_details:{ order_id, gross_amount } });
- *   → kirim tx.token/redirect_url ke frontend; webhook Midtrans menembak /api/payments/webhook.
+ *   → kirim tx.redirect_url ke frontend; webhook Midtrans menembak /api/payments/webhook.
  */
 const gateway = {
   create(order){
@@ -78,10 +71,41 @@ const gateway = {
     };
   },
   verifySignature(req){
-    // Midtrans asli: cek sha512(order_id+status_code+gross_amount+ServerKey)
     return IS_DEV || req.body.signature === process.env.WEBHOOK_SECRET;
   },
 };
+
+/* ================= REALTIME (Server-Sent Events) ================= */
+const sseClients = new Map(); // userId -> Set<res>
+function ssePush(userId, event, data){
+  const set = sseClients.get(userId);
+  if (!set) return;
+  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const res of set) { try { res.write(payload); } catch {} }
+}
+function sseBroadcast(event, data, exceptUserId){
+  for (const [uid] of sseClients) if (uid !== exceptUserId) ssePush(uid, event, data);
+}
+app.get('/api/events', (req, res) => {
+  let uid;
+  try { uid = jwt.verify(String(req.query.token || ''), JWT_SECRET).uid; }
+  catch { return res.status(401).end(); }
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.write('event: hello\ndata: {}\n\n');
+  if (!sseClients.has(uid)) sseClients.set(uid, new Set());
+  sseClients.get(uid).add(res);
+  const hb = setInterval(() => { try { res.write(': hb\n\n'); } catch {} }, 25000);
+  req.on('close', () => {
+    clearInterval(hb);
+    const set = sseClients.get(uid);
+    if (set) { set.delete(res); if (!set.size) sseClients.delete(uid); }
+  });
+});
 
 /* ================= HELPER ================= */
 const now = () => Date.now();
@@ -98,12 +122,9 @@ function emailProblem(email){
   if (DISPOSABLE.includes(domain)) return 'Email sekali-pakai tidak diizinkan — pakai email aktifmu';
   return null;
 }
-
 function sendOtpEmail(email, code){
-  // Produksi: kirim via nodemailer/Resend/Mailgun. Demo: log ke konsol server.
   console.log(`[email→${email}] Kode verifikasi Lebak.market: ${code}`);
 }
-
 function auth(req, res, next){
   const h = req.headers.authorization || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : null;
@@ -115,10 +136,22 @@ function auth(req, res, next){
     next();
   } catch { return bad(res, 401, 'Sesi kedaluwarsa — login lagi ya'); }
 }
-
-function addEvent(orderId, status, note){
+function optionalAuth(req, _res, next){
+  const h = req.headers.authorization || '';
+  const token = h.startsWith('Bearer ') ? h.slice(7) : null;
+  if (token) { try { req.userId = jwt.verify(token, JWT_SECRET).uid; } catch {} }
+  next();
+}
+function addEvent(orderId, status, note, notify = true){
   db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, orderId);
   db.prepare('INSERT INTO order_events (order_id, status, note, at) VALUES (?,?,?,?)').run(orderId, status, note, now());
+  if (notify){
+    const o = db.prepare('SELECT buyer_id, seller_id, id FROM orders WHERE id = ?').get(orderId);
+    if (o){
+      ssePush(o.buyer_id, 'order', { orderId, status, note });
+      ssePush(o.seller_id, 'order', { orderId, status, note });
+    }
+  }
 }
 function addRevenue(orderId, kind, amount){
   if (amount > 0) db.prepare('INSERT INTO revenue (order_id, kind, amount, at) VALUES (?,?,?,?)').run(orderId, kind, amount, now());
@@ -144,12 +177,10 @@ app.post('/api/auth/register', async (req, res) => {
   if (!/^08\d{8,12}$/.test(phone)) return bad(res, 400, 'No. HP format 08xxxxxxxxxx');
   if (!KECAMATAN.includes(kec)) return bad(res, 400, 'Pilih kecamatan di Lebak');
   if (String(password).length < 6) return bad(res, 400, 'Password minimal 6 karakter');
-
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const pass_hash = await bcrypt.hash(password, 10);
-  const payload = JSON.stringify({ name: name.trim(), phone, kec, pass_hash });
   db.prepare('INSERT OR REPLACE INTO otps (email, code, payload, expires_at, attempts) VALUES (?,?,?,?,0)')
-    .run(em, code, payload, now() + 10 * 60e3);
+    .run(em, code, JSON.stringify({ name: name.trim(), phone, kec, pass_hash }), now() + 10 * 60e3);
   sendOtpEmail(em, code);
   res.json({ ok: true, message: 'Kode verifikasi dikirim ke ' + em, ...(IS_DEV ? { devCode: code } : {}) });
 });
@@ -195,16 +226,25 @@ app.post('/api/auth/login', async (req, res) => {
 
 app.get('/api/me', auth, (req, res) => res.json({ user: req.user }));
 
-/* ================= PRODUK ================= */
-app.get('/api/products', (req, res) => {
+/* ================= PRODUK (100% postingan pengguna asli) ================= */
+const PRODUCT_SELECT = `
+  SELECT p.*, u.name seller_name, u.kec seller_kec,
+    (SELECT COUNT(*) FROM likes l WHERE l.product_id = p.id) likes
+  FROM products p JOIN users u ON u.id = p.seller_id`;
+
+app.get('/api/products', optionalAuth, (req, res) => {
   const { cat, radius, q } = req.query;
-  let rows = db.prepare('SELECT * FROM products ORDER BY lebak DESC, dist ASC, created_at DESC').all();
+  let rows = db.prepare(PRODUCT_SELECT + ' ORDER BY p.lebak DESC, p.created_at DESC').all();
   if (cat && cat !== 'all') rows = rows.filter(p => p.cat === cat);
   const r = parseFloat(radius);
   if (!isNaN(r)) rows = rows.filter(p => p.dist <= r);
   if (q) {
     const s = String(q).toLowerCase();
     rows = rows.filter(p => p.name.toLowerCase().includes(s) || p.seller_name.toLowerCase().includes(s) || p.cat.includes(s));
+  }
+  if (req.userId) {
+    const mine = new Set(db.prepare('SELECT product_id FROM likes WHERE user_id = ?').all(req.userId).map(x => x.product_id));
+    rows.forEach(p => { p.liked = mine.has(p.id) ? 1 : 0; });
   }
   res.json({ products: rows });
 });
@@ -218,19 +258,32 @@ app.post('/api/products', auth, (req, res) => {
   if (!st || st < 1) return bad(res, 400, 'Stok minimal 1');
   const g = 'g-' + (1 + Math.floor(Math.random() * 6));
   const r = db.prepare(`INSERT INTO products
-    (seller_id, seller_name, ava, ac, verified, cat, name, price, stock, cond, loc, dist, cod, freeship, lebak, emoji, g, likes, descr, created_at)
-    VALUES (?,?,?,?,0,?,?,?,?,?,?,0.5,?,?,1,?,?,0,?,?)`)
-    .run(req.user.id, req.user.name, '🙋', '#fff3c4', cat, name.trim(), pr, st,
-         cond === 'bekas' ? 'bekas' : 'baru', req.user.kec + ', Lebak',
-         cod ? 1 : 0, freeship ? 1 : 0, String(emoji).slice(0, 4) || '📦', g, String(descr).trim() || 'Tanpa deskripsi.', now());
-  res.json({ ok: true, product: db.prepare('SELECT * FROM products WHERE id = ?').get(Number(r.lastInsertRowid)) });
+    (seller_id, cat, name, price, stock, cond, loc, dist, cod, freeship, lebak, emoji, g, descr, created_at)
+    VALUES (?,?,?,?,?,?,?,0.5,?,?,1,?,?,?,?)`)
+    .run(req.user.id, cat, name.trim(), pr, st, cond === 'bekas' ? 'bekas' : 'baru',
+         req.user.kec + ', Lebak', cod ? 1 : 0, freeship ? 1 : 0,
+         String(emoji).slice(0, 4) || '📦', g, String(descr).trim() || 'Tanpa deskripsi.', now());
+  const prod = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(Number(r.lastInsertRowid));
+  sseBroadcast('product', { id: prod.id, name: prod.name, seller: prod.seller_name }, req.user.id);
+  res.json({ ok: true, product: prod });
+});
+
+app.post('/api/products/:id/like', auth, (req, res) => {
+  const pid = parseInt(req.params.id, 10);
+  if (!db.prepare('SELECT id FROM products WHERE id = ?').get(pid)) return bad(res, 404, 'Produk tidak ditemukan');
+  const has = db.prepare('SELECT 1 x FROM likes WHERE user_id = ? AND product_id = ?').get(req.user.id, pid);
+  if (has) db.prepare('DELETE FROM likes WHERE user_id = ? AND product_id = ?').run(req.user.id, pid);
+  else db.prepare('INSERT INTO likes (user_id, product_id, at) VALUES (?,?,?)').run(req.user.id, pid, now());
+  const likes = db.prepare('SELECT COUNT(*) c FROM likes WHERE product_id = ?').get(pid).c;
+  res.json({ ok: true, liked: !has, likes });
 });
 
 /* ================= ORDER ================= */
 app.post('/api/orders', auth, (req, res) => {
   const { productId, mode, payMethod, recvName, recvAddr, meetPoint, meetTime } = req.body;
-  const p = db.prepare('SELECT * FROM products WHERE id = ?').get(parseInt(productId, 10));
+  const p = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(parseInt(productId, 10));
   if (!p) return bad(res, 404, 'Produk tidak ditemukan');
+  if (p.seller_id === req.user.id) return bad(res, 400, 'Tidak bisa membeli barang sendiri 😄');
   if (p.stock < 1) return bad(res, 409, 'Stok habis');
   const isJasa = p.dist === 0;
 
@@ -238,12 +291,12 @@ app.post('/api/orders', auth, (req, res) => {
     if (!p.cod || isJasa || p.dist > COD_MAX_KM) return bad(res, 400, 'COD tidak tersedia untuk produk ini');
     if (!meetPoint || !meetTime) return bad(res, 400, 'Isi titik temu & waktu janjian');
     const id = uid();
-    db.prepare(`INSERT INTO orders (id, buyer_id, product_id, mode, method, price, ship, app_fee, gateway_fee, total, status, meet_point, meet_time, created_at)
-      VALUES (?,?,?,?,?,?,0,0,0,?,?,?,?,?)`)
-      .run(id, req.user.id, p.id, 'cod', 'Bayar di tempat', p.price, p.price, 'Janjian COD', meetPoint, meetTime, now());
+    db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, price, ship, app_fee, gateway_fee, total, status, meet_point, meet_time, created_at)
+      VALUES (?,?,?,?,?,?,?,0,0,0,?,?,?,?,?)`)
+      .run(id, req.user.id, p.seller_id, p.id, 'cod', 'Bayar di tempat', p.price, p.price, 'Janjian COD', meetPoint, meetTime, now());
     addEvent(id, 'Janjian COD', `${meetPoint} · ${meetTime}. Atur detail lewat chat. Bayar HANYA setelah cek barang!`);
     db.prepare('UPDATE products SET stock = stock - 1 WHERE id = ?').run(p.id);
-    return res.json({ ok: true, order: getOrder(id, req.user.id) });
+    return res.json({ ok: true, order: getOrder(id) });
   }
 
   if (!['rekber', 'driver'].includes(mode)) return bad(res, 400, 'Mode transaksi tidak dikenal');
@@ -259,29 +312,37 @@ app.post('/api/orders', auth, (req, res) => {
 
   const id = uid();
   const pay = gateway.create({ id, total });
-  db.prepare(`INSERT INTO orders (id, buyer_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, va, created_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(id, req.user.id, p.id, mode, gw.name, payMethod, p.price, ship, APP_FEE, gatewayFee, total,
+  db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, va, created_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, payMethod, p.price, ship, APP_FEE, gatewayFee, total,
          'Menunggu Pembayaran', recvName, recvAddr, pay.va, now());
   addEvent(id, 'Menunggu Pembayaran', 'Invoice rekber diterbitkan — bayar sebelum 24 jam');
-  res.json({ ok: true, order: getOrder(id, req.user.id), payment: pay,
-    breakdown: { price: p.price, shipBase: bd.base, sellerCovers: bd.seller, subsidy: bd.subsidy, appFee: APP_FEE, gatewayFee, total } });
+  res.json({ ok: true, order: getOrder(id), payment: pay });
 });
 
-function getOrder(id, buyerId){
-  const o = db.prepare(`SELECT o.*, p.name pname, p.emoji, p.g, p.seller_name, p.cond, p.dist
-    FROM orders o JOIN products p ON p.id = o.product_id WHERE o.id = ?`).get(id);
-  if (!o || (buyerId && o.buyer_id !== buyerId)) return null;
+function getOrder(id){
+  const o = db.prepare(`SELECT o.*, p.name pname, p.emoji, p.g, p.cond, p.dist,
+      su.name seller_name, bu.name buyer_name
+    FROM orders o
+    JOIN products p ON p.id = o.product_id
+    JOIN users su ON su.id = o.seller_id
+    JOIN users bu ON bu.id = o.buyer_id
+    WHERE o.id = ?`).get(id);
+  if (!o) return null;
   o.events = db.prepare('SELECT status, note, at FROM order_events WHERE order_id = ? ORDER BY at').all(id);
   return o;
 }
 
 app.get('/api/orders', auth, (req, res) => {
   const ids = db.prepare('SELECT id FROM orders WHERE buyer_id = ? ORDER BY created_at DESC').all(req.user.id);
-  res.json({ orders: ids.map(x => getOrder(x.id, req.user.id)) });
+  res.json({ orders: ids.map(x => getOrder(x.id)) });
+});
+app.get('/api/sales', auth, (req, res) => {
+  const ids = db.prepare('SELECT id FROM orders WHERE seller_id = ? ORDER BY created_at DESC').all(req.user.id);
+  res.json({ sales: ids.map(x => getOrder(x.id)) });
 });
 
-/* --- WEBHOOK PEMBAYARAN (ditembak gateway; di demo: tombol simulasi frontend) --- */
+/* --- WEBHOOK PEMBAYARAN (pola Midtrans; tanpa timer palsu) --- */
 app.post('/api/payments/webhook', (req, res) => {
   if (!gateway.verifySignature(req)) return bad(res, 403, 'Signature tidak valid');
   const { order_id, transaction_status = 'settlement' } = req.body;
@@ -289,40 +350,37 @@ app.post('/api/payments/webhook', (req, res) => {
   if (!o) return bad(res, 404, 'Order tidak ditemukan');
   if (o.status !== 'Menunggu Pembayaran') return res.json({ ok: true, note: 'sudah diproses' });
   if (transaction_status !== 'settlement') return res.json({ ok: true, note: 'status diabaikan: ' + transaction_status });
-
   db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
-  addEvent(o.id, 'Dana Ditahan (Rekber)', 'Webhook gateway diterima — dana aman di rekening bersama, penjual dinotifikasi otomatis 🔔');
+  addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana aman di rekening bersama. Penjual: silakan proses pesanan! 🔔');
   addRevenue(o.id, 'app_fee', o.app_fee);
-
-  // Simulasi perjalanan pesanan (produksi: aksi penjual/kurir yang menggerakkan status)
-  const p = db.prepare('SELECT dist FROM products WHERE id = ?').get(o.product_id);
-  const isJasa = p.dist === 0;
-  if (o.mode === 'driver') {
-    setTimeout(() => addEvent(o.id, 'Driver Menjemput', 'Driver Lebak menuju lokasi penjual untuk ambil barang 🛵'), 5000);
-    setTimeout(() => addEvent(o.id, 'Diantar Driver', 'Barang di tangan driver, menuju alamatmu — live tracking'), 11000);
-    setTimeout(() => addEvent(o.id, 'Tiba — Cek Barang', 'Barang sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair'), 17000);
-  } else if (isJasa) {
-    setTimeout(() => addEvent(o.id, 'Dikerjakan', 'Penjual mulai mengerjakan pesananmu 🎨'), 5000);
-    setTimeout(() => addEvent(o.id, 'Tiba — Cek Barang', 'Hasil kerja dikirim! Review, minta revisi bila perlu, lalu konfirmasi'), 13000);
-  } else {
-    setTimeout(() => addEvent(o.id, 'Dikirim', 'Penjual menyerahkan paket ke ekspedisi — resi otomatis terbit 📦'), 5000);
-    setTimeout(() => addEvent(o.id, 'Tiba — Cek Barang', 'Paket sampai! Cek kondisi & kelengkapan, lalu konfirmasi agar dana cair'), 14000);
-  }
   res.json({ ok: true });
 });
 
-/* --- Konfirmasi pembeli → dana cair (escrow release) --- */
+/* --- Aksi PENJUAL: kirim barang / serahkan ke driver / kirim hasil --- */
+app.post('/api/orders/:id/ship', auth, (req, res) => {
+  const o = getOrder(req.params.id);
+  if (!o || o.seller_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (o.status !== 'Dana Ditahan (Rekber)') return bad(res, 409, 'Pesanan belum dibayar / sudah diproses');
+  const isJasa = o.dist === 0;
+  if (o.mode === 'driver') addEvent(o.id, 'Diantar Driver', `Penjual menyerahkan barang ke Driver Lebak — menuju alamat pembeli 🛵`);
+  else if (isJasa) addEvent(o.id, 'Hasil Dikirim', 'Penjual mengirim hasil kerja — silakan review, lalu konfirmasi agar dana cair 🎨');
+  else addEvent(o.id, 'Dikirim', 'Penjual menyerahkan paket ke ekspedisi — resi terbit 📦');
+  res.json({ ok: true, order: getOrder(o.id) });
+});
+
+/* --- Aksi PEMBELI: konfirmasi diterima → dana cair --- */
+const CONFIRMABLE = ['Dikirim', 'Diantar Driver', 'Hasil Dikirim'];
 app.post('/api/orders/:id/confirm', auth, (req, res) => {
-  const o = getOrder(req.params.id, req.user.id);
-  if (!o) return bad(res, 404, 'Order tidak ditemukan');
+  const o = getOrder(req.params.id);
+  if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
   if (o.mode === 'cod') {
     if (o.status !== 'Janjian COD') return bad(res, 409, 'Status tidak bisa dikonfirmasi');
     addEvent(o.id, 'Selesai', 'Ketemuan sukses — barang oke, bayar di tempat. Win-win! 🎉');
-    return res.json({ ok: true, order: getOrder(o.id, req.user.id) });
+    return res.json({ ok: true, order: getOrder(o.id) });
   }
-  if (o.status !== 'Tiba — Cek Barang') return bad(res, 409, 'Barang belum tiba / sudah selesai');
+  if (!CONFIRMABLE.includes(o.status)) return bad(res, 409, 'Barang belum dikirim penjual / sudah selesai');
   const commission = Math.round(o.price * SELLER_COMMISSION);
-  const extra = db.prepare('SELECT freeship FROM products WHERE id = ?').get(o.product_id).freeship
+  const extra = db.prepare('SELECT freeship FROM products WHERE id = ?').get(o.product_id)?.freeship
     ? Math.round(o.price * FREESHIP_EXTRA) : 0;
   const driverCut = o.mode === 'driver' ? Math.round(o.ship * DRIVER_COMMISSION) : 0;
   const net = o.price - commission - extra;
@@ -330,58 +388,59 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
   addRevenue(o.id, 'freeship_extra', extra);
   addRevenue(o.id, 'driver_cut', driverCut);
   addEvent(o.id, 'Selesai — Dana Cair',
-    `Kamu konfirmasi sesuai → dana otomatis diteruskan ke penjual: Rp${net.toLocaleString('id-ID')} (komisi platform 3%${extra ? ' + program gratis ongkir 4%' : ''} dipotong) 💸`);
-  res.json({ ok: true, order: getOrder(o.id, req.user.id), payout: { net, commission, extra, driverCut } });
+    `Pembeli konfirmasi sesuai → dana diteruskan ke penjual: Rp${net.toLocaleString('id-ID')} (komisi platform 3%${extra ? ' + program gratis ongkir 4%' : ''} dipotong) 💸`);
+  res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, extra, driverCut } });
 });
 
 app.post('/api/orders/:id/complain', auth, (req, res) => {
-  const o = getOrder(req.params.id, req.user.id);
-  if (!o) return bad(res, 404, 'Order tidak ditemukan');
-  if (o.status !== 'Tiba — Cek Barang') return bad(res, 409, 'Komplain hanya saat barang tiba');
+  const o = getOrder(req.params.id);
+  if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (!CONFIRMABLE.includes(o.status)) return bad(res, 409, 'Komplain hanya saat barang sudah dikirim');
   addEvent(o.id, 'Komplain — Ditinjau', 'Komplain dibuka: dana tetap ditahan, CS menengahi dengan bukti foto/video ⚖️');
-  res.json({ ok: true, order: getOrder(o.id, req.user.id) });
+  res.json({ ok: true, order: getOrder(o.id) });
 });
 
-/* ================= CHAT ================= */
-const CHAT_REPLIES = [
-  'Halo kak! 👋 Masih ready, silakan langsung diorder ya 😊',
-  'Boleh kak, mau COD atau lewat rekber aja biar aman?',
-  'Siap kak, barang aman & sesuai deskripsi. Bisa cek dulu pas ketemuan 👌',
-  'Nego tipis boleh kak, yang penting sama-sama enak 😄',
-  'Kalau lewat driver bisa sampai hari ini juga lho kak 🛵',
-];
+/* ================= CHAT NYATA antar pengguna ================= */
 app.get('/api/chats', auth, (req, res) => {
-  const rows = db.prepare(`SELECT peer, MAX(at) last_at,
-      SUM(CASE WHEN from_me = 0 AND read = 0 THEN 1 ELSE 0 END) unread
-    FROM messages WHERE user_id = ? GROUP BY peer ORDER BY last_at DESC`).all(req.user.id);
-  const chats = rows.map(r => ({
-    peer: r.peer, unread: r.unread,
-    last: db.prepare('SELECT from_me, text, at FROM messages WHERE user_id = ? AND peer = ? ORDER BY at DESC LIMIT 1').get(req.user.id, r.peer),
-  }));
+  const rows = db.prepare(`
+    SELECT peer_id, MAX(at) last_at, SUM(unread) unread FROM (
+      SELECT recipient_id peer_id, at, 0 unread FROM messages WHERE sender_id = @me
+      UNION ALL
+      SELECT sender_id peer_id, at, CASE WHEN read = 0 THEN 1 ELSE 0 END unread FROM messages WHERE recipient_id = @me
+    ) GROUP BY peer_id ORDER BY last_at DESC`).all({ me: req.user.id });
+  const chats = rows.map(r => {
+    const peer = db.prepare('SELECT id, name, kec FROM users WHERE id = ?').get(r.peer_id);
+    const last = db.prepare(`SELECT sender_id, text, at FROM messages
+      WHERE (sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)
+      ORDER BY at DESC LIMIT 1`).get(req.user.id, r.peer_id, r.peer_id, req.user.id);
+    return { peer, unread: r.unread, last: { from_me: last.sender_id === req.user.id ? 1 : 0, text: last.text, at: last.at } };
+  });
   res.json({ chats });
 });
-app.get('/api/chats/:peer', auth, (req, res) => {
-  db.prepare('UPDATE messages SET read = 1 WHERE user_id = ? AND peer = ?').run(req.user.id, req.params.peer);
-  const msgs = db.prepare('SELECT from_me, text, at FROM messages WHERE user_id = ? AND peer = ? ORDER BY at').all(req.user.id, req.params.peer);
-  res.json({ messages: msgs });
+app.get('/api/chats/:peerId', auth, (req, res) => {
+  const pid = parseInt(req.params.peerId, 10);
+  const peer = db.prepare('SELECT id, name, kec FROM users WHERE id = ?').get(pid);
+  if (!peer) return bad(res, 404, 'Pengguna tidak ditemukan');
+  db.prepare('UPDATE messages SET read = 1 WHERE recipient_id = ? AND sender_id = ?').run(req.user.id, pid);
+  const msgs = db.prepare(`SELECT sender_id, text, at FROM messages
+    WHERE (sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)
+    ORDER BY at`).all(req.user.id, pid, pid, req.user.id)
+    .map(m => ({ from_me: m.sender_id === req.user.id ? 1 : 0, text: m.text, at: m.at }));
+  res.json({ peer, messages: msgs });
 });
-app.post('/api/chats/:peer', auth, (req, res) => {
+app.post('/api/chats/:peerId', auth, (req, res) => {
+  const pid = parseInt(req.params.peerId, 10);
+  if (pid === req.user.id) return bad(res, 400, 'Tidak bisa chat dengan diri sendiri 😄');
+  if (!db.prepare('SELECT id FROM users WHERE id = ?').get(pid)) return bad(res, 404, 'Pengguna tidak ditemukan');
   const text = String(req.body.text || '').trim().slice(0, 1000);
   if (!text) return bad(res, 400, 'Pesan kosong');
-  const peer = req.params.peer;
-  db.prepare('INSERT INTO messages (user_id, peer, from_me, text, read, at) VALUES (?,?,1,?,1,?)').run(req.user.id, peer, text, now());
-  // Balasan penjual disimulasikan (produksi: pesan diteruskan ke akun penjual via WebSocket)
-  const uidCopy = req.user.id;
-  setTimeout(() => {
-    const reply = CHAT_REPLIES[Math.floor(Math.random() * CHAT_REPLIES.length)];
-    db.prepare('INSERT INTO messages (user_id, peer, from_me, text, read, at) VALUES (?,?,0,?,0,?)').run(uidCopy, peer, reply, now());
-  }, 1500 + Math.random() * 2000);
+  db.prepare('INSERT INTO messages (sender_id, recipient_id, text, read, at) VALUES (?,?,?,0,?)').run(req.user.id, pid, text, now());
+  ssePush(pid, 'chat', { from: { id: req.user.id, name: req.user.name }, text, at: now() });
   res.json({ ok: true });
 });
 
 /* ================= KULINER & REVENUE ================= */
 app.get('/api/restos', (req, res) => res.json({ restos: [...RESTOS].sort((a, b) => a.dist - b.dist) }));
-
 app.get('/api/revenue', (req, res) => {
   const total = db.prepare('SELECT COALESCE(SUM(amount),0) t FROM revenue').get().t;
   const byKind = db.prepare('SELECT kind, SUM(amount) amount, COUNT(*) n FROM revenue GROUP BY kind').all();
@@ -391,5 +450,5 @@ app.get('/api/revenue', (req, res) => {
 /* ================= START ================= */
 app.listen(PORT, () => {
   console.log(`🌾 Lebak.market API + frontend siap di http://localhost:${PORT}`);
-  console.log(`   Mode: ${IS_DEV ? 'DEV (OTP dibalas di respons API)' : 'PRODUKSI'}`);
+  console.log(`   Mode: ${IS_DEV ? 'DEV (OTP dibalas di respons API)' : 'PRODUKSI'} · Realtime: SSE aktif`);
 });

@@ -1,6 +1,10 @@
-# 🌾 Lebak.market — Sosmed Jualan & Kuliner Lebak (Fullstack)
+# 🌾 Lebak.market — Sosmed Jualan & Kuliner Lebak (Fullstack, 100% Real & Realtime)
 
-Marketplace bergaya **media sosial** khusus **Kabupaten Lebak, Banten**: feed seperti Instagram tapi semua postingan adalah jualan. Penjual lokal Lebak **selalu diprioritaskan** — lokal pride! Kini **fullstack**: frontend + backend API sungguhan.
+Marketplace bergaya **media sosial** khusus **Kabupaten Lebak, Banten**. Penjual lokal Lebak **selalu diprioritaskan** — lokal pride!
+
+**100% real:** tidak ada postingan seed/bot — feed hanya berisi jualan pengguna terdaftar asli. Chat benar-benar antar akun (bukan balasan otomatis), dan status pesanan digerakkan aksi penjual sungguhan (Tandai Dikirim / Serahkan ke Driver / Kirim Hasil Kerja).
+
+**Realtime (SSE):** pesan chat, perubahan status pesanan, dan jualan baru terdorong langsung ke semua pengguna online lewat `GET /api/events` — tanpa refresh. Transaksi punya dua sisi: tab **🛍️ Pembelian** dan **🏪 Penjualan** di akun yang sama.
 
 ```
 ratecard/
@@ -35,7 +39,10 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 | `POST /api/payments/webhook` | Jalur notifikasi gateway (persis pola Midtrans) → dana ditahan, stok dipotong, status berjalan otomatis |
 | `POST /api/orders/:id/confirm` | Escrow release: komisi 3% (+4% freeship) dipotong, sisanya "dicairkan" ke penjual |
 | `POST /api/orders/:id/complain` | Tahan dana, tandai sengketa |
-| `GET/POST /api/chats/:peer` | Chat pembeli↔penjual (balasan penjual disimulasikan server; frontend polling) |
+| `GET /api/events` | **Realtime SSE**: push chat, status order, & produk baru ke pengguna online |
+| `GET /api/sales` · `POST /api/orders/:id/ship` | Sisi penjual: daftar penjualan + aksi kirim (ekspedisi/driver/hasil jasa) |
+| `GET/POST /api/chats/:peerId` | Chat NYATA antar akun pengguna (tersimpan di DB, terdorong via SSE) |
+| `POST /api/products/:id/like` | Like tersimpan per akun di server |
 | `GET /api/restos` | Direktori kuliner Lebak + menu & harga |
 | `GET /api/revenue` | **Buku kas pendapatan platform** (biaya aplikasi, komisi penjual/driver) — tampil live di modal "ℹ️ Biaya & Komisi" |
 | `GET /api/config` | Konstanta bisnis (tarif driver, batas COD, biaya) — satu sumber kebenaran |
