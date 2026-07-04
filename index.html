@@ -440,6 +440,62 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 
 /* ============ TOAST ============ */
 #toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:200;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
+
+/* ============ RESPONSIVE / MOBILE ============ */
+.bottom-nav{display:none}
+@media(max-width:680px){
+  body{padding-bottom:76px}
+  .fab{display:none}
+  .hide-mobile{display:none!important}
+  .bottom-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:95;display:flex;justify-content:space-around;align-items:center;
+    background:#fff;border-top:2.5px solid var(--ink);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .bn-item{
+    display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:800;
+    color:var(--muted);background:none;border:none;position:relative;padding:2px 8px;
+  }
+  .bn-item .bico{font-size:21px;line-height:1.1}
+  .bn-item .count{
+    position:absolute;top:-5px;right:0;min-width:18px;height:18px;border-radius:999px;
+    background:var(--coral);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;
+    border:2px solid var(--ink);padding:0 3px;
+  }
+  .bn-sell{
+    width:54px;height:54px;border-radius:50%;background:var(--coral);border:2.5px solid var(--ink);
+    color:#fff;font-size:26px;font-weight:800;display:grid;place-items:center;margin-top:-28px;
+    box-shadow:0 4px 0 var(--ink);flex:none;
+  }
+  .head-inner{gap:9px;height:62px}
+  .cat-bar{top:62px}
+  .search{padding:8px 14px}
+  .icon-btn,.ava-btn{width:40px;height:40px;font-size:16px}
+  .login-btn{padding:9px 16px;font-size:12.5px}
+  .hero-strip{padding:22px 0 6px}
+  .hero-strip h1{font-size:21px}
+  .main-grid{padding:18px 0 80px;gap:20px}
+  .post-media{font-size:54px}
+  .post-media .price-tag{font-size:13.5px;padding:6px 14px}
+  .post-body{padding:14px 14px 16px}
+  .post-head{padding:13px 14px}
+  .post-cta .btn{min-width:0;padding:12px 14px;font-size:13.5px}
+  .modal{border-radius:20px;max-height:94vh}
+  .modal-head{padding:15px 16px;border-radius:18px 18px 0 0}
+  .modal-body{padding:18px 16px 22px}
+  .overlay{padding:10px}
+  .drawer{width:100vw;border-left:none}
+  .resto-grid{grid-template-columns:1fr}
+  .order-card{padding:15px 14px}
+  .qris{width:170px;height:170px}
+  .va-num{font-size:17px;letter-spacing:1px}
+  #toasts{bottom:88px}
+}
+@media(max-width:380px){
+  .hero-strip h1{font-size:19px}
+  .chip{padding:8px 15px;font-size:12.5px}
+  .btn{padding:11px 18px;font-size:13.5px}
+}
 .toast{
   background:var(--ink);color:#fff;border-radius:999px;padding:12px 24px;font-size:13.5px;font-weight:700;
   border:2px solid #fff;box-shadow:0 6px 20px rgba(43,36,64,.4);animation:toastIn .3s ease;max-width:90vw;
@@ -462,9 +518,9 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
       <input id="searchInput" type="text" placeholder="Cari di Lebak: barang, jasa, ikan hias..." oninput="renderFeed()">
     </div>
     <div class="head-actions">
-      <button class="icon-btn" onclick="showView('kuliner')" title="Kuliner Lebak">🍽️</button>
-      <button class="icon-btn" onclick="openChatList()" title="Chat">💬<span id="chatCount" class="count hidden">0</span></button>
-      <button class="icon-btn" onclick="showView('orders')" title="Transaksi Saya">📦<span id="orderCount" class="count hidden">0</span></button>
+      <button class="icon-btn hide-mobile" onclick="showView('kuliner')" title="Kuliner Lebak">🍽️</button>
+      <button class="icon-btn hide-mobile" onclick="openChatList()" title="Chat">💬<span id="chatCount" class="count hidden">0</span></button>
+      <button class="icon-btn hide-mobile" onclick="showView('orders')" title="Transaksi Saya">📦<span id="orderCount" class="count hidden">0</span></button>
       <button class="icon-btn" onclick="openFavs()" title="Favorit">💖<span id="favCount" class="count hidden">0</span></button>
       <span id="authSlot"></span>
     </div>
@@ -545,6 +601,16 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--coral)}
 </div>
 
 <button class="fab" onclick="openSell()">＋ Jual</button>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav">
+  <button class="bn-item" onclick="showView('feed')"><span class="bico">🏠</span>Beranda</button>
+  <button class="bn-item" onclick="showView('kuliner')"><span class="bico">🍽️</span>Kuliner</button>
+  <button class="bn-sell" onclick="openSell()" title="Jual">＋</button>
+  <button class="bn-item" onclick="showView('orders')"><span class="bico">📦</span><span id="bnOrderCount" class="count hidden">0</span>Transaksi</button>
+  <button class="bn-item" onclick="openChatList()"><span class="bico">💬</span><span id="bnChatCount" class="count hidden">0</span>Chat</button>
+</nav>
+
 <div id="toasts"></div>
 <div id="modalRoot"></div>
 
@@ -755,6 +821,22 @@ function openAuth(tab, first){
     </div>
   </div>`;
 }
+/* --- Validasi email ketat + verifikasi OTP --- */
+const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
+const BAD_DOMAINS = { // typo umum → koreksi, plus email sekali-pakai yang ditolak
+  'gmail.con':'gmail.com','gmail.co':'gmail.com','gmial.com':'gmail.com','gnail.com':'gmail.com',
+  'gmai.com':'gmail.com','yahho.com':'yahoo.com','yaho.com':'yahoo.com','hotmial.com':'hotmail.com',
+};
+const DISPOSABLE = ['mailinator.com','tempmail.com','temp-mail.org','guerrillamail.com','10minutemail.com','yopmail.com','sharklasers.com','trashmail.com'];
+function checkEmail(email){
+  if (!EMAIL_RE.test(email)) return 'Format email belum benar (cth: nama@gmail.com) 📧';
+  const domain = email.split('@')[1];
+  if (domain.split('.').pop().length < 2) return 'Domain email tidak valid 📧';
+  if (BAD_DOMAINS[domain]) return 'Hmm, mungkin maksudmu @' + BAD_DOMAINS[domain] + '? Cek lagi ya 👀';
+  if (DISPOSABLE.includes(domain)) return 'Email sekali-pakai tidak diizinkan — pakai email aktifmu ya 🙏';
+  return null;
+}
+let pendingReg = null;
 function doRegister(){
   const name = document.getElementById('aName').value.trim();
   const email = document.getElementById('aEmail').value.trim().toLowerCase();
@@ -763,17 +845,60 @@ function doRegister(){
   const pass = document.getElementById('aPass').value;
   const pass2 = document.getElementById('aPass2').value;
   if (!name || name.length < 3) return toast('Nama minimal 3 huruf ya 🙏');
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Format email belum benar 📧');
+  const emailErr = checkEmail(email);
+  if (emailErr) return toast(emailErr);
   if (users.some(u => u.email === email)) return toast('Email sudah terdaftar — coba masuk aja!');
   if (!/^08\d{8,12}$/.test(phone)) return toast('No. HP format 08xxxxxxxxxx ya 📱');
   if (pass.length < 6) return toast('Password minimal 6 karakter 🔒');
   if (pass !== pass2) return toast('Ulangan password tidak sama 🙈');
-  users.push({ name, email, phone, kec, pass, joined: Date.now() });
-  session = email;
+  pendingReg = { name, email, phone, kec, pass, code: String(Math.floor(100000 + Math.random()*900000)) };
+  openOtp();
+  // Di versi live: kode dikirim server ke inbox email. Demo: tampilkan di toast.
+  setTimeout(() => toast('📧 [DEMO] Kode verifikasimu: ' + pendingReg.code), 700);
+}
+function openOtp(){
+  if (!pendingReg) return;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>📧 Verifikasi Email</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <span class="big">✉️</span>
+          <b>Kode verifikasi dikirim!</b>
+          <p>Kami mengirim 6 digit kode ke <b>${esc(pendingReg.email)}</b>.<br>Masukkan kodenya untuk membuktikan emailmu aktif & valid.</p>
+        </div>
+        <label class="f">Kode verifikasi (6 digit)</label>
+        <input class="f" id="aOtp" inputmode="numeric" maxlength="6" placeholder="______"
+          style="text-align:center;font-size:24px;font-weight:800;letter-spacing:10px"
+          onkeydown="if(event.key==='Enter')verifyOtp()">
+        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">✅ Verifikasi & Buat Akun</button>
+        <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
+          Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="resendOtp();return false">Kirim ulang</a>
+          · <a href="#" style="font-weight:800" onclick="openAuth('register');return false">Ganti email</a>
+        </p>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Demo: kode muncul sebagai notifikasi. Di versi live, kode dikirim server ke inbox emailmu (email palsu = tidak pernah menerima kode = tidak bisa daftar).</p>
+      </div>
+    </div>
+  </div>`;
+  setTimeout(() => document.getElementById('aOtp')?.focus(), 300);
+}
+function resendOtp(){
+  if (!pendingReg) return;
+  pendingReg.code = String(Math.floor(100000 + Math.random()*900000));
+  toast('📧 [DEMO] Kode baru: ' + pendingReg.code);
+}
+function verifyOtp(){
+  if (!pendingReg) return;
+  const code = document.getElementById('aOtp').value.trim();
+  if (code !== pendingReg.code) return toast('Kode salah — cek lagi ya 🙈');
+  const { name, email, phone, kec, pass } = pendingReg;
+  users.push({ name, email, phone, kec, pass, verifiedEmail: true, joined: Date.now() });
+  session = email; pendingReg = null;
   store.set('users', users); store.set('session', session);
   renderAuthSlot(); closeModal();
   document.getElementById('locLabel').textContent = kec + ', Lebak';
-  toast('🎉 Wilujeng sumping, ' + name.split(' ')[0] + '! Akunmu siap jual & beli');
+  toast('🎉 Email terverifikasi! Wilujeng sumping, ' + name.split(' ')[0] + '! 🌾');
 }
 function doLogin(){
   const email = document.getElementById('aEmail').value.trim().toLowerCase();
@@ -958,12 +1083,16 @@ function renderTrending(){
 function updateBadges(){
   const fc = document.getElementById('favCount');
   fc.textContent = favs.size; fc.classList.toggle('hidden', !favs.size);
-  const oc = document.getElementById('orderCount');
   const active = orders.filter(o => !o.status.startsWith('Selesai')).length;
-  oc.textContent = active; oc.classList.toggle('hidden', !active);
-  const cc = document.getElementById('chatCount');
   const unread = Object.values(chats).reduce((s,c) => s + (c.unread||0), 0);
-  cc.textContent = unread; cc.classList.toggle('hidden', !unread);
+  ['orderCount','bnOrderCount'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = active; el.classList.toggle('hidden', !active); }
+  });
+  ['chatCount','bnChatCount'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = unread; el.classList.toggle('hidden', !unread); }
+  });
 }
 
 /* ---------- FAVORIT ---------- */

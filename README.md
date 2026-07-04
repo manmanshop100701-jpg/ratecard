@@ -8,8 +8,12 @@ Marketplace bergaya **media sosial** khusus **Kabupaten Lebak, Banten**: feed se
 
 ### 🔐 Akun (register & login)
 - Daftar dengan nama, email, no. HP, **kecamatan di Lebak**, dan password (validasi lengkap)
+- **Email wajib valid**: format diperiksa ketat, typo domain umum dikoreksi (mis. `gmail.con` → saran `gmail.com`), email sekali-pakai (mailinator dkk.) ditolak, lalu **verifikasi kode OTP 6 digit** — di demo kode tampil sebagai notifikasi; di versi live dikirim server ke inbox (email palsu tidak akan menerima kode)
 - **1 akun = penjual + pembeli** — tanpa daftar toko terpisah; posting jualan memakai identitas & kecamatan akun
 - Modal sambutan saat kunjungan pertama; aksi beli/jual/chat/favorit otomatis minta login dulu
+
+### 📱 Responsif penuh
+- Desktop: layout 2 kolom + sidebar; Mobile (≤680px): **bottom navigation ala aplikasi** (Beranda · Kuliner · ＋Jual · Transaksi · Chat) dengan badge notifikasi, drawer & modal layar penuh, ukuran teks/tombol ramah jempol, aman untuk notch (safe-area)
 
 ### 🌾 Lokal Pride Lebak
 - Post penjual Lebak diberi strip **"LOKAL PRIDE"** + badge 🌾 dan **selalu tampil paling atas** di feed
