@@ -79,8 +79,10 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | Var | Fungsi |
 |---|---|
 | `JWT_SECRET` | **Wajib di produksi** — kunci sesi login |
-| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | **Email OTP sungguhan via Gmail** — begitu diisi, kode masuk ke inbox pendaftar (bukan tampil di layar) |
-| `SMTP_HOST/PORT/USER/PASS` | Alternatif SMTP umum (Brevo, Mailgun, dll.) |
+| `BREVO_API_KEY` + `MAIL_SENDER` | **Email OTP via Brevo (HTTPS)** — jalur paling andal di hosting cloud karena tidak terkena blokir SMTP (Railway trial memblokir SMTP!). Gratis 300 email/hari; `MAIL_SENDER` = email yang diverifikasi sebagai pengirim di dashboard Brevo |
+| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | Email OTP via Gmail SMTP — cocok untuk Termux/VPS; di PaaS sering diblokir |
+| `RESEND_API_KEY` | Alternatif HTTPS lain (butuh domain terverifikasi) |
+| `SMTP_HOST/PORT/USER/PASS` | SMTP umum lainnya |
 | `OTP_IN_RESPONSE` | Otomatis: `0` saat email terpasang, `1` (mode pilot, kode tampil di aplikasi) saat belum |
 | `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
 | `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |

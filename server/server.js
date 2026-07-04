@@ -42,7 +42,7 @@ const IS_DEV = process.env.NODE_ENV !== 'production';
  * Atau SMTP umum (Brevo/Mailgun/dll): SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
  * Selama belum diisi → mode pilot: kode OTP ikut dibalas di respons API
  * agar pendaftaran tetap bisa jalan. */
-const SMTP_READY = !!(process.env.GMAIL_USER || process.env.SMTP_HOST);
+const SMTP_READY = !!(process.env.GMAIL_USER || process.env.SMTP_HOST || process.env.BREVO_API_KEY || process.env.RESEND_API_KEY);
 const OTP_IN_RESPONSE = process.env.OTP_IN_RESPONSE ? process.env.OTP_IN_RESPONSE !== '0' : !SMTP_READY;
 let mailer = null;
 if (SMTP_READY) {
@@ -162,26 +162,58 @@ function emailProblem(email){
   if (DISPOSABLE.includes(domain)) return 'Email sekali-pakai tidak diizinkan — pakai email aktifmu';
   return null;
 }
+const otpHtml = code => `
+  <div style="font-family:sans-serif;max-width:440px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:12px">
+    <h2 style="color:#2b2440;margin:0 0 4px">Lebak.market</h2>
+    <p style="color:#6f6787;margin:0 0 20px">Marketplace-nya urang Lebak</p>
+    <p>Masukkan kode berikut untuk memverifikasi emailmu:</p>
+    <p style="font-size:34px;font-weight:800;letter-spacing:8px;text-align:center;background:#fff9f2;border-radius:10px;padding:16px;color:#2b2440">${code}</p>
+    <p style="color:#6f6787;font-size:13px">Kode berlaku 10 menit. Abaikan email ini jika kamu tidak mendaftar.</p>
+  </div>`;
+
 async function sendOtpEmail(email, code){
-  if (!mailer){
-    console.log(`[email→${email}] Kode verifikasi Lebak.market: ${code} (mode pilot — SMTP belum dikonfigurasi)`);
-    return;
-  }
+  const subject = `${code} — Kode Verifikasi Lebak.market`;
   try {
-    await mailer.sendMail({
-      from: process.env.MAIL_FROM || `"Lebak.market" <${process.env.GMAIL_USER || process.env.SMTP_USER}>`,
-      to: email,
-      subject: `${code} — Kode Verifikasi Lebak.market`,
-      html: `
-        <div style="font-family:sans-serif;max-width:440px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:12px">
-          <h2 style="color:#2b2440;margin:0 0 4px">Lebak.market</h2>
-          <p style="color:#6f6787;margin:0 0 20px">Marketplace-nya urang Lebak</p>
-          <p>Masukkan kode berikut untuk memverifikasi emailmu:</p>
-          <p style="font-size:34px;font-weight:800;letter-spacing:8px;text-align:center;background:#fff9f2;border-radius:10px;padding:16px;color:#2b2440">${code}</p>
-          <p style="color:#6f6787;font-size:13px">Kode berlaku 10 menit. Abaikan email ini jika kamu tidak mendaftar.</p>
-        </div>`,
-    });
-    console.log(`[email→${email}] OTP terkirim via ${process.env.GMAIL_USER ? 'Gmail' : 'SMTP'}`);
+    /* Jalur 1: Brevo lewat HTTPS — tidak terpengaruh pemblokiran SMTP
+       (Railway trial dkk.). Butuh BREVO_API_KEY + MAIL_SENDER (email
+       yang sudah diverifikasi sebagai pengirim di dashboard Brevo). */
+    if (process.env.BREVO_API_KEY){
+      const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender: { name: 'Lebak.market', email: process.env.MAIL_SENDER || process.env.GMAIL_USER },
+          to: [{ email }], subject, htmlContent: otpHtml(code),
+        }),
+      });
+      if (!r.ok) throw new Error('Brevo ' + r.status + ': ' + (await r.text()).slice(0, 200));
+      console.log(`[email→${email}] OTP terkirim via Brevo (HTTPS)`);
+      return;
+    }
+    /* Jalur 2: Resend lewat HTTPS (butuh domain terverifikasi). */
+    if (process.env.RESEND_API_KEY){
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: process.env.MAIL_SENDER || 'Lebak.market <onboarding@resend.dev>',
+          to: [email], subject, html: otpHtml(code),
+        }),
+      });
+      if (!r.ok) throw new Error('Resend ' + r.status + ': ' + (await r.text()).slice(0, 200));
+      console.log(`[email→${email}] OTP terkirim via Resend (HTTPS)`);
+      return;
+    }
+    /* Jalur 3: SMTP (Gmail App Password / SMTP umum). */
+    if (mailer){
+      await mailer.sendMail({
+        from: process.env.MAIL_FROM || `"Lebak.market" <${process.env.GMAIL_USER || process.env.SMTP_USER}>`,
+        to: email, subject, html: otpHtml(code),
+      });
+      console.log(`[email→${email}] OTP terkirim via ${process.env.GMAIL_USER ? 'Gmail' : 'SMTP'}`);
+      return;
+    }
+    console.log(`[email→${email}] Kode verifikasi Lebak.market: ${code} (mode pilot — email belum dikonfigurasi)`);
   } catch (e) {
     // Penyelamat: catat kodenya di log server agar admin bisa membantu
     // pendaftar yang emailnya tidak sampai (mis. SMTP diblokir jaringan).
