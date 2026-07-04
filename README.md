@@ -57,6 +57,35 @@ Alurnya sudah 1:1 dengan gateway sungguhan — tinggal ganti modul `gateway` di 
 3. Set URL webhook di dashboard Midtrans ke `https://domainmu.com/api/payments/webhook` + verifikasi signature SHA-512
 4. Tombol "[SANDBOX] Simulasikan Pembayaran" dihapus — webhook asli yang menembak
 
+## ☁️ Deploy ke Cloud (Railway / Render)
+
+Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Procfile`, dan `render.yaml`.
+
+### Railway (paling mudah, ±5 menit)
+1. Buka [railway.app](https://railway.app) → login pakai akun GitHub
+2. **New Project → Deploy from GitHub repo** → pilih repo ini → pilih branch
+3. Railway mendeteksi Node otomatis dan menjalankan `npm install` + `npm start`
+4. Tab **Variables** → tambah `JWT_SECRET` = teks acak panjang (wajib!)
+5. Tab **Settings → Networking → Generate Domain** → dapat URL publik 🎉
+6. *(Agar database awet saat redeploy)*: klik service → **Volumes → New Volume**, mount path `/data`, lalu tambah variable `DB_PATH=/data/data.db`
+
+### Render (blueprint sekali klik)
+1. Buka [render.com](https://render.com) → login pakai GitHub
+2. **New + → Blueprint** → pilih repo ini → Render membaca `render.yaml` → **Apply**
+3. `JWT_SECRET` dibuat otomatis; tunggu build selesai → dapat URL `https://lebak-market.onrender.com`
+4. Catatan free tier: server "tidur" setelah 15 menit sepi (bangun ±30 detik saat diakses) dan disk bersifat sementara — database ter-reset saat redeploy. Upgrade + persistent disk menghilangkan keduanya (lihat komentar di `render.yaml`).
+
+### Environment variables
+| Var | Fungsi |
+|---|---|
+| `JWT_SECRET` | **Wajib di produksi** — kunci sesi login |
+| `OTP_IN_RESPONSE` | `1` (default) = mode pilot, kode OTP tampil di aplikasi; `0` setelah SMTP dipasang |
+| `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
+| `WEBHOOK_SECRET` | Kosong = tombol sandbox aktif; isi saat Midtrans asli terpasang |
+| `PORT` | Diisi otomatis oleh platform |
+
+> 🔐 **Mode pilot OTP**: karena belum ada pengirim email sungguhan, kode verifikasi ikut ditampilkan di aplikasi (`OTP_IN_RESPONSE=1`). Validasi email tetap jalan (format/typo/sekali-pakai), tapi kepemilikan email belum benar-benar dibuktikan. Pasang nodemailer/Resend di `sendOtpEmail()` lalu set `OTP_IN_RESPONSE=0` untuk verifikasi sejati.
+
 ## 🏗️ Menuju Produksi Penuh
 
 - Deploy: **Railway / Render / Fly.io / VPS** (GitHub Pages tidak bisa — perlu server). Ganti `JWT_SECRET` via env!

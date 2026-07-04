@@ -24,6 +24,10 @@ const { RESTOS } = require('./seed');
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'lebak-market-dev-secret-ganti-di-produksi';
 const IS_DEV = process.env.NODE_ENV !== 'production';
+/* Mode pilot: kode OTP ikut dibalas di respons API karena belum ada
+   pengirim email sungguhan. Setel OTP_IN_RESPONSE=0 begitu SMTP
+   (nodemailer/Resend) terpasang di sendOtpEmail(). */
+const OTP_IN_RESPONSE = process.env.OTP_IN_RESPONSE !== '0';
 
 const app = express();
 app.use(cors());
@@ -71,7 +75,9 @@ const gateway = {
     };
   },
   verifySignature(req){
-    return IS_DEV || req.body.signature === process.env.WEBHOOK_SECRET;
+    // Tanpa WEBHOOK_SECRET = mode sandbox (tombol simulasi frontend).
+    // Saat Midtrans terpasang: set WEBHOOK_SECRET & verifikasi SHA-512 asli.
+    return !process.env.WEBHOOK_SECRET || req.body.signature === process.env.WEBHOOK_SECRET;
   },
 };
 
@@ -182,7 +188,7 @@ app.post('/api/auth/register', async (req, res) => {
   db.prepare('INSERT OR REPLACE INTO otps (email, code, payload, expires_at, attempts) VALUES (?,?,?,?,0)')
     .run(em, code, JSON.stringify({ name: name.trim(), phone, kec, pass_hash }), now() + 10 * 60e3);
   sendOtpEmail(em, code);
-  res.json({ ok: true, message: 'Kode verifikasi dikirim ke ' + em, ...(IS_DEV ? { devCode: code } : {}) });
+  res.json({ ok: true, message: 'Kode verifikasi dikirim ke ' + em, ...(OTP_IN_RESPONSE ? { devCode: code } : {}) });
 });
 
 app.post('/api/auth/resend', (req, res) => {
@@ -192,7 +198,7 @@ app.post('/api/auth/resend', (req, res) => {
   const code = String(Math.floor(100000 + Math.random() * 900000));
   db.prepare('UPDATE otps SET code = ?, expires_at = ?, attempts = 0 WHERE email = ?').run(code, now() + 10 * 60e3, em);
   sendOtpEmail(em, code);
-  res.json({ ok: true, message: 'Kode baru dikirim', ...(IS_DEV ? { devCode: code } : {}) });
+  res.json({ ok: true, message: 'Kode baru dikirim', ...(OTP_IN_RESPONSE ? { devCode: code } : {}) });
 });
 
 app.post('/api/auth/verify', (req, res) => {

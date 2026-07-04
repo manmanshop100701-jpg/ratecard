@@ -1,0 +1,24 @@
+# Blueprint Render.com — deploy sekali klik:
+# Dashboard Render → New + → Blueprint → pilih repo ini → Apply.
+services:
+  - type: web
+    name: lebak-market
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/config
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true        # Render membuat secret acak otomatis
+      - key: OTP_IN_RESPONSE
+        value: "1"                 # mode pilot: OTP tampil di aplikasi (belum ada SMTP).
+                                   # Ganti ke "0" setelah email sungguhan dipasang.
+      # --- Aktifkan jika pakai plan berbayar + persistent disk, agar
+      # --- database tidak ter-reset saat redeploy:
+      # - key: DB_PATH
+      #   value: /var/data/data.db
+    # disk:
+    #   name: lebak-data
+    #   mountPath: /var/data
+    #   sizeGB: 1

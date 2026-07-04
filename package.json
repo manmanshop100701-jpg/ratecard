@@ -1,0 +1,13 @@
+{
+  "name": "lebak-market",
+  "version": "1.0.0",
+  "description": "Lebak.market — sosmed jualan & kuliner Kabupaten Lebak (fullstack, realtime)",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm --prefix server install",
+    "start": "npm --prefix server start"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}
