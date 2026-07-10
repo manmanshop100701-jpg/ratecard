@@ -783,7 +783,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       Biaya &amp; Komisi
     </button>
     <button class="btn btn-coral" onclick="openSell()">+ Jual Barang</button>
-    <div class="lnav-foot">Lebak.market — marketplace warga Kab. Lebak. Rekber aman · COD · driver lokal.</div>
+    <div class="lnav-foot">© Lebak.market — marketplace warga Kabupaten Lebak</div>
   </aside>
 
   <main>
@@ -826,15 +826,15 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <div id="trending"></div>
     </div>
     <div class="side-card">
-      <h3>Belanja aman (win-win)</h3>
+      <h3>Cara kerja rekber</h3>
       <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber)</span></div>
       <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan</span></div>
       <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi → dana cair</span></div>
       <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan</span></div>
     </div>
     <div class="side-card">
-      <h3>Lokal Pride Lebak</h3>
-      <p style="font-size:13px;color:var(--muted)">Penjual dari Lebak diprioritaskan di feed — belanja tetangga sendiri, ekonomi Lebak muter di Lebak. Jarak dihitung live dari lokasimu.</p>
+      <h3>Penjual Lokal</h3>
+      <p style="font-size:13px;color:var(--muted)">Penjual terdekat diprioritaskan di feed — jarak dihitung dari lokasimu.</p>
     </div>
   </aside>
 </div>
@@ -1047,7 +1047,7 @@ function openLocPicker(){
           Status: ${geoLive && !locManual ? `<b>GPS live aktif</b>${myAcc ? ' · akurasi ±' + (myAcc >= 1000 ? (myAcc/1000).toFixed(1) + ' km' : myAcc + ' m') : ''}` : locManual ? `<b>Manual: Kec. ${esc(locManual)}</b>` : '<b>GPS belum aktif</b>'}
         </div>
         <button class="btn btn-coral" style="width:100%" onclick="closeModal();startGeo(true)">Deteksi Ulang — GPS Presisi Tinggi</button>
-        <div class="warn-note" style="margin-top:12px"><b>Kenapa bisa meleset?</b> Di laptop/PC, browser menebak posisi dari Wi-Fi/IP sehingga bisa meleset ratusan meter — bahkan beda kota. Di HP: aktifkan GPS + izinkan "lokasi presisi/akurat" untuk situs ini. Angka ±meter di label menunjukkan seberapa yakin perangkatmu.</div>
+        <div class="warn-note" style="margin-top:12px">Di laptop/PC posisi ditebak dari Wi-Fi/IP sehingga bisa meleset. Di HP: aktifkan GPS dan izin lokasi presisi.</div>
         <label class="f" style="margin-top:16px">Atau kunci manual di kecamatanmu (GPS diabaikan)</label>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:4px">
           ${kecs.map(k => `<button class="chip mini ${locManual===k?'active':''}" onclick="setManualLoc('${k}')">${k}</button>`).join('')}
@@ -1064,7 +1064,7 @@ function setManualLoc(kec){
   setLocLabel(esc(kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(manual)</span>');
   closeModal(); loadFeed();
   if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderJelajah();
-  toast('Lokasi dikunci di Kec. ' + kec + ' — klik label lokasi untuk kembali ke GPS');
+  toast('Lokasi diatur: Kec. ' + kec);
 }
 const clock = t => new Date(t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
 const ago = t => {
@@ -1134,14 +1134,8 @@ function openAuth(tab, first){
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-head"><h3>${first ? 'Wilujeng sumping' : isReg ? 'Daftar Akun' : 'Masuk'}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-head"><h3>${isReg ? 'Daftar Akun' : 'Masuk'}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <div class="auth-hero">
-          <span class="big" style="font-family:Georgia,serif;font-weight:800">L</span>
-          <b>Lebak.market — marketplace-nya urang Lebak</b>
-          <p>Satu akun untuk semua: belanja, jualan, chat, sampai cek kuliner terdekat.</p>
-          <span class="dual-badge">Pembeli ✓ &nbsp;·&nbsp; Penjual ✓ &nbsp;·&nbsp; 1 akun saja</span>
-        </div>
         <div class="auth-tabs">
           <button class="chip ${!isReg?'active':''}" onclick="openAuth('login')">Masuk</button>
           <button class="chip ${isReg?'active':''}" onclick="openAuth('register')">Daftar Baru</button>
@@ -1160,7 +1154,6 @@ function openAuth(tab, first){
           <label class="f">Ulangi password</label>
           <input class="f" id="aPass2" type="password" placeholder="••••••••">
           <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="doRegister()">Daftar &amp; Verifikasi Email</button>
-          <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Password dienkripsi (bcrypt) di server.</p>
         ` : `
           <label class="f">Email</label>
           <input class="f" id="aEmail" type="email" placeholder="nama@email.com">
@@ -1201,17 +1194,17 @@ function openOtp(){
     <div class="modal">
       <div class="modal-head"><h3>Verifikasi Email</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <div class="safe-note" style="margin:0 0 14px"><b>Akunmu sudah aktif ✓</b> — kamu sudah bisa login, belanja, dan jualan sekarang juga. Verifikasi email hanya menambah badge terpercaya di profilmu.</div>
+        <div class="safe-note" style="margin:0 0 14px">Akun sudah aktif — verifikasi email bisa dilakukan kapan saja.</div>
         <div class="auth-hero">
-          <b>Cek inbox emailmu</b>
-          <p>Kode 6 digit dikirim ke <b>${esc(pendingReg.email)}</b> — berlaku 10 menit, maks. 5 percobaan. Tidak ada di inbox? Cek folder spam.</p>
+          <b>Cek email kamu</b>
+          <p>Kode 6 digit dikirim ke <b>${esc(pendingReg.email)}</b> (berlaku 10 menit). Tidak ada? Cek folder spam.</p>
         </div>
         <label class="f">Kode verifikasi (6 digit)</label>
         <input class="f" id="aOtp" inputmode="numeric" maxlength="6" placeholder="______"
           style="text-align:center;font-size:24px;font-weight:800;letter-spacing:10px"
           onkeydown="if(event.key==='Enter')verifyOtp()">
         <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">Verifikasi Email</button>
-        <button class="btn" style="width:100%;margin-top:10px" onclick="closeModal();toast('Siap! Verifikasi email bisa kapan saja dari halaman akun')">Lewati — verifikasi nanti</button>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="closeModal()">Lewati — verifikasi nanti</button>
         <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
           Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="resendOtp();return false">Kirim ulang</a>
         </p>
@@ -1234,7 +1227,7 @@ async function verifyOtp(){
     token = r.token; user = r.user; pendingReg = null;
     store.set('token', token); store.set('user', user);
     renderAuthSlot(); closeModal(); afterLogin();
-    toast('Email terverifikasi ✓ — wilujeng sumping, ' + user.name.split(' ')[0] + '!');
+    toast('Email terverifikasi');
   } catch (e) { toast(e.message); }
 }
 /* Verifikasi ulang dari halaman akun (untuk yang tadinya melewati OTP) */
@@ -1284,7 +1277,6 @@ async function openProfile(){
           <span class="big" style="font-family:Georgia,serif;font-weight:800">${initOf(user.name)}</span>
           <b>${esc(user.name)}</b>
           <p>${esc(user.email)} · ${esc(user.phone)}<br>${esc(user.kec)}, Kab. Lebak, Banten · ${user.verified ? 'Email terverifikasi ✓' : 'Email belum diverifikasi'}</p>
-          <span class="dual-badge">Pembeli ✓ · Penjual ✓ — satu akun untuk semua</span>
           ${user.verified ? '' : `<div style="margin-top:10px"><button class="btn btn-mint btn-sm" onclick="reVerify()">Verifikasi email sekarang</button></div>`}
         </div>
         <div style="background:var(--tint);border:1px solid var(--tint-line);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
@@ -1293,9 +1285,8 @@ async function openProfile(){
           <button class="btn btn-coral btn-sm" onclick="openWallet()">Tarik / Riwayat</button>
         </div>
         ${user.cod_debt ? `<div class="warn-note" style="margin-bottom:12px"><b>Tagihan komisi COD: ${rupiah(user.cod_debt)}</b> — dipotong otomatis dari pencairan rekber berikutnya.</div>` : ''}
-        <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan + Jual untuk menambah</span></div></div>
+        <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
-        <div class="mini-row"><span class="em g-5"><span class="letter-s">R</span></span><div><b>Realtime aktif</b><span>Chat, pesanan &amp; jualan baru terdorong langsung tanpa refresh</span></div></div>
         <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">+ Posting Jualan Baru</button>
         <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">Keluar Akun</button>
       </div>
@@ -1317,14 +1308,14 @@ async function openWallet(){
         <div class="auth-hero">
           <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">SALDO AKTIF</p>
           <b style="font-size:28px;color:var(--green)">${rupiah(w.balance)}</b>
-          <p>Hasil penjualan (escrow cair) masuk ke sini — bisa <b>ditarik</b> ke rekening/e-wallet atau <b>dipakai belanja</b> lagi di Lebak.market tanpa biaya layanan.</p>
+          <p>Bisa ditarik ke rekening/e-wallet atau dipakai belanja lagi.</p>
         </div>
         <label class="f">Jumlah penarikan (min ${rupiah(w.minWithdraw)})</label>
         <input class="f" id="wAmount" type="number" min="${w.minWithdraw}" max="${w.balance}" placeholder="cth: 50000">
         <label class="f">Tujuan (bank/e-wallet · nomor · atas nama)</label>
         <input class="f" id="wDest" placeholder="cth: BRI 1234567890 a.n. Mongg / DANA 08xxxx">
         <button class="btn btn-coral" style="width:100%;margin-top:16px" ${w.balance < w.minWithdraw ? 'disabled' : ''} onclick="doWithdraw()">Tarik Saldo</button>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Dana ditransfer admin maks 1×24 jam ke tujuan yang kamu isi.</p>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Diproses maks 1×24 jam.</p>
         <div class="menu-mini" style="margin-top:16px">
           <div class="mtitle">Riwayat saldo</div>
           ${w.txns.length ? w.txns.map(t => `
@@ -1357,18 +1348,18 @@ async function openInfoBiaya(){
     <div class="modal">
       <div class="modal-head"><h3>Biaya &amp; Komisi</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Kami transparan soal biaya — dari sinilah platform ini hidup &amp; terus dikembangkan:</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Rincian biaya platform:</p>
         <div class="mini-row"><span class="em g-1"><span class="letter-s">A</span></span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
         <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — 3%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">D</span></span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
         <div class="mini-row"><span class="em g-2"><span class="letter-s">C</span></span><div><b>Komisi COD — ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)})</b><span>Dicatat sebagai tagihan penjual, dipotong otomatis dari pencairan rekber berikutnya</span></div></div>
         <div class="mini-row"><span class="em g-6"><span class="letter-s">G</span></span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge &amp; prioritas feed</span></div></div>
         <div class="menu-mini" style="margin-top:14px">
-          <div class="mtitle">Pendapatan platform tercatat di server (live)</div>
+          <div class="mtitle">Pendapatan platform</div>
           ${rev.byKind.length ? rev.byKind.map(r => `<div class="menu-line"><span>${kindLabel[r.kind]||r.kind} (${r.n}×)</span><b>${rupiah(r.amount)}</b></div>`).join('') : '<div class="menu-line"><span>Belum ada transaksi</span><b>Rp0</b></div>'}
           <div class="menu-line" style="font-weight:800"><span>TOTAL</span><b>${rupiah(rev.total)}</b></div>
         </div>
-        <div class="safe-note">Gratis: daftar akun, posting jualan, chat, COD ketemuan, dan lihat kuliner. Biaya hanya muncul saat transaksi terjadi.</div>
+        <div class="safe-note">Daftar, posting, dan chat gratis — biaya hanya saat transaksi.</div>
       </div>
     </div>
   </div>`;
@@ -1505,10 +1496,9 @@ function renderFeed(){
     const filtered = activeCat !== 'all' || radiusKm !== Infinity || document.getElementById('searchInput').value.trim();
     feed.innerHTML = filtered
       ? `<div class="empty-feed"><h3>Tidak ada yang cocok</h3><p style="color:var(--muted);font-size:14px">Coba perlebar radius atau ganti kategori/kata kunci.</p></div>`
-      : `<div class="empty-feed"><h3>Feed masih kosong — 100% asli</h3>
-          <p style="color:var(--muted);font-size:14px;margin:8px 0 20px">Tidak ada postingan bot atau contoh di sini.<br>Semua jualan berasal dari warga sungguhan. Jadilah yang pertama!</p>
-          <button class="btn btn-coral" onclick="openSell()">Posting Jualan Pertamamu</button>
-          <p style="font-size:11.5px;color:var(--muted);margin-top:14px">Gratis, cukup akun terverifikasi</p>
+      : `<div class="empty-feed"><h3>Belum ada produk</h3>
+          <p style="color:var(--muted);font-size:14px;margin:8px 0 20px">Jadilah penjual pertama di Lebak.market.</p>
+          <button class="btn btn-coral" onclick="openSell()">+ Posting Jualan</button>
         </div>`;
     return;
   }
@@ -1546,7 +1536,7 @@ function renderFeed(){
         ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
       </div>
       <div class="engage">
-        <span>${p.likes ? '👍 ' + p.likes + ' suka' : 'Jadilah yang pertama menyukai ini'}</span>
+        <span>👍 ${p.likes} suka</span>
         <span>Stok ${p.stock}</span>
       </div>
       <div class="act-row">
@@ -1735,7 +1725,7 @@ async function renderThread(){
     const stick = el.parentElement.scrollTop + el.parentElement.clientHeight >= el.parentElement.scrollHeight - 40;
     el.innerHTML = r.messages.length
       ? r.messages.map(m => `<div class="bubble ${m.from_me?'me':'them'}">${esc(m.text)}<small>${clock(m.at)}</small></div>`).join('')
-      : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan dengan ${esc(openThread.name)}.<br><span style="font-size:11.5px;font-weight:600">Pesan terkirim langsung ke akunnya — realtime.</span></div>`;
+      : `<div style="text-align:center;padding:40px 10px;color:var(--muted);font-weight:700;font-size:13px">Mulai obrolan dengan ${esc(openThread.name)}.<br><span style="font-size:11.5px;font-weight:600">Pesan terkirim realtime.</span></div>`;
     if (stick) el.parentElement.scrollTop = el.parentElement.scrollHeight;
   } catch {}
 }
@@ -1818,7 +1808,7 @@ function renderBuy(){
                       : isJasa ? 'Tidak tersedia untuk jasa online' : !p.cod ? 'Penjual tidak membuka COD' : 'Di luar jangkauan COD (maks ' + COD_MAX_KM + ' km)'}</span></div>
         <span class="rad"></span>
       </div>
-      ${p.cond==='bekas' ? `<div class="warn-note"><b>Barang bekas?</b> Cek kelengkapan, fungsi, dan minus yang disebut deskripsi. Di rekber kamu punya waktu cek sebelum dana cair.</div>` : ''}
+      ${p.cond==='bekas' ? `<div class="warn-note">Barang bekas: cek kelengkapan & fungsi sebelum konfirmasi.</div>` : ''}
       <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.mode?'':'disabled'} onclick="buyNext()">Lanjut →</button>`;
   }
   else if (buy.step === 2 && buy.mode === 'cod'){
@@ -1827,7 +1817,7 @@ function renderBuy(){
       <select class="f" id="bMeet">${MEET_POINTS.map(m => `<option ${buy.meet===m?'selected':''}>${m}</option>`).join('')}</select>
       <label class="f">Waktu janjian</label>
       <input class="f" id="bTime" type="text" placeholder="cth: Sabtu, 15.00 WIB" value="${esc(buy.time)}">
-      <div class="safe-note"><b>Tips COD aman:</b> ajak teman, ketemu di tempat ramai/siang hari, cek barang sampai puas <b>sebelum</b> uang berpindah, jangan transfer DP sebelum ketemu. Atur detailnya lewat chat.</div>
+      <div class="safe-note">Tips: ketemu di tempat ramai, cek barang sebelum bayar, jangan transfer DP.</div>
       <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="placeCod()">Buat Janjian COD</button>`;
   }
   else if (buy.step === 2){
@@ -1866,9 +1856,9 @@ function renderBuy(){
         ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
         <div class="sum-row"><span>Biaya layanan${buy.pay==='saldo'?' (Saldo — gratis)':m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
-        <div class="sum-row total"><span>Estimasi total (final dihitung server)</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
+        <div class="sum-row total"><span>Total</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
       </div>
-      <div class="safe-note">Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
+      <div class="safe-note">Dana ditahan sistem dan cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
       <button class="btn btn-coral" style="width:100%;margin-top:18px" ${buy.pay?'':'disabled'} onclick="placeRekber()">Bayar ke Rekber</button>`;
   }
 
@@ -1897,7 +1887,7 @@ async function placeCod(){
   try {
     await api('/orders', { method:'POST', body:{ productId: buy.pid, mode:'cod', meetPoint: buy.meet, meetTime: buy.time, buyerLat: myLoc?.lat, buyerLng: myLoc?.lng } });
     closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
-    toast('Janjian COD dibuat — penjual langsung dapat notifikasi');
+    toast('Janjian COD dibuat');
   } catch (e) { toast(e.message); }
 }
 async function placeRekber(){
@@ -1912,7 +1902,7 @@ async function placeRekber(){
       // dibayar pakai saldo — langsung lunas, tanpa halaman pembayaran
       await refreshMe();
       closeModal(); await loadFeed(); ordTab = 'beli'; showView('orders');
-      toast('Dibayar pakai Saldo ✓ — dana ditahan rekber sampai kamu konfirmasi barang sesuai');
+      toast('Dibayar pakai saldo — dana ditahan rekber');
       return;
     }
     openPayment(r.order);
@@ -1948,10 +1938,10 @@ async function paySnap(orderId, snapToken, payUrl){
     await loadSnap();
     closeModal();
     window.snap.pay(snapToken, {
-      onSuccess: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Pembayaran berhasil — dana masuk rekber, penjual dapat notifikasi'); },
-      onPending: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Menunggu pembayaranmu — selesaikan sesuai instruksi'); },
+      onSuccess: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Pembayaran berhasil — dana ditahan rekber'); },
+      onPending: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Menunggu pembayaran'); },
       onError:   () => toast('Pembayaran gagal — coba lagi dari Transaksi Saya'),
-      onClose:   () => toast('Jendela pembayaran ditutup — lanjutkan kapan saja dari Transaksi Saya'),
+      onClose:   () => toast('Lanjutkan pembayaran dari menu Transaksi'),
     });
   } catch (e) {
     // popup gagal dimuat → pakai halaman pembayaran Midtrans langsung
@@ -1973,9 +1963,9 @@ function openPayment(o){
             <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
             ${o.va ? `<div class="va-num">${String(o.va).replace(/(\d{4})(?=\d)/g,'$1 ')}</div>` : ''}
             <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-            <p style="font-size:12px;color:var(--muted)">Pembayaran diproses gateway resmi (QRIS, VA bank, e-wallet). Dana masuk rekber, bukan langsung ke penjual.</p>
+            <p style="font-size:12px;color:var(--muted)">Dana ditahan rekber sampai barang dikonfirmasi.</p>
           </div>
-          <a class="btn btn-coral" style="width:100%;margin-top:18px" href="${esc(o.pay_url)}" target="_blank" rel="noopener" onclick="setTimeout(()=>{closeModal();ordTab='beli';showView('orders');toast('Selesaikan pembayaran di tab baru — status terupdate otomatis di sini')},400)">Bayar Sekarang</a>
+          <a class="btn btn-coral" style="width:100%;margin-top:18px" href="${esc(o.pay_url)}" target="_blank" rel="noopener" onclick="setTimeout(()=>{closeModal();ordTab='beli';showView('orders');toast('Selesaikan pembayaran di tab baru')},400)">Bayar Sekarang</a>
         </div>
       </div>
     </div>`;
@@ -1991,7 +1981,7 @@ function openPayment(o){
             <span class="count-pill">Bayar sebelum <b>24 jam</b></span>
             <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
             <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-            <p style="font-size:12px;color:var(--muted)">Pembayaran diproses <b>Midtrans</b> (QRIS, VA bank, GoPay, ShopeePay, dll). Dana masuk rekber, bukan langsung ke penjual.</p>
+            <p style="font-size:12px;color:var(--muted)">Dana ditahan rekber sampai barang dikonfirmasi.</p>
           </div>
           <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="paySnap('${o.id}', '${esc(o.snap_token)}', '${esc(o.pay_url || '')}')">Bayar Sekarang</button>
           ${o.pay_url ? `<a class="btn" style="width:100%;margin-top:10px" href="${esc(o.pay_url)}" target="_blank" rel="noopener">Buka Halaman Pembayaran (tab baru)</a>` : ''}
@@ -2012,11 +2002,11 @@ function openPayment(o){
           ${isQr ? qrisHTML() + `<p style="font-size:12.5px;color:var(--muted)">Scan pakai e-wallet / m-banking apa pun</p>`
                  : `<div class="va-num">${String(o.va).replace(/(\d{4})(?=\d)/g,'$1 ')}</div><p style="font-size:12.5px;color:var(--muted)">Salin nomor VA lalu transfer dari m-banking</p>`}
           <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-          <p style="font-size:12px;color:var(--muted)">Dana masuk rekening bersama (escrow), bukan ke penjual</p>
+          <p style="font-size:12px;color:var(--muted)">Dana ditahan di rekening bersama (escrow)</p>
         </div>
         <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">[SANDBOX] Simulasikan Pembayaran Berhasil</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Mode simulasi — isi key <b>Duitku</b> (DUITKU_MERCHANT_CODE + DUITKU_API_KEY) atau <b>Midtrans</b> di server, maka tombol ini otomatis diganti pembayaran sungguhan.
+          Mode simulasi — gateway pembayaran belum diaktifkan.
         </p>
       </div>
     </div>
@@ -2026,7 +2016,7 @@ async function simulatePaid(orderId){
   try {
     await api('/payments/webhook', { method:'POST', body:{ order_id: orderId, transaction_status:'settlement' } });
     closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
-    toast('Dana masuk rekber — penjual dapat notifikasi untuk memproses');
+    toast('Pembayaran diterima — dana ditahan rekber');
   } catch (e) { toast(e.message); }
 }
 
@@ -2034,14 +2024,14 @@ async function simulatePaid(orderId){
 async function shipOrder(orderId){
   try {
     await api('/orders/' + orderId + '/ship', { method:'POST' });
-    toast('Status terkirim — pembeli langsung dapat notifikasi');
+    toast('Status pesanan diperbarui');
     await refreshBadges(); renderOrders();
   } catch (e) { toast(e.message); }
 }
 async function confirmDone(orderId){
   try {
     const r = await api('/orders/' + orderId + '/confirm', { method:'POST' });
-    if (r.payout) toast('Dana cair ke penjual ' + rupiah(r.payout.net) + ' (komisi platform dipotong otomatis)');
+    if (r.payout) toast('Dana ' + rupiah(r.payout.net) + ' cair ke saldo penjual');
     else toast('Transaksi COD selesai');
     await refreshBadges(); renderOrders();
   } catch (e) { toast(e.message); }
@@ -2049,7 +2039,7 @@ async function confirmDone(orderId){
 async function complain(orderId){
   try {
     await api('/orders/' + orderId + '/complain', { method:'POST' });
-    toast('Komplain dibuka — dana tetap ditahan, CS menengahi dengan bukti');
+    toast('Komplain dibuka — dana ditahan sementara');
     renderOrders();
   } catch (e) { toast(e.message); }
 }
@@ -2121,7 +2111,7 @@ async function renderOrders(){
     ? list.map(x => orderCard(x, ordTab === 'jual')).join('')
     : `<div class="empty-feed">
         <h3>${ordTab==='beli'?'Belum ada pembelian':'Belum ada yang membeli daganganmu'}</h3>
-        <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">${ordTab==='beli'?'Yuk cari barang incaran di feed.':'Posting jualan & bagikan ke tetangga — notifikasi pembeli masuk realtime ke sini.'}</p>
+        <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">${ordTab==='beli'?'Yuk cari barang incaran di feed.':'Pesanan dari pembeli akan tampil di sini.'}</p>
         <button class="btn btn-coral" onclick="${ordTab==='beli'?`showView('feed')`:'openSell()'}">${ordTab==='beli'?'Ke Feed →':'+ Posting Jualan'}</button>
       </div>`);
 }
@@ -2134,8 +2124,8 @@ function renderJelajah(){
   document.getElementById('jt-wisata').classList.toggle('active', !kul);
   document.getElementById('jelajahTitle').textContent = kul ? 'Kuliner & Nongkrong di Sekitarmu' : 'Destinasi Wisata Kabupaten Lebak';
   document.getElementById('jelajahDesc').innerHTML = kul
-    ? 'Tempat makan <b>asli</b> di sekitar lokasi live kamu — nama, alamat, dan jarak dari peta OpenStreetMap.'
-    : 'Dari pantai Sawarna sampai Negeri di Atas Awan — <b>tempat-tempat nyata</b> lengkap dengan jarak live dari posisimu & rute Google Maps. Foto dimuat dari Wikimedia Commons bila tersedia.';
+    ? 'Tempat makan di sekitarmu — data OpenStreetMap.'
+    : 'Pantai, curug, pegunungan, dan budaya se-Kabupaten Lebak — lengkap dengan jarak dan rute.';
   document.getElementById('wisataChips').classList.toggle('hidden', kul);
   if (kul) renderRestos(); else renderWisata();
 }
@@ -2175,12 +2165,12 @@ async function renderRestos(){
   const grid = document.getElementById('restoGrid');
   if (!myLoc){
     grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Aktifkan lokasi dulu</h3>
-      <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Kami butuh posisi GPS-mu untuk menampilkan tempat makan <b>asli</b> di sekitarmu (data OpenStreetMap).</p>
+      <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Izinkan akses lokasi untuk menampilkan tempat makan di sekitarmu.</p>
       <button class="btn btn-coral" onclick="startGeo(true)">Izinkan Akses Lokasi</button></div>`;
     return;
   }
   if (!restos.length || !restosAt || havKm(restosAt, myLoc) > 1){
-    grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Mencari tempat makan di sekitarmu…</h3><p style="color:var(--muted);font-size:14px">Membaca peta OpenStreetMap dari posisi live kamu.</p></div>`;
+    grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Mencari tempat makan di sekitarmu…</h3></div>`;
     try { restos = await fetchNearbyFood(myLoc); restosAt = { ...myLoc }; }
     catch (e) { grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Peta tidak dapat dihubungi</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)} — coba lagi sebentar lagi.</p></div>`; return; }
   }
@@ -2199,8 +2189,8 @@ async function renderRestos(){
         <button class="btn btn-yellow btn-sm" onclick="openResto('${r.id}')">Detail &amp; Petunjuk Arah</button>
       </div>
     </div>`).join('')
-  : `<div class="empty-feed" style="grid-column:1/-1"><h3>Belum ada tempat makan terdata</h3><p style="color:var(--muted);font-size:14px">Radius 15 km dari posisimu belum terpetakan di OpenStreetMap. Kamu bisa bantu memetakan di openstreetmap.org!</p></div>`)
-  + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">Data tempat: © OpenStreetMap contributors · jarak dihitung live dari GPS-mu</p>`;
+  : `<div class="empty-feed" style="grid-column:1/-1"><h3>Belum ada tempat makan terdata</h3><p style="color:var(--muted);font-size:14px">Belum ada data tempat makan dalam radius 15 km dari posisimu.</p></div>`)
+  + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">Data: © OpenStreetMap contributors</p>`;
 }
 function openResto(id){
   const r = restos.find(x => x.id === id);
@@ -2216,7 +2206,7 @@ function openResto(id){
         <div class="resto-info-row"><span>${r.addr ? esc(r.addr) + ' — ' : ''}<b>${km(r.dist)} dari posisimu (live)</b></span></div>
         ${r.open ? `<div class="resto-info-row"><span>Jam buka: ${esc(r.open)}</span></div>` : ''}
         ${r.phone ? `<div class="resto-info-row"><span>Telp: <a href="tel:${esc(r.phone)}" style="font-weight:700">${esc(r.phone)}</a></span></div>` : ''}
-        <div class="safe-note" style="margin-top:14px">Tempat ini nyata — datanya dari <a href="${osm}" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">OpenStreetMap</a>. Datang dan pesan langsung di lokasinya.</div>
+        <div class="safe-note" style="margin-top:14px">Sumber data: <a href="${osm}" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">OpenStreetMap</a></div>
         <a class="btn btn-coral" style="width:100%;margin-top:16px" href="${gmaps}" target="_blank" rel="noopener">Petunjuk Arah (Google Maps)</a>
       </div>
     </div>
@@ -2282,7 +2272,7 @@ function renderWisata(){
         <button class="btn btn-yellow btn-sm" onclick="openWisata(${w.i})">Detail &amp; Rute</button>
       </div>
     </div>`).join('')
-    + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">${WISATA.length} destinasi nyata se-Kab. Lebak · jarak dihitung live dari GPS-mu · foto: Wikimedia Commons</p>`;
+    + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">Foto: Wikimedia Commons</p>`;
   // muat foto asli secara asinkron (tanpa memblokir render)
   list.forEach(w => fetchWisataImg(w.q).then(url => {
     const el = document.getElementById('wmedia-' + w.i);
@@ -2307,7 +2297,7 @@ function openWisata(i){
       <div class="modal-body">
         <div class="resto-info-row"><span><b>${w.cat}</b> · Kec. ${esc(w.kec)}, Kabupaten Lebak, Banten</span></div>
         <p style="font-size:13.5px;margin:10px 0">${esc(w.desc)}</p>
-        <div class="safe-note">Destinasi terpencil? Berangkat pagi, cek cuaca, bawa uang tunai (jarang ATM/sinyal), dan pakai pemandu warga lokal — sekalian rezeki buat mereka.</div>
+        <div class="safe-note">Bawa uang tunai dan cek cuaca — beberapa lokasi minim sinyal & ATM.</div>
         <a class="btn btn-coral" style="width:100%;margin-top:14px" href="${gmaps}" target="_blank" rel="noopener">Rute ke Sana (Google Maps)</a>
         <a class="btn" style="width:100%;margin-top:8px" href="https://www.google.com/search?q=${encodeURIComponent(w.name + ' ' + w.kec + ' Lebak')}" target="_blank" rel="noopener">Info &amp; Ulasan Terbaru (Google)</a>
       </div>
@@ -2324,14 +2314,14 @@ function openSell(){
     <div class="modal">
       <div class="modal-head"><h3>Posting Jualan Baru</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <div class="safe-note" style="margin:0 0 14px">Posting sebagai <b>${esc(user.name)}</b> (${esc(user.kec)}, Lebak) — begitu tayang, pengguna online dapat notifikasi realtime.</div>
+        <div class="safe-note" style="margin:0 0 14px">Posting sebagai <b>${esc(user.name)}</b> · Kec. ${esc(user.kec)}</div>
         <label class="f">Foto barang</label>
         <input type="file" id="sFile" accept="image/*" style="display:none" onchange="onPhoto(event)">
         <div id="photoBox">
           <div class="photo-drop" onclick="document.getElementById('sFile').click()">
             ${IC.camera}
             <span>Ambil foto / pilih dari galeri</span>
-            <span style="font-size:11.5px;font-weight:600">Foto asli bikin pembeli lebih percaya — dikompresi otomatis</span>
+            <span style="font-size:11.5px;font-weight:600">Maks 5 MB — dikompresi otomatis</span>
           </div>
         </div>
         <label class="f">Nama produk / jasa</label>
@@ -2340,11 +2330,11 @@ function openSell(){
         <select class="f" id="sCat" onchange="onSellCat()">
           ${CATS.filter(c => c.id!=='all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
         </select>
-        <div id="jasaNote" class="safe-note hidden" style="margin-top:10px">Kategori <b>Jasa</b> = pengerjaan online: pembeli TIDAK dikenai ongkir, hasil dikirim via email/WA/chat. Pembayaran tetap aman lewat rekber.</div>
+        <div id="jasaNote" class="safe-note hidden" style="margin-top:10px">Jasa online: tanpa ongkir, hasil dikirim via email/WA/chat.</div>
         <div id="rowShipCost" class="hidden">
           <label class="f">Ongkir dari penjual (Rp) — wajib untuk Peternakan</label>
           <input class="f" id="sShipCost" type="number" min="0" placeholder="cth: 25000">
-          <p style="font-size:11.5px;color:var(--muted);margin-top:4px">Kirim hewan hidup butuh penanganan khusus — kamu yang menentukan ongkirnya, dibayar pembeli saat checkout.</p>
+          <p style="font-size:11.5px;color:var(--muted);margin-top:4px">Ongkir ditentukan penjual dan dibayar pembeli saat checkout.</p>
         </div>
         <label class="f">Kondisi</label>
         <select class="f" id="sCond"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
@@ -2354,10 +2344,10 @@ function openSell(){
         <input class="f" id="sStock" type="number" min="1" value="1">
         <label class="f">Deskripsi (untuk barang bekas: jujur soal minus)</label>
         <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
-        <div class="check-row" id="rowCod"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan (radius ${COD_MAX_KM} km) — komisi COD ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) jadi tagihan, dipotong dari pencairan rekber berikutnya</label></div>
-        <div class="check-row" id="rowFreeship"><input type="checkbox" id="sFreeship"><label for="sFreeship">Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge &amp; prioritas (komisi +4%)</label></div>
+        <div class="check-row" id="rowCod"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan — komisi ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) per transaksi COD</label></div>
+        <div class="check-row" id="rowFreeship"><input type="checkbox" id="sFreeship"><label for="sFreeship">Gratis ongkir ditanggung penjual (komisi +4%, prioritas feed)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">Posting Sekarang</button>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Komisi penjual 3% hanya dipotong saat transaksi sukses. Posting gratis.</p>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Posting gratis · komisi 3% per transaksi sukses</p>
       </div>
     </div>
   </div>`;
@@ -2406,7 +2396,7 @@ function removePhoto(){
     <div class="photo-drop" onclick="document.getElementById('sFile').click()">
       ${IC.camera}
       <span>Ambil foto / pilih dari galeri</span>
-      <span style="font-size:11.5px;font-weight:600">Foto asli bikin pembeli lebih percaya — dikompresi otomatis</span>
+      <span style="font-size:11.5px;font-weight:600">Maks 5 MB — dikompresi otomatis</span>
     </div>`;
 }
 async function submitSell(){
@@ -2426,7 +2416,7 @@ async function submitSell(){
     }});
     closeModal(); sellImg = null;
     activeCat = 'all'; renderCats(); await loadFeed();
-    toast('Jualanmu tayang & terdorong realtime ke semua pengguna');
+    toast('Produk berhasil diposting');
   } catch (e) { toast(e.message); }
 }
 

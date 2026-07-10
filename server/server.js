@@ -331,7 +331,7 @@ function emailProblem(email){
 const otpHtml = code => `
   <div style="font-family:sans-serif;max-width:440px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:12px">
     <h2 style="color:#2b2440;margin:0 0 4px">Lebak.market</h2>
-    <p style="color:#6f6787;margin:0 0 20px">Marketplace-nya urang Lebak</p>
+    <p style="color:#6f6787;margin:0 0 20px">Marketplace warga Kabupaten Lebak</p>
     <p>Masukkan kode berikut untuk memverifikasi emailmu:</p>
     <p style="font-size:34px;font-weight:800;letter-spacing:8px;text-align:center;background:#fff9f2;border-radius:10px;padding:16px;color:#2b2440">${code}</p>
     <p style="color:#6f6787;font-size:13px">Kode berlaku 10 menit. Abaikan email ini jika kamu tidak mendaftar.</p>
@@ -407,7 +407,7 @@ function auth(req, res, next){
     req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance FROM users WHERE id = ?').get(data.uid);
     if (!req.user) return bad(res, 401, 'Akun tidak ditemukan');
     next();
-  } catch { return bad(res, 401, 'Sesi kedaluwarsa — login lagi ya'); }
+  } catch { return bad(res, 401, 'Sesi berakhir — silakan login kembali'); }
 }
 function optionalAuth(req, _res, next){
   const h = req.headers.authorization || '';
@@ -482,7 +482,7 @@ app.post('/api/auth/register', async (req, res) => {
   res.json({
     ok: true, token: signToken(id),
     user: { id, name: name.trim(), email: em, phone, kec, verified: 0 },
-    message: 'Akun aktif! Kode verifikasi email dikirim ke ' + em,
+    message: 'Kode verifikasi dikirim ke ' + em,
     ...(OTP_IN_RESPONSE ? { devCode: code } : {}),
   });
 });
@@ -509,12 +509,12 @@ app.post('/api/auth/verify', (req, res) => {
   const em = String(req.body.email || '').trim().toLowerCase();
   const code = String(req.body.code || '').trim();
   const row = db.prepare('SELECT * FROM otps WHERE email = ?').get(em);
-  if (!row) return bad(res, 404, 'Tidak ada pendaftaran menunggu — daftar dulu ya');
-  if (row.expires_at < now()) return bad(res, 410, 'Kode kedaluwarsa — kirim ulang ya');
+  if (!row) return bad(res, 404, 'Tidak ada pendaftaran menunggu');
+  if (row.expires_at < now()) return bad(res, 410, 'Kode kedaluwarsa — kirim ulang');
   if (row.attempts >= 5) return bad(res, 429, 'Terlalu banyak percobaan — kirim ulang kode');
   if (row.code !== code) {
     db.prepare('UPDATE otps SET attempts = attempts + 1 WHERE email = ?').run(em);
-    return bad(res, 400, 'Kode salah — cek lagi ya');
+    return bad(res, 400, 'Kode verifikasi salah');
   }
   const p = JSON.parse(row.payload);
   let u = db.prepare('SELECT * FROM users WHERE email = ?').get(em);
@@ -548,7 +548,7 @@ app.post('/api/auth/login', async (req, res) => {
         u = db.prepare('SELECT * FROM users WHERE email = ?').get(em);
       }
     }
-    if (!u) return bad(res, 404, 'Email belum terdaftar — daftar dulu yuk');
+    if (!u) return bad(res, 404, 'Email belum terdaftar');
   } else if (!await bcrypt.compare(pw, u.pass_hash)) {
     return bad(res, 401, 'Password salah');
   }
@@ -642,7 +642,7 @@ app.post('/api/orders', auth, async (req, res) => {
   const { productId, mode, payMethod, recvName, recvAddr, meetPoint, meetTime } = req.body;
   const p = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(parseInt(productId, 10));
   if (!p) return bad(res, 404, 'Produk tidak ditemukan');
-  if (p.seller_id === req.user.id) return bad(res, 400, 'Tidak bisa membeli barang sendiri 😄');
+  if (p.seller_id === req.user.id) return bad(res, 400, 'Tidak bisa membeli produk sendiri');
   if (p.stock < 1) return bad(res, 409, 'Stok habis');
   // jasa = pengerjaan online: TANPA ongkir, tanpa COD/driver
   const isJasa = p.cat === 'jasa' || p.dist === 0;
@@ -657,7 +657,7 @@ app.post('/api/orders', auth, async (req, res) => {
     db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, price, ship, app_fee, gateway_fee, total, status, meet_point, meet_time, created_at)
       VALUES (?,?,?,?,?,?,?,0,0,0,?,?,?,?,?)`)
       .run(id, req.user.id, p.seller_id, p.id, 'cod', 'Bayar di tempat', p.price, p.price, 'Janjian COD', meetPoint, meetTime, now());
-    addEvent(id, 'Janjian COD', `${meetPoint} · ${meetTime}. Atur detail lewat chat. Bayar HANYA setelah cek barang!`);
+    addEvent(id, 'Janjian COD', `${meetPoint} · ${meetTime}. Bayar setelah cek barang.`);
     db.prepare('UPDATE products SET stock = stock - 1 WHERE id = ?').run(p.id);
     return res.json({ ok: true, order: getOrder(id) });
   }
@@ -686,7 +686,7 @@ app.post('/api/orders', auth, async (req, res) => {
     walletTxn(req.user.id, 'purchase', -total, 'Bayar ' + p.name.slice(0, 40) + ' (rekber)', id);
     db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(p.id);
     addEvent(id, 'Menunggu Pembayaran', 'Invoice diterbitkan', false);
-    addEvent(id, 'Dana Ditahan (Rekber)', 'Dibayar pakai Saldo — dana aman di rekening bersama. Penjual: silakan proses pesanan! 🔔');
+    addEvent(id, 'Dana Ditahan (Rekber)', 'Dibayar pakai saldo — dana ditahan rekber. Menunggu penjual memproses.');
     addRevenue(id, 'app_fee', APP_FEE);
     return res.json({ ok: true, order: getOrder(id), payment: { paid: true, method: 'saldo' } });
   }
@@ -777,12 +777,12 @@ app.post('/api/payments/webhook', (req, res) => {
   if (o.status !== 'Menunggu Pembayaran') return res.json({ ok: true, note: 'sudah diproses' });
   if (paid){
     db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
-    addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana aman di rekening bersama. Penjual: silakan proses pesanan! 🔔');
+    addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana ditahan rekber. Menunggu penjual memproses.');
     addRevenue(o.id, 'app_fee', o.app_fee);
     return res.json({ ok: true });
   }
   if (failed){
-    addEvent(o.id, 'Dibatalkan', 'Pembayaran kedaluwarsa/gagal — pesan ulang bila masih berminat');
+    addEvent(o.id, 'Dibatalkan', 'Pembayaran kedaluwarsa/gagal.');
     return res.json({ ok: true });
   }
   res.json({ ok: true, note: 'status diabaikan' }); // pending dll.
@@ -794,9 +794,9 @@ app.post('/api/orders/:id/ship', auth, (req, res) => {
   if (!o || o.seller_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
   if (o.status !== 'Dana Ditahan (Rekber)') return bad(res, 409, 'Pesanan belum dibayar / sudah diproses');
   const isJasa = o.cat === 'jasa' || o.dist === 0;
-  if (o.mode === 'driver') addEvent(o.id, 'Diantar Driver', `Penjual menyerahkan barang ke Driver Lebak — menuju alamat pembeli 🛵`);
-  else if (isJasa) addEvent(o.id, 'Hasil Dikirim', 'Penjual mengirim hasil kerja — silakan review, lalu konfirmasi agar dana cair 🎨');
-  else addEvent(o.id, 'Dikirim', 'Penjual menyerahkan paket ke ekspedisi — resi terbit 📦');
+  if (o.mode === 'driver') addEvent(o.id, 'Diantar Driver', 'Barang diserahkan ke driver — menuju alamat pembeli.');
+  else if (isJasa) addEvent(o.id, 'Hasil Dikirim', 'Hasil kerja dikirim — periksa lalu konfirmasi agar dana cair.');
+  else addEvent(o.id, 'Dikirim', 'Paket diserahkan ke ekspedisi.');
   res.json({ ok: true, order: getOrder(o.id) });
 });
 
@@ -813,7 +813,7 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
     addRevenue(o.id, 'cod_fee', fee);
     db.prepare('UPDATE users SET cod_debt = cod_debt + ? WHERE id = ?').run(fee, o.seller_id);
     addEvent(o.id, 'Selesai',
-      `Ketemuan sukses — barang oke, bayar di tempat 🎉 Komisi COD Rp${fee.toLocaleString('id-ID')} (${COD_FEE_RATE * 100}%, min Rp${COD_FEE_MIN.toLocaleString('id-ID')}) dicatat sebagai tagihan penjual & dipotong otomatis dari pencairan rekber berikutnya.`);
+      `Transaksi COD selesai. Komisi COD Rp${fee.toLocaleString('id-ID')} dicatat sebagai tagihan penjual (dipotong dari pencairan rekber berikutnya).`);
     return res.json({ ok: true, order: getOrder(o.id), codFee: fee });
   }
   if (!CONFIRMABLE.includes(o.status)) return bad(res, 409, 'Barang belum dikirim penjual / sudah selesai');
@@ -835,7 +835,7 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
   // dana cair MASUK KE SALDO penjual — bisa ditarik atau dibelanjakan lagi
   walletTxn(o.seller_id, 'escrow_in', net, 'Dana cair: ' + o.pname.slice(0, 40), o.id);
   addEvent(o.id, 'Selesai — Dana Cair',
-    `Pembeli konfirmasi sesuai → Rp${net.toLocaleString('id-ID')} masuk ke SALDO penjual (komisi platform 3%${extra ? ' + program gratis ongkir 4%' : ''}${debtCut ? ' + pelunasan tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong). Tarik saldo kapan saja dari profil 💸`);
+    `Rp${net.toLocaleString('id-ID')} masuk ke saldo penjual (komisi 3%${extra ? ' + gratis ongkir 4%' : ''}${debtCut ? ' + tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong).`);
   res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, extra, driverCut, debtCut } });
 });
 
@@ -861,7 +861,7 @@ app.post('/api/orders/:id/complain', auth, (req, res) => {
   const o = getOrder(req.params.id);
   if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
   if (!CONFIRMABLE.includes(o.status)) return bad(res, 409, 'Komplain hanya saat barang sudah dikirim');
-  addEvent(o.id, 'Komplain — Ditinjau', 'Komplain dibuka: dana tetap ditahan, CS menengahi dengan bukti foto/video ⚖️');
+  addEvent(o.id, 'Komplain — Ditinjau', 'Komplain dibuka — dana ditahan sampai sengketa selesai.');
   res.json({ ok: true, order: getOrder(o.id) });
 });
 
@@ -895,7 +895,7 @@ app.get('/api/chats/:peerId', auth, (req, res) => {
 });
 app.post('/api/chats/:peerId', auth, (req, res) => {
   const pid = parseInt(req.params.peerId, 10);
-  if (pid === req.user.id) return bad(res, 400, 'Tidak bisa chat dengan diri sendiri 😄');
+  if (pid === req.user.id) return bad(res, 400, 'Tidak bisa chat dengan diri sendiri');
   if (!db.prepare('SELECT id FROM users WHERE id = ?').get(pid)) return bad(res, 404, 'Pengguna tidak ditemukan');
   const text = String(req.body.text || '').trim().slice(0, 1000);
   if (!text) return bad(res, 400, 'Pesan kosong');
