@@ -889,12 +889,12 @@ const CATS = [
   { id:'jasa',       label:'Jasa' },
   { id:'makanan',    label:'Makanan' },
   { id:'elektronik', label:'Elektronik' },
-  { id:'ikan',       label:'Ikan Hias' },
+  { id:'ternak',     label:'Peternakan' },
   { id:'fashion',    label:'Fashion' },
   { id:'kriya',      label:'Kriya Lebak' },
 ];
-const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ikan:'b-ikan', fashion:'b-fashion', kriya:'b-kriya' };
-const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ikan:'Ikan Hias', fashion:'Fashion', kriya:'Kriya Lebak' };
+const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik', ternak:'b-ikan', fashion:'b-fashion', kriya:'b-kriya' };
+const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ternak:'Peternakan', fashion:'Fashion', kriya:'Kriya Lebak' };
 const RADII = [ {v:5,l:'≤ 5 km'}, {v:10,l:'≤ 10 km'}, {v:25,l:'≤ 25 km'}, {v:Infinity,l:'Semua'} ];
 let COD_MAX_KM = 25, DRIVER_MAX_KM = 15, APP_FEE = 1000, FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 let COD_FEE_RATE = 0.02, COD_FEE_MIN = 1000;
@@ -911,7 +911,7 @@ const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
 function shipBreakdown(p, mode){
   if (mode === 'driver') return { base: driverFee(p.dist), seller: 0, subsidy: 0 };
-  const base = shipCost(p);
+  const base = p.ship_cost != null ? p.ship_cost : shipCost(p); // ongkir tetap dari penjual (peternakan)
   if (p.freeship) return { base, seller: base, subsidy: 0 };
   const subsidy = p.price >= FREESHIP_MIN ? Math.min(FREESHIP_CAP, base) : 0;
   return { base, seller: 0, subsidy };
@@ -1245,16 +1245,15 @@ async function doLogin(){
     }});
     token = r.token; user = r.user;
     store.set('token', token); store.set('user', user);
-    renderAuthSlot(); closeModal(); afterLogin();
-    toast('Halo lagi, ' + user.name.split(' ')[0] + '!');
+    // refresh penuh agar seluruh tampilan (badge, feed, chat) bersih dari sesi lama
+    location.reload();
   } catch (e) { toast(e.message); }
 }
 function doLogout(){
   token = null; user = null;
   store.set('token', null); store.set('user', null);
   if (es) { es.close(); es = null; }
-  renderAuthSlot(); closeModal(); updateBadges(); loadFeed();
-  toast('Sampai jumpa lagi!');
+  location.reload(); // refresh penuh — semua state sesi lama dibuang
 }
 function afterLogin(){
   if (!geoLive && !myLoc) locFallbackLabel(); // label GPS live tidak ditimpa
@@ -1264,6 +1263,7 @@ function afterLogin(){
 }
 async function openProfile(){
   if (!user) return openAuth('login');
+  await refreshMe(); // saldo & status terbaru dari server
   const myPosts = products.filter(p => p.seller_id === user.id).length;
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
@@ -1277,6 +1277,11 @@ async function openProfile(){
           <span class="dual-badge">Pembeli ✓ · Penjual ✓ — satu akun untuk semua</span>
           ${user.verified ? '' : `<div style="margin-top:10px"><button class="btn btn-mint btn-sm" onclick="reVerify()">Verifikasi email sekarang</button></div>`}
         </div>
+        <div style="background:var(--tint);border:1px solid var(--tint-line);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+          <div style="flex:1"><span style="font-size:12px;color:var(--muted);font-weight:600">Saldo Lebak.market</span>
+          <div style="font-size:22px;font-weight:800;color:var(--green)">${rupiah(user.balance || 0)}</div></div>
+          <button class="btn btn-coral btn-sm" onclick="openWallet()">Tarik / Riwayat</button>
+        </div>
         ${user.cod_debt ? `<div class="warn-note" style="margin-bottom:12px"><b>Tagihan komisi COD: ${rupiah(user.cod_debt)}</b> — dipotong otomatis dari pencairan rekber berikutnya.</div>` : ''}
         <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan + Jual untuk menambah</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
@@ -1286,6 +1291,50 @@ async function openProfile(){
       </div>
     </div>
   </div>`;
+}
+
+/* ---------- SALDO & PENARIKAN ---------- */
+async function openWallet(){
+  if (needLogin('membuka saldo')) return;
+  let w;
+  try { w = await api('/wallet'); } catch (e) { return toast(e.message); }
+  const kindLbl = { escrow_in:'Dana cair masuk', withdraw:'Penarikan', purchase:'Belanja pakai saldo' };
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Saldo Saya</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">SALDO AKTIF</p>
+          <b style="font-size:28px;color:var(--green)">${rupiah(w.balance)}</b>
+          <p>Hasil penjualan (escrow cair) masuk ke sini — bisa <b>ditarik</b> ke rekening/e-wallet atau <b>dipakai belanja</b> lagi di Lebak.market tanpa biaya layanan.</p>
+        </div>
+        <label class="f">Jumlah penarikan (min ${rupiah(w.minWithdraw)})</label>
+        <input class="f" id="wAmount" type="number" min="${w.minWithdraw}" max="${w.balance}" placeholder="cth: 50000">
+        <label class="f">Tujuan (bank/e-wallet · nomor · atas nama)</label>
+        <input class="f" id="wDest" placeholder="cth: BRI 1234567890 a.n. Mongg / DANA 08xxxx">
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" ${w.balance < w.minWithdraw ? 'disabled' : ''} onclick="doWithdraw()">Tarik Saldo</button>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Dana ditransfer admin maks 1×24 jam ke tujuan yang kamu isi.</p>
+        <div class="menu-mini" style="margin-top:16px">
+          <div class="mtitle">Riwayat saldo</div>
+          ${w.txns.length ? w.txns.map(t => `
+            <div class="menu-line"><span>${kindLbl[t.kind] || t.kind}<br><small style="color:var(--muted)">${esc(t.note)} · ${new Date(t.at).toLocaleDateString('id-ID')}</small></span>
+            <b style="color:${t.amount >= 0 ? 'var(--green)' : 'var(--amber)'};white-space:nowrap">${t.amount >= 0 ? '+' : '−'}${rupiah(Math.abs(t.amount))}</b></div>`).join('')
+          : '<div class="menu-line"><span>Belum ada transaksi saldo</span><b>—</b></div>'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function doWithdraw(){
+  const amount = document.getElementById('wAmount').value;
+  const dest = document.getElementById('wDest').value.trim();
+  try {
+    const r = await api('/wallet/withdraw', { method:'POST', body:{ amount, dest } });
+    await refreshMe();
+    toast(r.message);
+    openWallet();
+  } catch (e) { toast(e.message); }
 }
 
 /* ---------- INFO BIAYA ---------- */
@@ -1783,9 +1832,16 @@ function renderBuy(){
     const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
     const shipPaid = Math.max(0, bd.base - bd.seller - bd.subsidy);
     const m = PAY_METHODS.find(x => x.id === buy.pay);
-    const fee = m ? m.fee(p.price + shipPaid + APP_FEE) : 0;
+    const fee = buy.pay === 'saldo' ? 0 : m ? m.fee(p.price + shipPaid + APP_FEE) : 0;
+    const saldoNeed = p.price + shipPaid + APP_FEE; // bayar saldo = tanpa biaya layanan
+    const saldoOk = user && (user.balance || 0) >= saldoNeed;
     body = `${stepDots}
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
+      <div class="pay-opt ${saldoOk ? (buy.pay==='saldo'?'sel':'') : 'off'}" ${saldoOk?`onclick="buy.pay='saldo';renderBuy()"`:''}>
+        <span class="ic" style="font-weight:800;font-size:13px">S</span>
+        <div><b>Saldo Lebak.market</b><span>${user ? 'Saldomu: ' + rupiah(user.balance || 0) : ''} · tanpa biaya layanan${saldoOk ? '' : ' · saldo belum cukup (butuh ' + rupiah(saldoNeed) + ')'}</span></div>
+        <span class="rad"></span>
+      </div>
       ${PAY_METHODS.map(pm => `
         <div class="pay-opt ${buy.pay===pm.id?'sel':''}" onclick="buy.pay='${pm.id}';renderBuy()">
           <span class="ic" style="font-weight:800;font-size:13px">${PAY_IC[pm.id]}</span>
@@ -1794,11 +1850,11 @@ function renderBuy(){
         </div>`).join('')}
       <div style="background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-top:14px">
         <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
-        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir — jasa online, hasil dikirim digital':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
+        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir — jasa online, hasil dikirim digital':p.ship_cost!=null?'Ongkir (ditetapkan penjual)':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
         ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
         ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
-        <div class="sum-row"><span>Biaya layanan${m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
+        <div class="sum-row"><span>Biaya layanan${buy.pay==='saldo'?' (Saldo — gratis)':m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
         <div class="sum-row total"><span>Estimasi total (final dihitung server)</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
       </div>
       <div class="safe-note">Uangmu <b>tidak langsung ke penjual</b> — ditahan sistem dan baru cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
@@ -1841,8 +1897,20 @@ async function placeRekber(){
       buyerLat: myLoc?.lat, buyerLng: myLoc?.lng,
     }});
     await refreshBadges();
+    if (r.payment && r.payment.paid){
+      // dibayar pakai saldo — langsung lunas, tanpa halaman pembayaran
+      await refreshMe();
+      closeModal(); await loadFeed(); ordTab = 'beli'; showView('orders');
+      toast('Dibayar pakai Saldo ✓ — dana ditahan rekber sampai kamu konfirmasi barang sesuai');
+      return;
+    }
     openPayment(r.order);
   } catch (e) { toast(e.message); }
+}
+/* segarkan data akun (saldo dll.) dari server */
+async function refreshMe(){
+  if (!token) return;
+  try { user = (await api('/me')).user; store.set('user', user); renderAuthSlot(); } catch {}
 }
 
 function qrisHTML(){
@@ -2156,6 +2224,11 @@ function openSell(){
           ${CATS.filter(c => c.id!=='all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
         </select>
         <div id="jasaNote" class="safe-note hidden" style="margin-top:10px">Kategori <b>Jasa</b> = pengerjaan online: pembeli TIDAK dikenai ongkir, hasil dikirim via email/WA/chat. Pembayaran tetap aman lewat rekber.</div>
+        <div id="rowShipCost" class="hidden">
+          <label class="f">Ongkir dari penjual (Rp) — wajib untuk Peternakan</label>
+          <input class="f" id="sShipCost" type="number" min="0" placeholder="cth: 25000">
+          <p style="font-size:11.5px;color:var(--muted);margin-top:4px">Kirim hewan hidup butuh penanganan khusus — kamu yang menentukan ongkirnya, dibayar pembeli saat checkout.</p>
+        </div>
         <label class="f">Kondisi</label>
         <select class="f" id="sCond"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
         <label class="f">Harga (Rp)</label>
@@ -2173,10 +2246,12 @@ function openSell(){
   </div>`;
 }
 function onSellCat(){
-  const jasa = document.getElementById('sCat').value === 'jasa';
+  const cat = document.getElementById('sCat').value;
+  const jasa = cat === 'jasa';
   document.getElementById('jasaNote').classList.toggle('hidden', !jasa);
   document.getElementById('rowCod').classList.toggle('hidden', jasa);
   document.getElementById('rowFreeship').classList.toggle('hidden', jasa);
+  document.getElementById('rowShipCost').classList.toggle('hidden', cat !== 'ternak');
 }
 function compressImage(file){
   return new Promise((resolve, reject) => {
@@ -2229,6 +2304,7 @@ async function submitSell(){
       cod: document.getElementById('sCod').checked,
       freeship: document.getElementById('sFreeship').checked,
       img: sellImg,
+      shipCost: document.getElementById('sCat').value === 'ternak' ? document.getElementById('sShipCost').value : undefined,
       lat: myLoc?.lat, lng: myLoc?.lng, // posisi live penjual saat posting
     }});
     closeModal(); sellImg = null;

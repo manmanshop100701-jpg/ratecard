@@ -6,8 +6,15 @@
  */
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
+const fs = require('fs');
 
-const db = new DatabaseSync(process.env.DB_PATH || path.join(__dirname, 'data.db'));
+/* Lokasi DB: env DB_PATH > volume /data (Railway/Render) > folder server.
+ * PENTING utk produksi: pasang Volume di Railway (mount path /data) agar
+ * database TIDAK hilang setiap deploy — tanpa volume, filesystem di-reset. */
+const DB_PATH = process.env.DB_PATH
+  || (fs.existsSync('/data') ? '/data/data.db' : path.join(__dirname, 'data.db'));
+console.log('🗄️  Database:', DB_PATH, DB_PATH.startsWith('/data') ? '(volume persisten ✓)' : '(EPHEMERAL — pasang Volume /data di Railway agar data awet!)');
+const db = new DatabaseSync(DB_PATH);
 
 db.exec(`
   PRAGMA journal_mode = WAL;
@@ -106,6 +113,16 @@ db.exec(`
     amount INTEGER NOT NULL,
     at INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS wallet_txns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    kind TEXT NOT NULL,          -- escrow_in | withdraw | purchase
+    amount INTEGER NOT NULL,     -- + masuk, - keluar
+    note TEXT NOT NULL DEFAULT '',
+    order_id TEXT,
+    at INTEGER NOT NULL
+  );
 `);
 
 // Migrasi ringan untuk database lama (sebelum kolom img/lat/lng/dst ada)
@@ -113,7 +130,10 @@ try { db.exec('ALTER TABLE products ADD COLUMN img TEXT'); } catch {}
 try { db.exec('ALTER TABLE products ADD COLUMN lat REAL'); } catch {}
 try { db.exec('ALTER TABLE products ADD COLUMN lng REAL'); } catch {}
 try { db.exec('ALTER TABLE users ADD COLUMN cod_debt INTEGER NOT NULL DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE users ADD COLUMN balance INTEGER NOT NULL DEFAULT 0'); } catch {}
 try { db.exec('ALTER TABLE orders ADD COLUMN snap_token TEXT'); } catch {}
 try { db.exec('ALTER TABLE orders ADD COLUMN pay_url TEXT'); } catch {}
+try { db.exec('ALTER TABLE products ADD COLUMN ship_cost INTEGER'); } catch {} // ongkir tetap dari penjual (peternakan dll.)
+try { db.exec("UPDATE products SET cat = 'ternak' WHERE cat = 'ikan'"); } catch {} // Ikan Hias → Peternakan
 
 module.exports = db;

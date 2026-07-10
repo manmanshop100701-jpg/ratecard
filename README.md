@@ -25,6 +25,11 @@ npm start
 
 Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset total.
 
+> ⚠️ **Produksi (Railway/Render): WAJIB pasang Volume agar database tidak hilang tiap deploy.**
+> Railway: klik service → **Settings → Volumes → Attach Volume** → mount path **`/data`** → redeploy.
+> Server otomatis mendeteksi `/data` dan menyimpan `data.db` + foto upload di sana (tanpa perlu env tambahan).
+> Tanpa volume, filesystem di-reset di setiap deploy → semua akun/produk hilang.
+
 ## 🧩 Arsitektur & Endpoint
 
 | Endpoint | Fungsi |

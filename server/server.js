@@ -58,7 +58,8 @@ if (SMTP_READY) {
 }
 
 /* ---- Penyimpanan foto produk ---- */
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
+const UPLOAD_DIR = process.env.UPLOAD_DIR
+  || (fs.existsSync('/data') ? '/data/uploads' : path.join(__dirname, 'uploads')); // ikut volume persisten bila ada
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const app = express();
@@ -81,7 +82,8 @@ const codFee = price => Math.max(COD_FEE_MIN, Math.round(price * COD_FEE_RATE));
 const COD_MAX_KM = 25, DRIVER_MAX_KM = 15;
 const FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 const KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
-const CATS = ['jasa','makanan','elektronik','ikan','fashion','kriya'];
+const CATS = ['jasa','makanan','elektronik','ternak','fashion','kriya'];
+const MIN_WITHDRAW = 10000;
 
 /* ---- Lokasi live ----
  * Produk menyimpan koordinat GPS penjual saat posting. Jarak SELALU
@@ -122,7 +124,9 @@ const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
 function shipBreakdown(p, mode){
   if (mode === 'driver') return { base: driverFee(p.dist), seller: 0, subsidy: 0 };
-  const base = shipCost(p);
+  // ongkir tetap dari penjual (wajib utk peternakan — hewan hidup butuh
+  // penanganan khusus) menimpa tarif ekspedisi standar
+  const base = p.ship_cost != null ? p.ship_cost : shipCost(p);
   if (p.freeship) return { base, seller: base, subsidy: 0 };
   const subsidy = p.price >= FREESHIP_MIN ? Math.min(FREESHIP_CAP, base) : 0;
   return { base, seller: 0, subsidy };
@@ -400,7 +404,7 @@ function auth(req, res, next){
   if (!token) return bad(res, 401, 'Perlu login dulu');
   try {
     const data = jwt.verify(token, JWT_SECRET);
-    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt FROM users WHERE id = ?').get(data.uid);
+    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance FROM users WHERE id = ?').get(data.uid);
     if (!req.user) return bad(res, 401, 'Akun tidak ditemukan');
     next();
   } catch { return bad(res, 401, 'Sesi kedaluwarsa — login lagi ya'); }
@@ -425,6 +429,14 @@ function addEvent(orderId, status, note, notify = true){
 function addRevenue(orderId, kind, amount){
   if (amount > 0) db.prepare('INSERT INTO revenue (order_id, kind, amount, at) VALUES (?,?,?,?)').run(orderId, kind, amount, now());
 }
+/* ---- SALDO pengguna (wallet internal) ----
+ * Dana escrow yang cair masuk ke saldo penjual; saldo bisa ditarik
+ * (diproses admin dari saldo gateway) atau dipakai belanja lagi. */
+function walletTxn(userId, kind, amount, note, orderId = null){
+  db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(amount, userId);
+  db.prepare('INSERT INTO wallet_txns (user_id, kind, amount, note, order_id, at) VALUES (?,?,?,?,?,?)')
+    .run(userId, kind, amount, note, orderId, now());
+}
 
 /* ================= CONFIG ================= */
 app.get('/api/config', (req, res) => {
@@ -445,7 +457,7 @@ app.get('/api/config', (req, res) => {
  * email+password selalu bisa, bahkan bila email OTP tidak sampai.
  * Verifikasi email hanya menaikkan status verified — bukan syarat login. */
 const signToken = uid => jwt.sign({ uid }, JWT_SECRET, { expiresIn: '30d' });
-const userPayload = u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec, verified: u.verified ? 1 : 0, cod_debt: u.cod_debt || 0 });
+const userPayload = u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec, verified: u.verified ? 1 : 0, cod_debt: u.cod_debt || 0, balance: u.balance || 0 });
 
 app.post('/api/auth/register', async (req, res) => {
   const { name = '', email = '', phone = '', kec = '', password = '' } = req.body;
@@ -581,12 +593,19 @@ app.get('/api/products', optionalAuth, (req, res) => {
 });
 
 app.post('/api/products', auth, (req, res) => {
-  const { name = '', cat, cond = 'baru', price, stock, descr = '', cod = true, freeship = false, img } = req.body;
+  const { name = '', cat, cond = 'baru', price, stock, descr = '', cod = true, freeship = false, img, shipCost: shipCostRaw } = req.body;
   if (!name.trim()) return bad(res, 400, 'Nama produk wajib diisi');
   if (!CATS.includes(cat)) return bad(res, 400, 'Kategori tidak dikenal');
   const pr = parseInt(price, 10), st = parseInt(stock, 10);
   if (!pr || pr < 1000) return bad(res, 400, 'Harga minimal Rp1.000');
   if (!st || st < 1) return bad(res, 400, 'Stok minimal 1');
+  // ongkir tetap dari penjual — wajib untuk kategori peternakan
+  let shipCostVal = null;
+  if (cat !== 'jasa' && shipCostRaw !== undefined && shipCostRaw !== null && shipCostRaw !== ''){
+    shipCostVal = parseInt(shipCostRaw, 10);
+    if (isNaN(shipCostVal) || shipCostVal < 0 || shipCostVal > 10_000_000) return bad(res, 400, 'Ongkir dari penjual tidak valid');
+  }
+  if (cat === 'ternak' && shipCostVal === null) return bad(res, 400, 'Kategori Peternakan wajib mengisi ongkir dari penjual (kirim hewan hidup)');
   let imgPath = null;
   if (img){
     imgPath = saveImage(img);
@@ -596,11 +615,11 @@ app.post('/api/products', auth, (req, res) => {
   // posisi GPS live penjual saat posting; tanpa izin GPS → pusat kecamatan domisili
   const pos = parseCoords(req.body.lat, req.body.lng) || KEC_COORDS[req.user.kec] || KEC_COORDS.Rangkasbitung;
   const r = db.prepare(`INSERT INTO products
-    (seller_id, cat, name, price, stock, cond, loc, dist, lat, lng, cod, freeship, lebak, emoji, g, img, descr, created_at)
-    VALUES (?,?,?,?,?,?,?,0.5,?,?,?,?,1,'',?,?,?,?)`)
+    (seller_id, cat, name, price, stock, cond, loc, dist, lat, lng, cod, freeship, lebak, emoji, g, img, descr, ship_cost, created_at)
+    VALUES (?,?,?,?,?,?,?,0.5,?,?,?,?,1,'',?,?,?,?,?)`)
     .run(req.user.id, cat, name.trim(), pr, st, cond === 'bekas' ? 'bekas' : 'baru',
          req.user.kec + ', Lebak', pos.lat, pos.lng, cod ? 1 : 0, freeship ? 1 : 0,
-         g, imgPath, String(descr).trim() || 'Tanpa deskripsi.', now());
+         g, imgPath, String(descr).trim() || 'Tanpa deskripsi.', shipCostVal, now());
   const prod = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(Number(r.lastInsertRowid));
   sseBroadcast('product', { id: prod.id, name: prod.name, seller: prod.seller_name }, req.user.id);
   res.json({ ok: true, product: prod });
@@ -643,7 +662,8 @@ app.post('/api/orders', auth, async (req, res) => {
 
   if (!['rekber', 'driver'].includes(mode)) return bad(res, 400, 'Mode transaksi tidak dikenal');
   if (mode === 'driver' && (isJasa || p.dist > DRIVER_MAX_KM)) return bad(res, 400, 'Driver hanya untuk penjual ≤ ' + DRIVER_MAX_KM + ' km');
-  const gw = GATEWAY_FEES[payMethod];
+  const paySaldo = payMethod === 'saldo';
+  const gw = paySaldo ? { name: 'Saldo Lebak.market', fee: () => 0 } : GATEWAY_FEES[payMethod];
   if (!gw) return bad(res, 400, 'Metode pembayaran tidak dikenal');
   if (!recvName || !recvAddr) return bad(res, 400, 'Isi nama & alamat/kontak penerima');
 
@@ -651,6 +671,23 @@ app.post('/api/orders', auth, async (req, res) => {
   const ship = Math.max(0, bd.base - bd.seller - bd.subsidy);
   const gatewayFee = gw.fee(p.price + ship + APP_FEE);
   const total = p.price + ship + APP_FEE + gatewayFee;
+
+  if (paySaldo){
+    // ---- BAYAR PAKAI SALDO: langsung lunas & dana ditahan rekber ----
+    const bal = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id)?.balance || 0;
+    if (bal < total) return bad(res, 402, `Saldo tidak cukup (saldo Rp${bal.toLocaleString('id-ID')}, butuh Rp${total.toLocaleString('id-ID')})`);
+    const id = uid();
+    db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, created_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'saldo', p.price, ship, APP_FEE, 0, total,
+           'Menunggu Pembayaran', recvName, recvAddr, now());
+    walletTxn(req.user.id, 'purchase', -total, 'Bayar ' + p.name.slice(0, 40) + ' (rekber)', id);
+    db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(p.id);
+    addEvent(id, 'Menunggu Pembayaran', 'Invoice diterbitkan', false);
+    addEvent(id, 'Dana Ditahan (Rekber)', 'Dibayar pakai Saldo — dana aman di rekening bersama. Penjual: silakan proses pesanan! 🔔');
+    addRevenue(id, 'app_fee', APP_FEE);
+    return res.json({ ok: true, order: getOrder(id), payment: { paid: true, method: 'saldo' } });
+  }
 
   const id = uid();
   let pay, snapToken = null, payUrl = null, vaNum = null;
@@ -793,9 +830,29 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
   addRevenue(o.id, 'commission', commission);
   addRevenue(o.id, 'freeship_extra', extra);
   addRevenue(o.id, 'driver_cut', driverCut);
+  // dana cair MASUK KE SALDO penjual — bisa ditarik atau dibelanjakan lagi
+  walletTxn(o.seller_id, 'escrow_in', net, 'Dana cair: ' + o.pname.slice(0, 40), o.id);
   addEvent(o.id, 'Selesai — Dana Cair',
-    `Pembeli konfirmasi sesuai → dana diteruskan ke penjual: Rp${net.toLocaleString('id-ID')} (komisi platform 3%${extra ? ' + program gratis ongkir 4%' : ''}${debtCut ? ' + pelunasan tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong) 💸`);
+    `Pembeli konfirmasi sesuai → Rp${net.toLocaleString('id-ID')} masuk ke SALDO penjual (komisi platform 3%${extra ? ' + program gratis ongkir 4%' : ''}${debtCut ? ' + pelunasan tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong). Tarik saldo kapan saja dari profil 💸`);
   res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, extra, driverCut, debtCut } });
+});
+
+/* ================= SALDO & PENARIKAN ================= */
+app.get('/api/wallet', auth, (req, res) => {
+  const balance = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id).balance;
+  const txns = db.prepare('SELECT kind, amount, note, order_id, at FROM wallet_txns WHERE user_id = ? ORDER BY at DESC LIMIT 50').all(req.user.id);
+  res.json({ balance, minWithdraw: MIN_WITHDRAW, txns });
+});
+app.post('/api/wallet/withdraw', auth, (req, res) => {
+  const amount = parseInt(req.body.amount, 10);
+  const dest = String(req.body.dest || '').trim().slice(0, 120);
+  if (!amount || amount < MIN_WITHDRAW) return bad(res, 400, 'Penarikan minimal Rp' + MIN_WITHDRAW.toLocaleString('id-ID'));
+  if (!dest || dest.length < 8) return bad(res, 400, 'Isi tujuan penarikan (bank/e-wallet + nomor + atas nama)');
+  const balance = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id).balance;
+  if (amount > balance) return bad(res, 400, 'Saldo tidak cukup (saldo Rp' + balance.toLocaleString('id-ID') + ')');
+  walletTxn(req.user.id, 'withdraw', -amount, 'Penarikan ke ' + dest + ' · diproses admin maks 1×24 jam');
+  console.log(`[withdraw] ${req.user.name} (${req.user.email}) menarik Rp${amount.toLocaleString('id-ID')} → ${dest}`);
+  res.json({ ok: true, balance: balance - amount, message: 'Permintaan penarikan dicatat — dana dikirim admin maks 1×24 jam' });
 });
 
 app.post('/api/orders/:id/complain', auth, (req, res) => {
