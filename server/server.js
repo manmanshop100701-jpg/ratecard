@@ -64,6 +64,7 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '8mb' })); // foto dikirim sebagai data URL terkompresi
+app.use(express.urlencoded({ extended: false })); // callback Duitku berbentuk form-urlencoded
 app.use('/uploads', express.static(UPLOAD_DIR));
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -132,27 +133,94 @@ const GATEWAY_FEES = {
   ewal: { name:'E-Wallet',             fee: s => Math.round(s * 0.015) },
 };
 
-/* ================= GATEWAY PEMBAYARAN (Midtrans Snap ASLI) =================
- * Set env berikut (dari dashboard.midtrans.com → Settings → Access Keys):
- *   MIDTRANS_SERVER_KEY  = SB-Mid-server-xxx (sandbox) / Mid-server-xxx (produksi)
- *   MIDTRANS_CLIENT_KEY  = SB-Mid-client-xxx / Mid-client-xxx
- *   MIDTRANS_IS_PRODUCTION=1  → pakai app.midtrans.com (uang sungguhan)
- * Lalu set Payment Notification URL di dashboard Midtrans ke:
- *   https://domainmu.com/api/payments/webhook
- * Tanpa key → otomatis mode simulasi (tombol [SANDBOX] di frontend).
+/* ================= GATEWAY PEMBAYARAN ASLI =================
+ * Dua penyedia didukung — isi salah satu, sisanya otomatis:
+ *
+ * DUITKU (duitku.com — ramah pendaftar perorangan):
+ *   DUITKU_MERCHANT_CODE = kode merchant (mis. DS12345 / D12345)
+ *   DUITKU_API_KEY       = API key dari dashboard Duitku → Proyek Saya
+ *   DUITKU_IS_PRODUCTION=1  → passport.duitku.com (uang sungguhan)
+ *   Callback URL di dashboard Duitku: https://domainmu.com/api/payments/webhook
+ *
+ * MIDTRANS (dashboard.midtrans.com → Settings → Access Keys):
+ *   MIDTRANS_SERVER_KEY / MIDTRANS_CLIENT_KEY / MIDTRANS_IS_PRODUCTION=1
+ *   Notification URL: https://domainmu.com/api/payments/webhook
+ *
+ * Bila keduanya diisi, DUITKU yang dipakai. Tanpa key sama sekali →
+ * mode simulasi (tombol [SANDBOX] di frontend).
  */
 const crypto = require('crypto');
+const md5 = s => crypto.createHash('md5').update(s).digest('hex');
+const sha256 = s => crypto.createHash('sha256').update(s).digest('hex');
+
+const DUITKU_MERCHANT_CODE = process.env.DUITKU_MERCHANT_CODE || '';
+const DUITKU_API_KEY = process.env.DUITKU_API_KEY || '';
+const DUITKU_PROD = process.env.DUITKU_IS_PRODUCTION === '1';
+const DUITKU_BASE = DUITKU_PROD ? 'https://passport.duitku.com/webapi' : 'https://sandbox.duitku.com/webapi';
+
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || '';
 const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY || '';
 const MIDTRANS_PROD = process.env.MIDTRANS_IS_PRODUCTION === '1';
 const MIDTRANS_BASE = MIDTRANS_PROD ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
-const GATEWAY_REAL = !!MIDTRANS_SERVER_KEY;
+
+const GATEWAY_KIND = (DUITKU_MERCHANT_CODE && DUITKU_API_KEY) ? 'duitku'
+  : MIDTRANS_SERVER_KEY ? 'midtrans' : 'sim';
+const GATEWAY_REAL = GATEWAY_KIND !== 'sim';
 // pilihan metode di checkout kita → metode yang dibuka di popup Snap
 const SNAP_PAYMENTS = {
   qris: ['qris', 'gopay'],
   va:   ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'other_va', 'echannel'],
   ewal: ['gopay', 'shopeepay'],
 };
+
+/* ---- DUITKU (API v2: getpaymentmethod + inquiry) ---- */
+const DUITKU_FALLBACK = { qris: 'SP', va: 'M2', ewal: 'OV' }; // bila daftar metode gagal diambil
+function duitkuPickMethod(list, methodId){
+  const tests = {
+    qris: x => /QRIS/i.test(x.paymentName || '') || ['SP','NQ','DQ','GQ','SQ'].includes(x.paymentMethod),
+    va:   x => /V\.?A|VIRTUAL|ATM|BANK/i.test(x.paymentName || ''),
+    ewal: x => /OVO|DANA|SHOPEE|LINK\s?AJA|GOPAY|WALLET/i.test(x.paymentName || ''),
+  };
+  const hit = list.find(tests[methodId] || (() => false)) || list[0];
+  return hit ? hit.paymentMethod : DUITKU_FALLBACK[methodId] || 'SP';
+}
+async function duitkuCreate(order, buyer, itemName, methodId, baseUrl){
+  // 1) ambil metode pembayaran yang AKTIF di akun merchant ini
+  let method = DUITKU_FALLBACK[methodId] || 'SP';
+  try {
+    const dt = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 19).replace('T', ' '); // WIB
+    const r1 = await fetch(DUITKU_BASE + '/api/merchant/paymentmethod/getpaymentmethod', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        merchantcode: DUITKU_MERCHANT_CODE, amount: order.total, datetime: dt,
+        signature: sha256(DUITKU_MERCHANT_CODE + order.total + dt + DUITKU_API_KEY),
+      }),
+    });
+    if (r1.ok) method = duitkuPickMethod((await r1.json()).paymentFee || [], methodId);
+  } catch (e) { console.error('[duitku] getpaymentmethod gagal, pakai fallback:', e.message); }
+  // 2) buat transaksi (inquiry) → dapat paymentUrl untuk pembeli
+  const r2 = await fetch(DUITKU_BASE + '/api/merchant/v2/inquiry', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      merchantCode: DUITKU_MERCHANT_CODE,
+      paymentAmount: order.total,
+      paymentMethod: method,
+      merchantOrderId: order.id,
+      productDetails: itemName.slice(0, 100),
+      customerVaName: buyer.name.slice(0, 20),
+      email: buyer.email,
+      phoneNumber: buyer.phone,
+      callbackUrl: baseUrl + '/api/payments/webhook',
+      returnUrl: baseUrl + '/?order=' + order.id,
+      signature: md5(DUITKU_MERCHANT_CODE + order.id + order.total + DUITKU_API_KEY),
+      expiryPeriod: 1440, // menit = 24 jam
+    }),
+  });
+  if (!r2.ok) throw new Error('Duitku ' + r2.status + ': ' + (await r2.text()).slice(0, 300));
+  const d = await r2.json(); // { paymentUrl, reference, vaNumber, qrString, statusCode }
+  if (d.statusCode && d.statusCode !== '00') throw new Error('Duitku: ' + (d.statusMessage || d.statusCode));
+  return d;
+}
 async function midtransCreate(order, buyer, items, methodId){
   const payload = {
     transaction_details: { order_id: order.id, gross_amount: order.total },
@@ -187,9 +255,13 @@ const gateway = {
     };
   },
   verifySignature(req){
-    if (GATEWAY_REAL){
+    const b = req.body || {};
+    if (GATEWAY_KIND === 'duitku'){
+      // Verifikasi resmi Duitku: MD5(merchantCode + amount + merchantOrderId + apiKey)
+      return md5(DUITKU_MERCHANT_CODE + String(b.amount) + String(b.merchantOrderId) + DUITKU_API_KEY) === b.signature;
+    }
+    if (GATEWAY_KIND === 'midtrans'){
       // Verifikasi resmi Midtrans: SHA-512(order_id + status_code + gross_amount + ServerKey)
-      const b = req.body || {};
       const sig = crypto.createHash('sha512')
         .update(String(b.order_id) + String(b.status_code) + String(b.gross_amount) + MIDTRANS_SERVER_KEY)
         .digest('hex');
@@ -199,6 +271,11 @@ const gateway = {
     return !process.env.WEBHOOK_SECRET || req.body.signature === process.env.WEBHOOK_SECRET;
   },
 };
+/* URL publik situs — untuk callback/return URL gateway.
+ * Set env PUBLIC_URL (mis. https://tokomu.up.railway.app) atau otomatis
+ * dari header request (Railway/Render menyetel x-forwarded-proto). */
+const baseUrlOf = req => (process.env.PUBLIC_URL || '').replace(/\/$/, '')
+  || `${req.get('x-forwarded-proto') || req.protocol}://${req.get('host')}`;
 
 /* ================= REALTIME (Server-Sent Events) ================= */
 const sseClients = new Map(); // userId -> Set<res>
@@ -355,7 +432,11 @@ app.get('/api/config', (req, res) => {
     kecamatan: KECAMATAN, cats: CATS, kecCoords: KEC_COORDS,
     fees: { appFee: APP_FEE, sellerCommission: SELLER_COMMISSION, driverCommission: DRIVER_COMMISSION, freeshipExtra: FREESHIP_EXTRA, codFeeRate: COD_FEE_RATE, codFeeMin: COD_FEE_MIN },
     limits: { codMaxKm: COD_MAX_KM, driverMaxKm: DRIVER_MAX_KM, freeshipCap: FREESHIP_CAP, freeshipMin: FREESHIP_MIN },
-    gateway: { real: GATEWAY_REAL, clientKey: MIDTRANS_CLIENT_KEY, snapJs: MIDTRANS_BASE + '/snap/snap.js', production: MIDTRANS_PROD },
+    gateway: {
+      real: GATEWAY_REAL, provider: GATEWAY_KIND,
+      clientKey: MIDTRANS_CLIENT_KEY, snapJs: MIDTRANS_BASE + '/snap/snap.js',
+      production: GATEWAY_KIND === 'duitku' ? DUITKU_PROD : MIDTRANS_PROD,
+    },
   });
 });
 
@@ -571,30 +652,44 @@ app.post('/api/orders', auth, async (req, res) => {
   const total = p.price + ship + APP_FEE + gatewayFee;
 
   const id = uid();
-  let pay, snap = null;
-  if (GATEWAY_REAL){
-    // ---- MIDTRANS ASLI: buat transaksi Snap, uang masuk beneran ----
+  let pay, snapToken = null, payUrl = null, vaNum = null;
+  if (GATEWAY_KIND === 'duitku'){
+    // ---- DUITKU ASLI: buat transaksi, pembeli diarahkan ke paymentUrl ----
+    try {
+      const d = await duitkuCreate({ id, total }, req.user, p.name, payMethod, baseUrlOf(req));
+      payUrl = d.paymentUrl || null;
+      vaNum = d.vaNumber || null;
+      pay = { real: true, provider: 'duitku', pay_url: payUrl, va: vaNum, expires_at: Date.now() + 24 * 3600e3 };
+    } catch (e) {
+      console.error('[duitku] gagal membuat transaksi:', e.message);
+      return bad(res, 502, 'Gateway pembayaran sedang bermasalah — coba lagi sebentar lagi');
+    }
+  } else if (GATEWAY_KIND === 'midtrans'){
+    // ---- MIDTRANS ASLI: buat transaksi Snap ----
     const items = [
       { id: 'P' + p.id, name: p.name.slice(0, 50), price: p.price, quantity: 1 },
       ...(ship > 0 ? [{ id: 'SHIP', name: mode === 'driver' ? 'Ongkos Driver Lebak' : 'Ongkir', price: ship, quantity: 1 }] : []),
       { id: 'FEE', name: 'Biaya aplikasi', price: APP_FEE, quantity: 1 },
       ...(gatewayFee > 0 ? [{ id: 'GWF', name: 'Biaya layanan pembayaran', price: gatewayFee, quantity: 1 }] : []),
     ];
-    try { snap = await midtransCreate({ id, total }, req.user, items, payMethod); }
-    catch (e) {
+    try {
+      const snap = await midtransCreate({ id, total }, req.user, items, payMethod);
+      snapToken = snap.token; payUrl = snap.redirect_url;
+      pay = { real: true, provider: 'midtrans', snap_token: snapToken, redirect_url: payUrl, expires_at: Date.now() + 24 * 3600e3 };
+    } catch (e) {
       console.error('[midtrans] gagal membuat transaksi:', e.message);
       return bad(res, 502, 'Gateway pembayaran sedang bermasalah — coba lagi sebentar lagi');
     }
-    pay = { real: true, snap_token: snap.token, redirect_url: snap.redirect_url, expires_at: Date.now() + 24 * 3600e3 };
   } else {
-    pay = gateway.create({ id, total }); // mode simulasi (belum ada MIDTRANS_SERVER_KEY)
+    pay = gateway.create({ id, total }); // mode simulasi (belum ada key gateway)
+    vaNum = pay.va;
   }
   db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, va, snap_token, pay_url, created_at)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, payMethod, p.price, ship, APP_FEE, gatewayFee, total,
-         'Menunggu Pembayaran', recvName, recvAddr, pay.va || null, snap ? snap.token : null, snap ? snap.redirect_url : null, now());
+         'Menunggu Pembayaran', recvName, recvAddr, vaNum || null, snapToken, payUrl, now());
   addEvent(id, 'Menunggu Pembayaran', GATEWAY_REAL
-    ? 'Invoice Midtrans diterbitkan — selesaikan pembayaran sebelum 24 jam'
+    ? `Invoice ${GATEWAY_KIND === 'duitku' ? 'Duitku' : 'Midtrans'} diterbitkan — selesaikan pembayaran sebelum 24 jam`
     : 'Invoice rekber diterbitkan — bayar sebelum 24 jam');
   res.json({ ok: true, order: getOrder(id), payment: pay });
 });
@@ -621,26 +716,36 @@ app.get('/api/sales', auth, (req, res) => {
   res.json({ sales: ids.map(x => getOrder(x.id)) });
 });
 
-/* --- WEBHOOK PEMBAYARAN (notifikasi Midtrans asli / simulasi sandbox) --- */
+/* --- WEBHOOK PEMBAYARAN (notifikasi Duitku / Midtrans asli / simulasi) --- */
 app.post('/api/payments/webhook', (req, res) => {
   if (!gateway.verifySignature(req)) return bad(res, 403, 'Signature tidak valid');
-  const { order_id, transaction_status = 'settlement', fraud_status } = req.body;
+  let order_id, paid, failed;
+  if (GATEWAY_KIND === 'duitku'){
+    // Duitku: form-urlencoded { merchantOrderId, resultCode ('00'=sukses), amount, signature, ... }
+    order_id = req.body.merchantOrderId;
+    paid = req.body.resultCode === '00';
+    failed = req.body.resultCode === '01' || req.body.resultCode === '02';
+  } else {
+    const { transaction_status = 'settlement', fraud_status } = req.body;
+    order_id = req.body.order_id;
+    paid = transaction_status === 'settlement'
+      || (transaction_status === 'capture' && (!fraud_status || fraud_status === 'accept'));
+    failed = ['expire', 'cancel', 'deny', 'failure'].includes(transaction_status);
+  }
   const o = db.prepare('SELECT * FROM orders WHERE id = ?').get(order_id);
   if (!o) return bad(res, 404, 'Order tidak ditemukan');
   if (o.status !== 'Menunggu Pembayaran') return res.json({ ok: true, note: 'sudah diproses' });
-  const paid = transaction_status === 'settlement'
-    || (transaction_status === 'capture' && (!fraud_status || fraud_status === 'accept'));
   if (paid){
     db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
     addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana aman di rekening bersama. Penjual: silakan proses pesanan! 🔔');
     addRevenue(o.id, 'app_fee', o.app_fee);
     return res.json({ ok: true });
   }
-  if (['expire', 'cancel', 'deny', 'failure'].includes(transaction_status)){
-    addEvent(o.id, 'Dibatalkan', 'Pembayaran ' + (transaction_status === 'expire' ? 'kedaluwarsa' : 'gagal/dibatalkan') + ' — pesan ulang bila masih berminat');
+  if (failed){
+    addEvent(o.id, 'Dibatalkan', 'Pembayaran kedaluwarsa/gagal — pesan ulang bila masih berminat');
     return res.json({ ok: true });
   }
-  res.json({ ok: true, note: 'status diabaikan: ' + transaction_status }); // pending dll.
+  res.json({ ok: true, note: 'status diabaikan' }); // pending dll.
 });
 
 /* --- Aksi PENJUAL: kirim barang / serahkan ke driver / kirim hasil --- */

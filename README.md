@@ -48,16 +48,24 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 
 **Keamanan yang sudah diterapkan:** password di-bcrypt, sesi JWT, harga/ongkir/komisi dihitung ulang di server (input frontend tidak dipercaya), OTP dibatasi umur & percobaan, escape output di frontend.
 
-## 💳 Payment Gateway Midtrans ASLI (sudah terpasang di kode)
+## 💳 Payment Gateway ASLI (Duitku ATAU Midtrans — sudah terpasang di kode)
 
-Integrasi Midtrans Snap sudah built-in — tanpa key, aplikasi otomatis jalan di mode simulasi. Mengaktifkan pembayaran sungguhan:
-1. Daftar [Midtrans](https://midtrans.com) (gratis; butuh KTP + rekening bank) → dashboard → **Settings → Access Keys**
-2. Set env: `MIDTRANS_SERVER_KEY` + `MIDTRANS_CLIENT_KEY` (mulai dari key **Sandbox** `SB-Mid-...` untuk uji coba; uang belum sungguhan)
-3. Dashboard Midtrans → **Settings → Payment → Notification URL** → isi `https://domainmu.com/api/payments/webhook` (signature SHA-512 diverifikasi otomatis oleh server)
-4. Uji checkout: popup Snap muncul (QRIS/VA/GoPay/ShopeePay) — di sandbox pakai [simulator Midtrans](https://simulator.sandbox.midtrans.com)
-5. Lolos review Midtrans → ganti ke key produksi + set `MIDTRANS_IS_PRODUCTION=1` → **uang masuk sungguhan** ke akun Midtrans-mu, ditarik ke rekening bank
+Dua penyedia didukung; isi key salah satu dan pembayaran sungguhan aktif otomatis. Tanpa key, aplikasi jalan di mode simulasi. **Bila keduanya diisi, Duitku yang dipakai.**
 
-Begitu key terisi, tombol "[SANDBOX] Simulasikan Pembayaran" otomatis hilang dan diganti popup pembayaran asli.
+### Opsi A — Duitku (ramah pendaftar perorangan, cukup KTP + rekening)
+1. Daftar di [duitku.com](https://duitku.com) → buat **Proyek** → catat **Merchant Code** (mis. `DS12345`) dan **API Key**
+2. Set env: `DUITKU_MERCHANT_CODE` + `DUITKU_API_KEY` (akun baru = mode **sandbox** dulu; uang belum sungguhan)
+3. Di pengaturan proyek Duitku, isi **Callback URL**: `https://domainmu.com/api/payments/webhook` (signature MD5 resmi Duitku diverifikasi otomatis oleh server)
+4. Uji checkout: pembeli diarahkan ke halaman pembayaran Duitku (QRIS/VA/e-wallet dipilih di sana)
+5. Proyek disetujui untuk produksi → set `DUITKU_IS_PRODUCTION=1` → **uang masuk sungguhan** ke saldo Duitku-mu, dicairkan ke rekening
+
+### Opsi B — Midtrans
+1. Daftar [Midtrans](https://midtrans.com) → dashboard → **Settings → Access Keys**
+2. Set env: `MIDTRANS_SERVER_KEY` + `MIDTRANS_CLIENT_KEY` (mulai dari key **Sandbox** `SB-Mid-...`)
+3. Dashboard → **Settings → Payment → Notification URL** → `https://domainmu.com/api/payments/webhook` (signature SHA-512 diverifikasi otomatis)
+4. Lolos review → key produksi + `MIDTRANS_IS_PRODUCTION=1`
+
+Tambahan: set `PUBLIC_URL` (mis. `https://tokomu.up.railway.app`) agar callback/return URL gateway selalu benar; tanpa itu server menebak dari header request. Begitu key terisi, tombol "[SANDBOX] Simulasikan Pembayaran" otomatis diganti pembayaran asli.
 
 ## ☁️ Deploy ke Cloud (Railway / Render)
 
@@ -87,9 +95,11 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | `SMTP_HOST/PORT/USER/PASS` | SMTP umum lainnya |
 | `OTP_IN_RESPONSE` | Otomatis: `0` saat email terpasang, `1` (mode pilot, kode tampil di aplikasi) saat belum |
 | `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
-| `MIDTRANS_SERVER_KEY` | Server Key Midtrans — mengaktifkan pembayaran **sungguhan** (tanpa ini = mode simulasi) |
-| `MIDTRANS_CLIENT_KEY` | Client Key Midtrans — dipakai popup Snap di frontend |
+| `DUITKU_MERCHANT_CODE` + `DUITKU_API_KEY` | Kredensial Duitku — mengaktifkan pembayaran **sungguhan** (prioritas di atas Midtrans) |
+| `DUITKU_IS_PRODUCTION` | `1` = produksi (passport.duitku.com); kosong = sandbox |
+| `MIDTRANS_SERVER_KEY` + `MIDTRANS_CLIENT_KEY` | Kredensial Midtrans — alternatif gateway |
 | `MIDTRANS_IS_PRODUCTION` | `1` = mode produksi (app.midtrans.com); kosong = sandbox |
+| `PUBLIC_URL` | URL publik situs untuk callback/return gateway (mis. `https://tokomu.up.railway.app`) |
 | `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |
 | `WEBHOOK_SECRET` | Kosong = tombol sandbox aktif; isi saat Midtrans asli terpasang |
 | `PORT` | Diisi otomatis oleh platform |

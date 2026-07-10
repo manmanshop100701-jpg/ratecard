@@ -1791,6 +1791,27 @@ async function paySnap(orderId, snapToken, payUrl){
   }
 }
 function openPayment(o){
+  if (GATEWAY.real && !o.snap_token && o.pay_url){
+    // Duitku (atau gateway hosted lain): pembeli menyelesaikan pembayaran
+    // di halaman resmi gateway — metode (QRIS/VA/e-wallet) dipilih di sana.
+    document.getElementById('modalRoot').innerHTML = `
+    <div class="overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-head"><h3>Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="pay-box">
+            <span class="count-pill">Bayar sebelum <b>24 jam</b></span>
+            <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
+            ${o.va ? `<div class="va-num">${String(o.va).replace(/(\d{4})(?=\d)/g,'$1 ')}</div>` : ''}
+            <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
+            <p style="font-size:12px;color:var(--muted)">Pembayaran diproses gateway resmi (QRIS, VA bank, e-wallet). Dana masuk rekber, bukan langsung ke penjual.</p>
+          </div>
+          <a class="btn btn-coral" style="width:100%;margin-top:18px" href="${esc(o.pay_url)}" target="_blank" rel="noopener" onclick="setTimeout(()=>{closeModal();ordTab='beli';showView('orders');toast('Selesaikan pembayaran di tab baru — status terupdate otomatis di sini')},400)">Bayar Sekarang</a>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
   if (GATEWAY.real && o.snap_token){
     document.getElementById('modalRoot').innerHTML = `
     <div class="overlay" onclick="if(event.target===this)closeModal()">
@@ -1826,7 +1847,7 @@ function openPayment(o){
         </div>
         <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">[SANDBOX] Simulasikan Pembayaran Berhasil</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Mode simulasi — aktifkan Midtrans asli dengan mengisi <b>MIDTRANS_SERVER_KEY</b> &amp; <b>MIDTRANS_CLIENT_KEY</b> di server, maka tombol ini otomatis diganti pembayaran sungguhan.
+          Mode simulasi — isi key <b>Duitku</b> (DUITKU_MERCHANT_CODE + DUITKU_API_KEY) atau <b>Midtrans</b> di server, maka tombol ini otomatis diganti pembayaran sungguhan.
         </p>
       </div>
     </div>
