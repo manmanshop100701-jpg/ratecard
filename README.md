@@ -105,6 +105,7 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | `MIDTRANS_SERVER_KEY` + `MIDTRANS_CLIENT_KEY` | Kredensial Midtrans — alternatif gateway |
 | `MIDTRANS_IS_PRODUCTION` | `1` = mode produksi (app.midtrans.com); kosong = sandbox |
 | `PUBLIC_URL` | URL publik situs untuk callback/return gateway (mis. `https://tokomu.up.railway.app`) |
+| `ADMIN_KEY` | Kunci admin — buka `/api/admin/withdrawals?key=ADMIN_KEY` untuk melihat daftar permintaan penarikan saldo penjual |
 | `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |
 | `WEBHOOK_SECRET` | Kosong = tombol sandbox aktif; isi saat Midtrans asli terpasang |
 | `PORT` | Diisi otomatis oleh platform |

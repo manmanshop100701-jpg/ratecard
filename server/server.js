@@ -902,6 +902,19 @@ app.post('/api/chats/:peerId', auth, (req, res) => {
   res.json({ ok: true });
 });
 
+/* Daftar permintaan penarikan utk ADMIN (kamu): set env ADMIN_KEY lalu buka
+ * https://situsmu.com/api/admin/withdrawals?key=ADMIN_KEY
+ * → transfer manual ke tujuan masing-masing dari saldo gateway-mu. */
+app.get('/api/admin/withdrawals', (req, res) => {
+  const key = process.env.ADMIN_KEY;
+  if (!key || req.query.key !== key) return bad(res, 403, 'Akses admin ditolak — set env ADMIN_KEY dan sertakan ?key=');
+  const rows = db.prepare(`
+    SELECT w.id, -w.amount amount, w.note, w.at, u.name, u.email, u.phone
+    FROM wallet_txns w JOIN users u ON u.id = w.user_id
+    WHERE w.kind = 'withdraw' ORDER BY w.at DESC LIMIT 200`).all();
+  res.json({ withdrawals: rows.map(r => ({ ...r, tanggal: new Date(r.at).toLocaleString('id-ID') })) });
+});
+
 /* ================= REVENUE =================
  * (Direktori kuliner kini diambil frontend langsung dari OpenStreetMap
  *  di sekitar lokasi live pengguna — tidak ada lagi data resto karangan.) */

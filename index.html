@@ -579,7 +579,8 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
   box-shadow:var(--shadow);transition:box-shadow .15s;display:flex;flex-direction:column;
 }
 .resto-card:hover{box-shadow:var(--shadow-lg)}
-.resto-media{aspect-ratio:16/8;display:grid;place-items:center;border-bottom:1px solid var(--line);position:relative}
+.resto-media{aspect-ratio:16/8;display:grid;place-items:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.resto-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .resto-media .dist-tag{
   position:absolute;right:12px;bottom:10px;background:rgba(31,41,55,.82);color:#fff;
   border-radius:8px;padding:3px 10px;font-weight:600;font-size:11px;
@@ -757,9 +758,13 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>
       Beranda
     </button>
-    <button class="lnav-item" id="ln-kuliner" onclick="showView('kuliner')">
+    <button class="lnav-item" id="ln-kuliner" onclick="setJelajah('kuliner')">
       <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg></span>
       Kuliner Sekitarmu
+    </button>
+    <button class="lnav-item" onclick="setJelajah('wisata')">
+      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg></span>
+      Wisata Lebak
     </button>
     <button class="lnav-item" id="ln-orders" onclick="showView('orders')">
       <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
@@ -803,8 +808,13 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <div class="view-tabs">
         <button class="chip" onclick="showView('feed')">← Kembali belanja</button>
       </div>
-      <h2 style="margin-bottom:6px">Kuliner &amp; Nongkrong di Sekitarmu</h2>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:22px">Tempat makan <b>asli</b> di sekitar lokasi live kamu — nama, alamat, dan jarak dari peta OpenStreetMap, bukan data karangan.</p>
+      <h2 id="jelajahTitle" style="margin-bottom:6px">Jelajah Lebak</h2>
+      <p id="jelajahDesc" style="color:var(--muted);font-size:14px;margin-bottom:14px"></p>
+      <div class="seg-tabs" style="max-width:340px">
+        <button id="jt-kuliner" onclick="setJelajah('kuliner')">🍜 Kuliner Sekitar</button>
+        <button id="jt-wisata" onclick="setJelajah('wisata')">🏝 Wisata Lebak</button>
+      </div>
+      <div id="wisataChips" class="view-tabs hidden" style="margin-bottom:14px"></div>
       <div class="resto-grid" id="restoGrid"></div>
     </div>
   </main>
@@ -842,7 +852,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   </button>
   <button class="bn-item" onclick="showView('kuliner')">
     <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg>
-    Kuliner
+    Jelajah
   </button>
   <button class="bn-sell" onclick="openSell()" title="Jual">
     <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -1010,7 +1020,7 @@ function onGeoPos(pos){
   if (!moved) return;
   reverseLabel();
   loadFeed(); // jarak & urutan feed dihitung ulang dari posisi baru
-  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderRestos();
+  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderJelajah();
 }
 async function reverseLabel(){
   if (!myLoc) return;
@@ -1053,7 +1063,7 @@ function setManualLoc(kec){
   store.set('locManual', kec); store.set('loc', myLoc); store.set('locAcc', null);
   setLocLabel(esc(kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(manual)</span>');
   closeModal(); loadFeed();
-  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderRestos();
+  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderJelajah();
   toast('Lokasi dikunci di Kec. ' + kec + ' — klik label lokasi untuk kembali ke GPS');
 }
 const clock = t => new Date(t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
@@ -1373,9 +1383,10 @@ function showView(v){
   });
   document.getElementById('catBar').style.display = v === 'feed' ? '' : 'none';
   if (v === 'orders') renderOrders();
-  if (v === 'kuliner') renderRestos();
+  if (v === 'kuliner') renderJelajah();
   window.scrollTo({ top: 0 });
 }
+function setJelajah(tab){ jelajahTab = tab; showView('kuliner'); }
 
 /* ---------- BARS & STORIES ---------- */
 function renderCats(){
@@ -2115,6 +2126,20 @@ async function renderOrders(){
       </div>`);
 }
 
+/* ---------- JELAJAH: tab Kuliner (OSM) & Wisata Lebak ---------- */
+let jelajahTab = 'kuliner';
+function renderJelajah(){
+  const kul = jelajahTab === 'kuliner';
+  document.getElementById('jt-kuliner').classList.toggle('active', kul);
+  document.getElementById('jt-wisata').classList.toggle('active', !kul);
+  document.getElementById('jelajahTitle').textContent = kul ? 'Kuliner & Nongkrong di Sekitarmu' : 'Destinasi Wisata Kabupaten Lebak';
+  document.getElementById('jelajahDesc').innerHTML = kul
+    ? 'Tempat makan <b>asli</b> di sekitar lokasi live kamu — nama, alamat, dan jarak dari peta OpenStreetMap.'
+    : 'Dari pantai Sawarna sampai Negeri di Atas Awan — <b>tempat-tempat nyata</b> lengkap dengan jarak live dari posisimu & rute Google Maps. Foto dimuat dari Wikimedia Commons bila tersedia.';
+  document.getElementById('wisataChips').classList.toggle('hidden', kul);
+  if (kul) renderRestos(); else renderWisata();
+}
+
 /* ---------- KULINER (tempat asli dari OpenStreetMap, sekitar lokasi live) ---------- */
 let restos = [], restosAt = null; // posisi saat data terakhir diambil
 const OSM_TYPE = { restaurant:'Resto', cafe:'Cafe', fast_food:'Cepat Saji', food_court:'Food Court', ice_cream:'Es Krim' };
@@ -2193,6 +2218,98 @@ function openResto(id){
         ${r.phone ? `<div class="resto-info-row"><span>Telp: <a href="tel:${esc(r.phone)}" style="font-weight:700">${esc(r.phone)}</a></span></div>` : ''}
         <div class="safe-note" style="margin-top:14px">Tempat ini nyata — datanya dari <a href="${osm}" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">OpenStreetMap</a>. Datang dan pesan langsung di lokasinya.</div>
         <a class="btn btn-coral" style="width:100%;margin-top:16px" href="${gmaps}" target="_blank" rel="noopener">Petunjuk Arah (Google Maps)</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- WISATA LEBAK (destinasi nyata, jarak live, foto Wikimedia) ---------- */
+const WISATA = [
+  { name:'Pantai Sawarna (Ciantir)', kec:'Bayah', cat:'Pantai', lat:-6.9873, lng:106.3079, desc:'Pantai pasir putih paling terkenal di Lebak — ombak kelas dunia untuk surfing, sunset memukau, desa wisata dengan banyak homestay murah.', q:'Pantai Sawarna' },
+  { name:'Tanjung Layar', kec:'Bayah', cat:'Pantai', lat:-6.9926, lng:106.3113, desc:'Ikon Sawarna: dua karang raksasa menjulang seperti layar kapal — spot foto legendaris, indah saat matahari terbenam.', q:'Tanjung Layar Sawarna' },
+  { name:'Pantai Pulau Manuk', kec:'Bayah', cat:'Pantai', lat:-6.9772, lng:106.2827, desc:'Pantai dengan pulau karang kecil yang bisa didaki + gua peninggalan Jepang di sekitarnya. Masih sepi dan alami.', q:'Pulau Manuk Sawarna' },
+  { name:'Pantai Karang Taraje', kec:'Bayah', cat:'Pantai', lat:-6.9895, lng:106.3286, desc:'Karang bertingkat seperti tangga (taraje) — "air terjun laut" muncul tiap ombak besar pecah di karang.', q:'Karang Taraje Sawarna' },
+  { name:'Pantai Karang Bokor', kec:'Bayah', cat:'Pantai', lat:-6.9820, lng:106.2960, desc:'Tebing karang dramatis menghadap laut lepas dengan gardu pandang — dekat dari Sawarna.', q:'Karang Bokor Sawarna' },
+  { name:'Pantai Bagedur', kec:'Malingping', cat:'Pantai', lat:-6.8286, lng:105.9605, desc:'Garis pantai landai sepanjang ±10 km yang bisa dilintasi kendaraan — favorit warga saat libur lebaran.', q:'Pantai Bagedur Malingping' },
+  { name:'Pantai Binuangeun', kec:'Wanasalam', cat:'Pantai', lat:-6.8405, lng:105.8850, desc:'Kampung nelayan dengan TPI ramai — berburu sunrise lalu sarapan ikan bakar segar langsung dari pelelangan.', q:'Binuangeun Lebak' },
+  { name:'Pantai Karang Songsong (Cibobos)', kec:'Panggarangan', cat:'Pantai', lat:-6.9290, lng:106.1268, desc:'Pantai tersembunyi berkarang unik di jalur Malingping–Bayah — sangat alami, jarang wisatawan.', q:'Karang Songsong Panggarangan' },
+  { name:'Negeri di Atas Awan — Gunung Luhur', kec:'Cibeber (Citorek)', cat:'Pegunungan', lat:-6.7660, lng:106.3930, desc:'Lautan awan di ketinggian ±1.038 mdpl — datanglah sebelum subuh. Destinasi paling viral di Lebak, jalur Citorek–Warungbanten.', q:'Gunung Luhur Citorek' },
+  { name:'Kebun Teh Cikuya, Citorek', kec:'Cibeber', cat:'Pegunungan', lat:-6.7885, lng:106.3760, desc:'Hamparan kebun teh rakyat yang sejuk di kaki Halimun — searah perjalanan menuju Negeri di Atas Awan.', q:'Citorek Lebak' },
+  { name:'Situs Megalitik Lebak Sibedug', kec:'Cibeber', cat:'Sejarah', lat:-6.8105, lng:106.4030, desc:'Punden berundak batu purba tersembunyi di hutan Halimun — "Gunung Padang"-nya Banten, sangat terpencil, wajib pemandu lokal.', q:'Lebak Sibedug' },
+  { name:'Saba Budaya Baduy (Ciboleger)', kec:'Leuwidamar', cat:'Budaya', lat:-6.5760, lng:106.2905, desc:'Gerbang kampung adat Urang Kanekes. Trekking Baduy Luar–Dalam: tanpa listrik & sinyal — hormati pikukuh (aturan adat), dilarang memotret di Baduy Dalam.', q:'Suku Baduy' },
+  { name:'Museum Multatuli', kec:'Rangkasbitung', cat:'Sejarah', lat:-6.3592, lng:106.2470, desc:'Museum antikolonialisme pertama di Indonesia — kisah Max Havelaar, sejarah Lebak & kopi Banten. Buka Selasa–Minggu, tiket murah.', q:'Museum Multatuli' },
+  { name:'Arung Jeram Sungai Ciberang', kec:'Lebakgedong', cat:'Petualangan', lat:-6.5480, lng:106.4110, desc:'Rafting jeram kelas II–III sepanjang 9–12 km bersama operator lokal bersertifikat — seru untuk rombongan.', q:'Sungai Ciberang' },
+  { name:'Pemandian Air Panas Tirta Lebak Buana', kec:'Cipanas', cat:'Pemandian', lat:-6.5230, lng:106.3900, desc:'Kolam air panas belerang alami di kaki Halimun — pas melepas pegal setelah menjelajah Lebak timur.', q:'Cipanas Lebak Banten' },
+  { name:'Curug Munding', kec:'Gunungkencana', cat:'Curug', lat:-6.6820, lng:106.0950, desc:'Air terjun lebar bertingkat di aliran Cimadur — deras dan fotogenik terutama di musim hujan.', q:'Curug Munding Lebak' },
+  { name:'Curug Kanteh', kec:'Cilograng', cat:'Curug', lat:-6.9080, lng:106.4020, desc:'Salah satu curug tertinggi di Banten (±110 m) — trekking dari Desa Cikatomas; terpencil, megah, masih perawan.', q:'Curug Kanteh Cilograng' },
+  { name:'Curug Ciporolak', kec:'Cibeber', cat:'Curug', lat:-6.8320, lng:106.3350, desc:'Curug bertingkat berkolam jernih kebiruan di dalam hutan Halimun — jalur menantang, sebaiknya bersama pemandu lokal.', q:'Curug Ciporolak' },
+  { name:'Waduk Karian', kec:'Sajira', cat:'Danau', lat:-6.4420, lng:106.3560, desc:'Salah satu waduk terbesar di Indonesia — panorama perbukitan, spot memancing; kawasan wisatanya terus berkembang.', q:'Bendungan Karian' },
+  { name:'Goa Sangkir', kec:'Bojongmanik', cat:'Petualangan', lat:-6.5560, lng:106.1400, desc:'Gua karst berstalaktit-stalagmit alami — caving ringan ditemani warga lokal, jauh dari keramaian.', q:'Goa Sangkir Bojongmanik' },
+];
+let wisataCat = 'all';
+const wisataImgs = {}; // cache hasil pencarian foto Wikimedia per destinasi
+async function fetchWisataImg(q){
+  if (q in wisataImgs) return wisataImgs[q];
+  try {
+    const r = await fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrnamespace=6&gsrlimit=1&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`);
+    const pages = (await r.json())?.query?.pages || {};
+    const info = Object.values(pages)[0]?.imageinfo?.[0];
+    wisataImgs[q] = info?.thumburl || null;
+  } catch { wisataImgs[q] = null; }
+  return wisataImgs[q];
+}
+function renderWisata(){
+  const grid = document.getElementById('restoGrid');
+  const cats = ['all', ...new Set(WISATA.map(w => w.cat))];
+  document.getElementById('wisataChips').innerHTML = cats.map(c =>
+    `<button class="chip mini ${wisataCat===c?'active':''}" onclick="wisataCat='${c}';renderWisata()">${c==='all'?'Semua':c}</button>`).join('');
+  const from = myLoc || kecCoords.Rangkasbitung || { lat:-6.3592, lng:106.2494 };
+  const list = WISATA
+    .map((w, i) => ({ ...w, i, dist: havKm(from, w) }))
+    .filter(w => wisataCat === 'all' || w.cat === wisataCat)
+    .sort((a, b) => a.dist - b.dist);
+  grid.innerHTML = list.map(w => `
+    <div class="resto-card">
+      <div class="resto-media ${'g-' + (1 + w.i % 6)}" id="wmedia-${w.i}">
+        <span class="letter">${initOf(w.name)}</span>
+        <span class="type-tag">${w.cat}</span>
+        <span class="dist-tag">${km(w.dist)}</span>
+      </div>
+      <div class="resto-body">
+        <h4>${esc(w.name)}</h4>
+        <div class="resto-meta">Kec. ${esc(w.kec)}, Kab. Lebak${myLoc ? ' · ' + km(w.dist) + ' dari posisimu' : ''}</div>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${esc(w.desc)}</p>
+        <button class="btn btn-yellow btn-sm" onclick="openWisata(${w.i})">Detail &amp; Rute</button>
+      </div>
+    </div>`).join('')
+    + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">${WISATA.length} destinasi nyata se-Kab. Lebak · jarak dihitung live dari GPS-mu · foto: Wikimedia Commons</p>`;
+  // muat foto asli secara asinkron (tanpa memblokir render)
+  list.forEach(w => fetchWisataImg(w.q).then(url => {
+    const el = document.getElementById('wmedia-' + w.i);
+    if (url && el && !el.querySelector('img')) el.insertAdjacentHTML('afterbegin', `<img src="${esc(url)}" alt="${esc(w.name)}" loading="lazy">`);
+  }));
+}
+function openWisata(i){
+  const w = WISATA[i];
+  if (!w) return;
+  const from = myLoc || kecCoords.Rangkasbitung || { lat:-6.3592, lng:106.2494 };
+  const dist = havKm(from, w);
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${w.lat},${w.lng}`;
+  const img = wisataImgs[w.q];
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>${esc(w.name)}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="pd-media ${'g-' + (1 + i % 6)}">
+        ${img ? `<img src="${esc(img)}" alt="${esc(w.name)}">` : `<span class="letter">${initOf(w.name)}</span>`}
+        <span class="dist-tag">${km(dist)} dari posisimu</span>
+      </div>
+      <div class="modal-body">
+        <div class="resto-info-row"><span><b>${w.cat}</b> · Kec. ${esc(w.kec)}, Kabupaten Lebak, Banten</span></div>
+        <p style="font-size:13.5px;margin:10px 0">${esc(w.desc)}</p>
+        <div class="safe-note">Destinasi terpencil? Berangkat pagi, cek cuaca, bawa uang tunai (jarang ATM/sinyal), dan pakai pemandu warga lokal — sekalian rezeki buat mereka.</div>
+        <a class="btn btn-coral" style="width:100%;margin-top:14px" href="${gmaps}" target="_blank" rel="noopener">Rute ke Sana (Google Maps)</a>
+        <a class="btn" style="width:100%;margin-top:8px" href="https://www.google.com/search?q=${encodeURIComponent(w.name + ' ' + w.kec + ' Lebak')}" target="_blank" rel="noopener">Info &amp; Ulasan Terbaru (Google)</a>
       </div>
     </div>
   </div>`;
