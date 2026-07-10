@@ -7,27 +7,30 @@
 <meta name="description" content="Marketplace lokal Kabupaten Lebak: jual-beli aman dengan rekber, COD terdekat, driver lokal, dan direktori kuliner lengkap dengan menu.">
 <style>
 /* ================================================================
-   LEBAK.MARKET — Desain e-commerce profesional: header putih bersih,
-   banner promo hijau, trust-strip, dan GRID kartu produk rapat ala
-   marketplace besar. Fitur tidak berubah — hanya presentasinya.
+   LEBAK.MARKET — Desain ala FACEBOOK: navbar putih dengan ikon bulat,
+   layout 3 kolom di desktop (menu kiri · feed tengah · sidebar kanan),
+   kartu post dengan bar aksi Suka/Chat/Bagikan, stories, dan composer
+   "mau jual apa hari ini?". Fitur tidak berubah — hanya presentasi.
    ================================================================ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#f0f2f5;
   --card:#ffffff;
-  --ink:#20242b;
-  --muted:#6b7583;
-  --line:#e5e8ec;
+  --ink:#1c1e21;
+  --muted:#65676b;
+  --line:#e4e6eb;
+  --hover:#f2f2f2;
+  --icon-bg:#e4e6eb;
   --green:#0b8f4d;
   --green-2:#087a40;
   --tint:#e7f6ee;
   --tint-line:#c6e8d5;
   --amber:#b45309;
   --amber-tint:#fff4e0;
-  --price:#20242b;
-  --radius:12px;
-  --shadow:0 1px 2px rgba(20,26,36,.06);
-  --shadow-lg:0 10px 28px rgba(20,26,36,.14);
+  --price:#1c1e21;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(0,0,0,.1);
+  --shadow-lg:0 12px 28px rgba(0,0,0,.18);
   --font:'Inter','Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',sans-serif;
 }
 html{scroll-behavior:smooth}
@@ -78,30 +81,30 @@ header{
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
-.head-inner{display:flex;align-items:center;gap:14px;height:64px}
-.logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:10px;flex:none;letter-spacing:-.01em}
+.head-inner{display:flex;align-items:center;gap:12px;height:56px}
+.logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:9px;flex:none;letter-spacing:-.01em}
 .logo .mark{
-  width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
-  background:var(--green);color:#fff;font-weight:700;font-size:16px;font-family:Georgia,serif;
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:var(--green);color:#fff;font-weight:700;font-size:19px;font-family:Georgia,serif;
 }
 .logo .word em{font-style:normal;color:var(--green)}
 .search{
-  flex:1;display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);
-  border-radius:10px;padding:8px 8px 8px 15px;min-width:0;color:var(--muted);transition:all .15s;
+  flex:1;max-width:320px;display:flex;align-items:center;gap:8px;background:#f0f2f5;border:none;
+  border-radius:999px;padding:9px 9px 9px 16px;min-width:0;color:var(--muted);transition:box-shadow .15s;
 }
-.search:focus-within{border-color:var(--green);box-shadow:0 0 0 3px var(--tint)}
+.search:focus-within{box-shadow:0 0 0 2px var(--green)}
 .search .go{
-  border:none;background:var(--green);color:#fff;border-radius:7px;width:38px;height:32px;
+  border:none;background:transparent;color:var(--muted);border-radius:50%;width:30px;height:30px;
   display:grid;place-items:center;flex:none;transition:background .15s;
 }
-.search .go:hover{background:var(--green-2)}
+.search .go:hover{background:var(--icon-bg);color:var(--ink)}
 .search input{border:none;outline:none;flex:1;font-family:inherit;font-size:14px;background:transparent;color:var(--ink);min-width:0}
-.head-actions{display:flex;gap:6px;flex:none;align-items:center}
+.head-actions{display:flex;gap:8px;flex:none;align-items:center;margin-left:auto}
 .icon-btn{
-  position:relative;width:40px;height:40px;border-radius:10px;border:none;
-  background:transparent;display:grid;place-items:center;color:var(--muted);transition:all .15s;
+  position:relative;width:40px;height:40px;border-radius:50%;border:none;
+  background:var(--icon-bg);display:grid;place-items:center;color:var(--ink);transition:filter .15s;
 }
-.icon-btn:hover{background:#f2f4f3;color:var(--ink)}
+.icon-btn:hover{filter:brightness(.94)}
 .icon-btn .count{
   position:absolute;top:3px;right:3px;min-width:17px;height:17px;border-radius:999px;
   background:var(--green);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;
@@ -120,58 +123,55 @@ header{
 .login-btn:hover{background:var(--green-2)}
 @media(max-width:680px){.logo .word{display:none}}
 
-/* ============ HERO: BANNER PROMO + TRUST STRIP ============ */
-.hero-strip{padding:18px 0 4px}
-.promo-banner{
-  position:relative;overflow:hidden;border-radius:14px;color:#fff;
-  background:linear-gradient(115deg,#0b8f4d 0%,#0a7a44 55%,#075e34 100%);
-  padding:30px 34px;box-shadow:var(--shadow);
+/* ============ COMPOSER "mau jual apa?" (ala status box FB) ============ */
+.composer{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:12px 16px;display:flex;gap:10px;align-items:center;margin-bottom:16px;
 }
-.promo-banner::after{
-  content:"";position:absolute;right:-70px;top:-70px;width:260px;height:260px;border-radius:50%;
-  background:rgba(255,255,255,.08);
+.composer .ava{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:var(--tint);color:var(--green);font-weight:700;font-size:16px;
 }
-.promo-banner::before{
-  content:"";position:absolute;right:60px;bottom:-90px;width:200px;height:200px;border-radius:50%;
-  background:rgba(255,255,255,.06);
+.composer .ask{
+  flex:1;text-align:left;border:none;background:#f0f2f5;border-radius:999px;
+  padding:11px 16px;font-size:14.5px;color:var(--muted);transition:background .15s;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.promo-kicker{font-size:11px;font-weight:700;letter-spacing:1.6px;opacity:.85}
-.promo-banner h1{font-size:clamp(21px,3.4vw,30px);margin:6px 0 4px;color:#fff}
-.promo-banner p{font-size:14px;opacity:.9;max-width:520px}
-.quick-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px;position:relative;z-index:1}
-.chip-light{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff;backdrop-filter:blur(2px)}
-.chip-light:hover{background:rgba(255,255,255,.24);border-color:#fff;color:#fff}
-.trust-strip{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;
+.composer .ask:hover{background:var(--icon-bg)}
+.composer .cam{
+  border:none;background:transparent;border-radius:8px;padding:8px 10px;display:inline-flex;
+  align-items:center;gap:7px;font-weight:600;font-size:13px;color:var(--green);flex:none;
 }
-.trust-item{
-  display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);
-  border-radius:11px;padding:11px 14px;box-shadow:var(--shadow);
-}
-.trust-item .tic{
-  width:36px;height:36px;border-radius:9px;background:var(--tint);color:var(--green);
-  display:grid;place-items:center;flex:none;
-}
-.trust-item b{font-size:12.5px;display:block;line-height:1.3}
-.trust-item span{font-size:11px;color:var(--muted);line-height:1.35;display:block}
-@media(max-width:860px){.trust-strip{grid-template-columns:repeat(2,1fr)}}
-.stories{display:flex;gap:16px;overflow-x:auto;padding:16px 4px 6px;scrollbar-width:none}
+.composer .cam:hover{background:var(--hover)}
+
+/* ============ STORIES (kartu penjual aktif ala FB) ============ */
+.stories{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;margin-bottom:16px}
 .stories::-webkit-scrollbar{display:none}
-.story{flex:none;text-align:center;width:68px}
+.story{
+  flex:none;width:105px;height:170px;border-radius:12px;overflow:hidden;position:relative;
+  cursor:pointer;box-shadow:var(--shadow);border:none;padding:0;text-align:left;
+  transition:transform .15s;
+}
+.story:hover{transform:scale(1.02)}
 .story .ring{
-  width:56px;height:56px;margin:0 auto 6px;border-radius:50%;padding:2px;
-  border:1.5px solid var(--tint-line);
+  position:absolute;left:9px;top:9px;width:42px;height:42px;border-radius:50%;
+  border:3.5px solid var(--green);background:var(--card);padding:2px;z-index:2;
 }
 .story .ava{
   width:100%;height:100%;border-radius:50%;background:var(--tint);color:var(--green);
-  display:grid;place-items:center;font-weight:700;
+  display:grid;place-items:center;font-weight:700;font-size:15px;
 }
-.story span{font-size:11px;font-weight:600;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story .letter{position:absolute;inset:0;display:grid;place-items:center;font-size:40px}
+.story::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.02) 55%,rgba(0,0,0,.42))}
+.story span{
+  position:absolute;left:9px;right:9px;bottom:8px;z-index:2;font-size:12px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
 
 /* ============ KATEGORI + RADIUS ============ */
 .cat-bar{
-  position:sticky;top:64px;z-index:80;background:rgba(247,248,247,.95);
-  backdrop-filter:blur(8px);padding:11px 0 9px;border-bottom:1px solid var(--line);
+  position:sticky;top:56px;z-index:80;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(8px);padding:9px 0 8px;border-bottom:1px solid var(--line);
 }
 .cat-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:1px 2px}
 .cat-scroll::-webkit-scrollbar{display:none}
@@ -185,62 +185,100 @@ header{
 #radiusChips{display:contents}
 .radius-row .chip{flex:none}
 
-/* ============ LAYOUT ============ */
-.main-grid{display:block;padding:20px 0 90px}
-.sect-head{display:flex;align-items:center;gap:12px;margin:22px 0 12px}
-.sect-head h2{font-size:17px}
-.sect-head:first-child{margin-top:0}
+/* ============ LAYOUT 3 KOLOM (ala Facebook) ============ */
+.main-grid{
+  display:grid;grid-template-columns:270px minmax(0,1fr) 300px;gap:20px;
+  padding:16px 0 90px;align-items:start;max-width:1180px;margin:0 auto;
+}
 
-/* ============ GRID PRODUK (ala e-commerce besar) ============ */
-.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:14px}
-.pcard{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  overflow:hidden;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;
-  transition:box-shadow .18s,transform .18s,border-color .18s;
+/* menu kiri */
+.lnav{position:sticky;top:152px;display:flex;flex-direction:column;gap:2px}
+.lnav-item{
+  display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;border:none;
+  background:transparent;font-weight:600;font-size:14.5px;color:var(--ink);text-align:left;
+  transition:background .12s;width:100%;
 }
-.pcard:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);border-color:#d7dbe0}
-.pcard-media{aspect-ratio:1/1;display:grid;place-items:center;position:relative;border-bottom:1px solid var(--line)}
-.pcard-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.pcard-media .cond-tag{position:absolute;left:10px;top:10px}
-.pfav{
-  position:absolute;right:9px;top:9px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);
-  background:rgba(255,255,255,.94);color:var(--muted);display:grid;place-items:center;transition:all .15s;z-index:2;
+.lnav-item:hover{background:var(--icon-bg)}
+.lnav-item.on{background:var(--tint);color:var(--green)}
+.lnav-item .lic{
+  width:36px;height:36px;border-radius:50%;background:var(--icon-bg);color:var(--ink);
+  display:grid;place-items:center;flex:none;
 }
-.pfav:hover{color:var(--amber);border-color:#ecd9b6}
-.pfav.on{color:var(--amber);background:var(--amber-tint);border-color:#ecd9b6}
-.pfav svg.ic{width:15px;height:15px}
-.sold-out{position:absolute;inset:0;background:rgba(255,255,255,.72);display:grid;place-items:center;z-index:1}
-.sold-out b{background:var(--ink);color:#fff;border-radius:9px;padding:7px 18px;font-size:12.5px;letter-spacing:1px}
-.pcard-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;flex:1}
-.pcard-name{
-  font-size:13px;font-weight:500;line-height:1.35;min-height:35px;
+.lnav-item.on .lic{background:var(--green);color:#fff}
+.lnav .btn-coral{margin-top:10px}
+.lnav-foot{font-size:11px;color:var(--muted);padding:14px 10px 0;line-height:1.6}
+
+/* sidebar kanan */
+.rightbar{position:sticky;top:152px;display:flex;flex-direction:column;gap:16px}
+.side-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.side-card h3{font-size:14px;margin-bottom:10px;color:var(--muted);font-weight:700}
+.trend-card{
+  display:flex;gap:10px;align-items:center;border-radius:9px;padding:7px 8px;cursor:pointer;
+  transition:background .12s;margin:0 -8px;
+}
+.trend-card:hover{background:var(--hover)}
+.trend-card .em{width:44px;height:44px;border-radius:9px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
+.trend-card b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.trend-card span{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.trend-card>div{min-width:0;flex:1}
+
+/* responsif: sembunyikan sidebar bertahap (harus SETELAH definisi di atas) */
+@media(max-width:1080px){.main-grid{grid-template-columns:250px minmax(0,1fr)}.rightbar{display:none}}
+@media(max-width:860px){.main-grid{grid-template-columns:minmax(0,1fr)}.lnav{display:none}}
+
+/* ============ FEED POST (kartu ala Facebook) ============ */
+.feed{display:flex;flex-direction:column;gap:16px}
+.post{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.post-head{display:flex;align-items:flex-start;gap:10px;padding:12px 16px 0}
+.post-head .ava{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  font-weight:700;flex:none;background:var(--ac,var(--tint));color:var(--green);font-size:16px;
+}
+.post-head .who{flex:1;min-width:0}
+.post-head .who b{display:flex;align-items:center;gap:5px;font-size:14.5px;flex-wrap:wrap;font-weight:700}
+.verif{color:var(--green);font-size:12px}
+.post-head .who span{font-size:12.5px;color:var(--muted);display:block}
+.post-text{padding:8px 16px 10px}
+.post-price{font-size:19px;font-weight:800;color:var(--price)}
+.post-title{font-size:15px;font-weight:600;margin:1px 0 2px}
+.post-desc{
+  font-size:13.5px;color:var(--muted);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
-.pcard-price{font-size:15.5px;font-weight:800;color:var(--price)}
-.pcard-tags{display:flex;gap:4px;flex-wrap:wrap;min-height:20px}
+.post-media{
+  display:grid;place-items:center;position:relative;cursor:pointer;
+  aspect-ratio:16/10;background:#f7f8fa;
+}
+.post-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.post-media .cond-tag{position:absolute;left:12px;top:12px}
+.post-media .dist-tag{
+  position:absolute;right:12px;bottom:10px;background:rgba(0,0,0,.6);color:#fff;
+  border-radius:8px;padding:3px 10px;font-weight:600;font-size:11.5px;
+}
+.sold-out{position:absolute;inset:0;background:rgba(255,255,255,.72);display:grid;place-items:center;z-index:1}
+.sold-out b{background:var(--ink);color:#fff;border-radius:9px;padding:7px 18px;font-size:12.5px;letter-spacing:1px}
+.engage{
+  display:flex;justify-content:space-between;gap:10px;padding:9px 16px;
+  font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);margin:0 0;
+}
+.act-row{display:flex;padding:3px 8px}
+.fbact{
+  flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;
+  background:transparent;border-radius:7px;padding:8px 4px;font-weight:600;font-size:13.5px;
+  color:var(--muted);transition:background .12s;
+}
+.fbact:hover{background:var(--hover)}
+.fbact.liked{color:var(--green)}
+.fbact.faved{color:var(--amber)}
+.buy-row{display:flex;gap:8px;padding:8px 16px 14px;border-top:1px solid var(--line)}
+.buy-row .btn{flex:1}
 .ptag{
-  font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;
+  font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 7px;
   background:#f1f3f5;color:var(--muted);letter-spacing:.2px;
 }
 .pt-green{background:var(--tint);color:var(--green)}
 .pt-amber{background:var(--amber-tint);color:var(--amber)}
-.pcard-loc{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);margin-top:auto}
-.pcard-loc svg.ic{width:12px;height:12px}
-.pcard-seller{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.verif{color:var(--green);font-size:11px}
-
-/* strip "banyak dicari" horizontal */
-.trend-strip{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
-.trend-strip::-webkit-scrollbar{display:none}
-.trend-card{
-  flex:none;display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);
-  border-radius:11px;padding:9px 14px 9px 9px;cursor:pointer;box-shadow:var(--shadow);
-  transition:border-color .15s;max-width:250px;
-}
-.trend-card:hover{border-color:var(--green)}
-.trend-card .em{width:44px;height:44px;border-radius:9px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
-.trend-card b{font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;font-weight:600}
-.trend-card span{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.post-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
 
 /* detail produk (modal) */
 .pd-media{
@@ -288,14 +326,6 @@ header{
   padding:56px 24px;grid-column:1/-1;
 }
 .empty-feed .big{font-size:44px;display:block;margin-bottom:10px}
-
-/* footer info cara kerja */
-.info-foot{
-  margin-top:26px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  padding:18px 20px;box-shadow:var(--shadow);
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;
-}
-.info-foot h3{font-size:13.5px;grid-column:1/-1;margin-bottom:2px}
 
 /* tile fallback produk tanpa foto — dua nada netral bergantian */
 .g-1,.g-3,.g-5{background:#edf1ee}
@@ -606,22 +636,21 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
     color:#fff;display:grid;place-items:center;margin-top:-22px;
     box-shadow:var(--shadow-lg);flex:none;
   }
-  .head-inner{gap:8px;height:58px}
-  .cat-bar{top:58px;padding:8px 0 7px}
+  .head-inner{gap:8px;height:54px}
+  .search{max-width:none}
+  .cat-bar{top:54px;padding:8px 0 7px}
   .cat-scroll .chip{padding:7px 14px;font-size:12.5px}
   .radius-row{padding:7px 2px 1px;font-size:11.5px}
   .radius-row .chip.mini{padding:4px 11px;font-size:11px}
-  .hero-strip{padding:12px 0 4px}
-  .promo-banner{padding:20px 18px}
-  .promo-banner h1{font-size:19px}
-  .hero-strip .quick-row .chip{padding:7px 13px;font-size:12px}
-  .trust-strip{gap:8px}
-  .trust-item{padding:9px 11px}
-  .stories{padding:12px 2px 6px}
-  .main-grid{padding:14px 0 84px}
-  .feed{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-  .pcard-body{padding:9px 10px 11px}
-  .pcard-price{font-size:14.5px}
+  .main-grid{padding:12px 0 84px;gap:12px}
+  .composer{padding:10px 12px;margin-bottom:12px}
+  .composer .cam span{display:none}
+  .stories{margin-bottom:12px}
+  .story{width:92px;height:150px}
+  .feed{gap:12px}
+  .post-price{font-size:17px}
+  .fbact{font-size:12.5px;gap:5px;padding:8px 2px}
+  .buy-row{padding:8px 12px 12px}
   .post-cta .btn{min-width:0;padding:11px 13px;font-size:13px}
   .modal{border-radius:14px;max-height:94vh}
   .modal-head{padding:14px 16px;border-radius:14px 14px 0 0}
@@ -672,26 +701,6 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   </div>
 </header>
 
-<div class="wrap hero-strip" id="heroStrip">
-  <div class="promo-banner">
-    <span class="promo-kicker">MARKETPLACE WARGA KABUPATEN LEBAK</span>
-    <h1>Bangga Belanja Produk Lebak</h1>
-    <p>Penjual terdekat tampil paling atas — rekber aman, bisa COD, driver lokal siap antar hari ini.</p>
-    <div class="quick-row">
-      <button class="chip chip-light" onclick="showView('kuliner')">Kuliner Terdekat</button>
-      <button class="chip chip-light" onclick="openSell()">+ Jual Barangmu</button>
-      <button class="chip chip-light" onclick="openInfoBiaya()">Biaya &amp; Komisi</button>
-    </div>
-  </div>
-  <div class="trust-strip">
-    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><div><b>Rekber Escrow</b><span>Dana ditahan sampai barang sesuai</span></div></div>
-    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div><b>COD Ketemuan</b><span>Cek barang dulu, baru bayar</span></div></div>
-    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3V6h13v11H9m7-6h3l2 3v3h-2"/></svg></span><div><b>Driver Lokal</b><span>Antar hari ini mulai Rp10rb</span></div></div>
-    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>100% Postingan Asli</b><span>Tanpa bot — semua warga sungguhan</span></div></div>
-  </div>
-  <div class="stories" id="stories"></div>
-</div>
-
 <!-- ============ CATEGORY + RADIUS ============ -->
 <div class="cat-bar" id="catBar">
   <div class="wrap">
@@ -703,23 +712,50 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   </div>
 </div>
 
-<!-- ============ MAIN ============ -->
+<!-- ============ MAIN: 3 KOLOM ALA FACEBOOK ============ -->
 <div class="wrap main-grid">
+  <!-- MENU KIRI (desktop) -->
+  <aside class="lnav">
+    <button class="lnav-item" id="ln-feed" onclick="showView('feed')">
+      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>
+      Beranda
+    </button>
+    <button class="lnav-item" id="ln-kuliner" onclick="showView('kuliner')">
+      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg></span>
+      Kuliner Sekitarmu
+    </button>
+    <button class="lnav-item" id="ln-orders" onclick="showView('orders')">
+      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
+      Transaksi Saya
+    </button>
+    <button class="lnav-item" onclick="openChatList()">
+      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg></span>
+      Chat
+    </button>
+    <button class="lnav-item" onclick="openFavs()">
+      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></span>
+      Favorit
+    </button>
+    <button class="lnav-item" onclick="openInfoBiaya()">
+      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg></span>
+      Biaya &amp; Komisi
+    </button>
+    <button class="btn btn-coral" onclick="openSell()">+ Jual Barang</button>
+    <div class="lnav-foot">Lebak.market — marketplace warga Kab. Lebak. Rekber aman · COD · driver lokal.</div>
+  </aside>
+
   <main>
     <div id="view-feed">
-      <div id="trendWrap" class="hidden">
-        <div class="sect-head"><h2>Lagi Banyak Dicari</h2></div>
-        <div class="trend-strip" id="trending"></div>
+      <div class="composer" id="composer">
+        <span class="ava" id="composerAva">?</span>
+        <button class="ask" onclick="openSell()" id="composerAsk">Mau jual apa hari ini?</button>
+        <button class="cam" onclick="openSell()">
+          <svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Foto</span>
+        </button>
       </div>
-      <div class="sect-head"><h2>Produk di Sekitarmu</h2><span class="live-pill"><i></i> urut dari lokasimu</span></div>
+      <div class="stories" id="stories"></div>
       <div class="feed" id="feed"></div>
-      <div class="info-foot">
-        <h3>Belanja aman di Lebak.market (win-win)</h3>
-        <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber), bukan langsung ke penjual</span></div>
-        <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan di tempat ramai</span></div>
-        <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi → dana baru cair ke penjual</span></div>
-        <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan sampai beres</span></div>
-      </div>
     </div>
     <div id="view-orders" class="hidden">
       <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
@@ -735,6 +771,25 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <div class="resto-grid" id="restoGrid"></div>
     </div>
   </main>
+
+  <!-- SIDEBAR KANAN (desktop) -->
+  <aside class="rightbar">
+    <div class="side-card hidden" id="trendWrap">
+      <h3>Lagi banyak dicari</h3>
+      <div id="trending"></div>
+    </div>
+    <div class="side-card">
+      <h3>Belanja aman (win-win)</h3>
+      <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber)</span></div>
+      <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan</span></div>
+      <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi → dana cair</span></div>
+      <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan</span></div>
+    </div>
+    <div class="side-card">
+      <h3>Lokal Pride Lebak</h3>
+      <p style="font-size:13px;color:var(--muted)">Penjual dari Lebak diprioritaskan di feed — belanja tetangga sendiri, ekonomi Lebak muter di Lebak. Jarak dihitung live dari lokasimu.</p>
+    </div>
+  </aside>
 </div>
 
 <button class="fab" onclick="openSell()">
@@ -891,7 +946,8 @@ function locFallbackLabel(){
   setLocLabel(user ? esc(user.kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(perkiraan — atur ▾)</span>'
                    : 'Atur lokasi ▾');
 }
-const accLabel = () => myAcc ? ` <span style="font-weight:600;color:var(--muted)">±${myAcc >= 1000 ? (myAcc/1000).toFixed(1) + ' km' : Math.round(myAcc) + ' m'}</span>` : '';
+// akurasi >5 km (tebakan IP di laptop) tidak informatif — tak usah ditampilkan
+const accLabel = () => myAcc && myAcc <= 5000 ? ` <span style="font-weight:600;color:var(--muted)">±${myAcc >= 1000 ? (myAcc/1000).toFixed(1) + ' km' : Math.round(myAcc) + ' m'}</span>` : '';
 function startGeo(fromUser){
   if (!navigator.geolocation){ setLocLabel('Perangkat tanpa GPS — atur manual ▾'); return; }
   if (fromUser){ locManual = null; store.set('locManual', null); myAcc = null; toast('Mendeteksi posisi presisi…'); }
@@ -1015,6 +1071,10 @@ function renderAuthSlot(){
   slot.innerHTML = user
     ? `<button class="ava-btn" onclick="openProfile()" title="${esc(user.name)}">${initOf(user.name)}</button>`
     : `<button class="login-btn" onclick="openAuth('login')">Masuk</button>`;
+  // composer ala FB ikut menyapa pengguna
+  const ava = document.getElementById('composerAva'), ask = document.getElementById('composerAsk');
+  if (ava) ava.textContent = user ? initOf(user.name) : '?';
+  if (ask) ask.textContent = user ? `Mau jual apa hari ini, ${user.name.split(' ')[0]}?` : 'Mau jual apa hari ini?';
 }
 function needLogin(action){
   if (user && token) return false;
@@ -1220,8 +1280,11 @@ async function openInfoBiaya(){
 
 /* ---------- VIEWS ---------- */
 function showView(v){
-  ['feed','orders','kuliner'].forEach(x => document.getElementById('view-'+x).classList.toggle('hidden', v !== x));
-  document.getElementById('heroStrip').style.display = v === 'feed' ? '' : 'none';
+  ['feed','orders','kuliner'].forEach(x => {
+    document.getElementById('view-'+x).classList.toggle('hidden', v !== x);
+    const ln = document.getElementById('ln-'+x);
+    if (ln) ln.classList.toggle('on', v === x);
+  });
   document.getElementById('catBar').style.display = v === 'feed' ? '' : 'none';
   if (v === 'orders') renderOrders();
   if (v === 'kuliner') renderRestos();
@@ -1242,14 +1305,19 @@ function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); toast(v===Infinit
 
 function renderStories(){
   const el = document.getElementById('stories');
-  const sellers = [...new Map(products.map(p => [p.seller_id, p])).values()];
+  const sellers = [...new Map(products.map(p => [p.seller_id, p])).values()].slice(0, 10);
   if (!sellers.length){ el.innerHTML = ''; el.style.display = 'none'; return; }
   el.style.display = '';
   el.innerHTML = sellers.map(p => `
-    <div class="story" title="${esc(p.seller_name)} · ${km(p.dist)}">
-      <div class="ring"><div class="ava" style="background:${acOf(p.seller_id)};font-size:22px">${initOf(p.seller_name)}</div></div>
+    <button class="story ${p.g}" title="Lihat jualan ${esc(p.seller_name)}" onclick="storySearch('${esc(p.seller_name)}')">
+      ${p.img ? `<img src="${esc(p.img)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : `<span class="letter">${initOf(p.seller_name)}</span>`}
+      <span class="ring"><span class="ava" style="background:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span></span>
       <span>${esc(p.seller_name)}</span>
-    </div>`).join('');
+    </button>`).join('');
+}
+function storySearch(name){
+  document.getElementById('searchInput').value = name;
+  showView('feed'); loadFeed();
 }
 
 /* ---------- FEED ---------- */
@@ -1302,24 +1370,45 @@ function renderFeed(){
     const faved = favs.has(p.id);
     const out = p.stock <= 0;
     return `
-    <article class="pcard" onclick="openProduct(${p.id})">
-      <div class="pcard-media ${p.g}">
+    <article class="post">
+      <div class="post-head">
+        <span class="ava" style="--ac:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span>
+        <div class="who">
+          <b>${esc(p.seller_name)} <span class="verif">✓</span> ${mine?'<span class="ptag pt-amber">Postinganmu</span>':''}</b>
+          <span>${ago(p.created_at)} · ${esc(p.seller_kec)} · ${km(p.dist)} darimu · ${CAT_LABEL[p.cat]||p.cat}</span>
+        </div>
+      </div>
+      <div class="post-text">
+        <div class="post-price">${rupiah(p.price)}</div>
+        <div class="post-title">${esc(p.name)}</div>
+        <div class="post-desc">${esc(p.descr)}</div>
+        <div class="post-tags">
+          ${p.freeship?'<span class="ptag pt-green">Gratis Ongkir</span>':''}
+          ${p.cod && p.dist > 0 && p.dist <= COD_MAX_KM ? '<span class="ptag">Bisa COD</span>':''}
+          <span class="ptag">Rekber</span>
+          ${p.dist > 0 && p.dist <= DRIVER_MAX_KM ? '<span class="ptag">Driver mulai 10rb</span>':''}
+          ${p.lebak?'<span class="ptag pt-green">Lokal Lebak</span>':''}
+        </div>
+      </div>
+      <div class="post-media ${p.g}" onclick="openProduct(${p.id})" title="Lihat detail">
         ${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
-        <button class="pfav ${faved?'on':''}" title="Favorit" onclick="event.stopPropagation();toggleFav(${p.id})">${faved?IC.heartF:IC.heart}</button>
-        ${p.cond==='bekas' ? '<span class="cond-tag badge b-bekas">Bekas</span>' : ''}
+        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
+        <span class="dist-tag">${km(p.dist)}</span>
         ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
       </div>
-      <div class="pcard-body">
-        <div class="pcard-name">${esc(p.name)}</div>
-        <div class="pcard-price">${rupiah(p.price)}</div>
-        <div class="pcard-tags">
-          ${p.freeship?'<span class="ptag pt-green">Gratis Ongkir</span>':''}
-          ${p.cod && p.dist > 0 && p.dist <= COD_MAX_KM ? '<span class="ptag">COD</span>':''}
-          ${p.lebak?'<span class="ptag pt-green">Lokal Lebak</span>':''}
-          ${mine?'<span class="ptag pt-amber">Postinganmu</span>':''}
-        </div>
-        <div class="pcard-loc">${IC.pin} ${esc(p.seller_kec)} · ${km(p.dist)}</div>
-        <div class="pcard-seller">${esc(p.seller_name)} <span class="verif">✓</span> · ${p.likes} suka</div>
+      <div class="engage">
+        <span>${p.likes ? '👍 ' + p.likes + ' suka' : 'Jadilah yang pertama menyukai ini'}</span>
+        <span>Stok ${p.stock}</span>
+      </div>
+      <div class="act-row">
+        <button class="fbact ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">${IC.like} Suka</button>
+        ${mine ? `<button class="fbact" onclick="openProduct(${p.id})">${IC.share} Detail</button>`
+               : `<button class="fbact" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat Penjual</button>`}
+        <button class="fbact ${faved?'faved':''}" onclick="toggleFav(${p.id})">${faved?IC.heartF:IC.heart} ${faved?'Tersimpan':'Favorit'}</button>
+      </div>
+      <div class="buy-row">
+        ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>`
+               : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli — ${rupiah(p.price)}</button>`}
       </div>
     </article>`;
   }).join('');
