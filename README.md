@@ -48,13 +48,16 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 
 **Keamanan yang sudah diterapkan:** password di-bcrypt, sesi JWT, harga/ongkir/komisi dihitung ulang di server (input frontend tidak dipercaya), OTP dibatasi umur & percobaan, escape output di frontend.
 
-## 💳 Menghubungkan Midtrans Asli (produksi)
+## 💳 Payment Gateway Midtrans ASLI (sudah terpasang di kode)
 
-Alurnya sudah 1:1 dengan gateway sungguhan — tinggal ganti modul `gateway` di `server.js`:
-1. Daftar [Midtrans](https://midtrans.com) → ambil **Server Key** (mode sandbox dulu)
-2. `npm i midtrans-client`, buat transaksi Snap di `POST /api/orders` (contoh kode sudah dikomentari di `server.js`)
-3. Set URL webhook di dashboard Midtrans ke `https://domainmu.com/api/payments/webhook` + verifikasi signature SHA-512
-4. Tombol "[SANDBOX] Simulasikan Pembayaran" dihapus — webhook asli yang menembak
+Integrasi Midtrans Snap sudah built-in — tanpa key, aplikasi otomatis jalan di mode simulasi. Mengaktifkan pembayaran sungguhan:
+1. Daftar [Midtrans](https://midtrans.com) (gratis; butuh KTP + rekening bank) → dashboard → **Settings → Access Keys**
+2. Set env: `MIDTRANS_SERVER_KEY` + `MIDTRANS_CLIENT_KEY` (mulai dari key **Sandbox** `SB-Mid-...` untuk uji coba; uang belum sungguhan)
+3. Dashboard Midtrans → **Settings → Payment → Notification URL** → isi `https://domainmu.com/api/payments/webhook` (signature SHA-512 diverifikasi otomatis oleh server)
+4. Uji checkout: popup Snap muncul (QRIS/VA/GoPay/ShopeePay) — di sandbox pakai [simulator Midtrans](https://simulator.sandbox.midtrans.com)
+5. Lolos review Midtrans → ganti ke key produksi + set `MIDTRANS_IS_PRODUCTION=1` → **uang masuk sungguhan** ke akun Midtrans-mu, ditarik ke rekening bank
+
+Begitu key terisi, tombol "[SANDBOX] Simulasikan Pembayaran" otomatis hilang dan diganti popup pembayaran asli.
 
 ## ☁️ Deploy ke Cloud (Railway / Render)
 
@@ -84,6 +87,9 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | `SMTP_HOST/PORT/USER/PASS` | SMTP umum lainnya |
 | `OTP_IN_RESPONSE` | Otomatis: `0` saat email terpasang, `1` (mode pilot, kode tampil di aplikasi) saat belum |
 | `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
+| `MIDTRANS_SERVER_KEY` | Server Key Midtrans — mengaktifkan pembayaran **sungguhan** (tanpa ini = mode simulasi) |
+| `MIDTRANS_CLIENT_KEY` | Client Key Midtrans — dipakai popup Snap di frontend |
+| `MIDTRANS_IS_PRODUCTION` | `1` = mode produksi (app.midtrans.com); kosong = sandbox |
 | `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |
 | `WEBHOOK_SECRET` | Kosong = tombol sandbox aktif; isi saat Midtrans asli terpasang |
 | `PORT` | Diisi otomatis oleh platform |
@@ -107,4 +113,4 @@ Penjual mengunggah foto asli dari galeri/kamera saat posting; foto dikompresi ot
 
 ## ✨ Fitur Produk (ringkas)
 
-Register langsung aktif + verifikasi email opsional · 1 akun jual & beli · **lokasi live GPS** (jarak Haversine asli, label lokasi via Nominatim) · feed prioritas Lebak + kategori & radius dari posisi nyata · favorit · chat · rekber escrow win-win (barang bekas aman) · COD titik temu aman (validasi jarak GPS pembeli↔penjual) · Driver Lebak resmi (Rp10rb + Rp2.500/km, ≤15 km) · strategi gratis ongkir (ditanggung penjual / voucher plafon) · **kuliner asli dari OpenStreetMap** di sekitar pengguna + petunjuk arah Google Maps · monetisasi transparan · responsif penuh dengan bottom nav mobile.
+Register langsung aktif + verifikasi email opsional · 1 akun jual & beli · **lokasi live GPS dengan filter akurasi** (±meter ditampilkan; bisa dikunci manual per kecamatan) · **UI grid produk ala e-commerce besar** (banner promo, trust strip, kartu produk, modal detail) · feed prioritas Lebak + kategori & radius dari posisi nyata · favorit · chat · rekber escrow win-win · **pembayaran Midtrans asli** (QRIS/VA/e-wallet; simulasi otomatis saat key belum diisi) · COD titik temu aman (validasi jarak GPS) dengan **komisi COD 2% tercatat sebagai tagihan penjual** · Driver Lebak resmi (Rp10rb + Rp2.500/km, ≤15 km) · gratis ongkir (ditanggung penjual / voucher plafon) · kuliner asli dari OpenStreetMap + petunjuk arah Google Maps · monetisasi transparan · responsif penuh dengan bottom nav mobile.

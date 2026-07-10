@@ -72,6 +72,11 @@ const APP_FEE = 1000;
 const SELLER_COMMISSION = 0.03;
 const DRIVER_COMMISSION = 0.10;
 const FREESHIP_EXTRA = 0.04;
+/* Komisi COD: transaksi COD tidak lewat rekber, jadi komisi penjual
+ * dicatat sebagai TAGIHAN (users.cod_debt) dan dipotong otomatis dari
+ * pencairan rekber berikutnya — platform tetap dapat bagian. */
+const COD_FEE_RATE = 0.02, COD_FEE_MIN = 1000;
+const codFee = price => Math.max(COD_FEE_MIN, Math.round(price * COD_FEE_RATE));
 const COD_MAX_KM = 25, DRIVER_MAX_KM = 15;
 const FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 const KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
@@ -127,13 +132,52 @@ const GATEWAY_FEES = {
   ewal: { name:'E-Wallet',             fee: s => Math.round(s * 0.015) },
 };
 
-/* ================= GATEWAY PEMBAYARAN =================
- * Integrasi Midtrans asli (saat sudah punya Server Key):
- *   const midtrans = require('midtrans-client');
- *   const snap = new midtrans.Snap({ isProduction:false, serverKey:process.env.MIDTRANS_SERVER_KEY });
- *   const tx = await snap.createTransaction({ transaction_details:{ order_id, gross_amount } });
- *   → kirim tx.redirect_url ke frontend; webhook Midtrans menembak /api/payments/webhook.
+/* ================= GATEWAY PEMBAYARAN (Midtrans Snap ASLI) =================
+ * Set env berikut (dari dashboard.midtrans.com → Settings → Access Keys):
+ *   MIDTRANS_SERVER_KEY  = SB-Mid-server-xxx (sandbox) / Mid-server-xxx (produksi)
+ *   MIDTRANS_CLIENT_KEY  = SB-Mid-client-xxx / Mid-client-xxx
+ *   MIDTRANS_IS_PRODUCTION=1  → pakai app.midtrans.com (uang sungguhan)
+ * Lalu set Payment Notification URL di dashboard Midtrans ke:
+ *   https://domainmu.com/api/payments/webhook
+ * Tanpa key → otomatis mode simulasi (tombol [SANDBOX] di frontend).
  */
+const crypto = require('crypto');
+const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || '';
+const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY || '';
+const MIDTRANS_PROD = process.env.MIDTRANS_IS_PRODUCTION === '1';
+const MIDTRANS_BASE = MIDTRANS_PROD ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
+const GATEWAY_REAL = !!MIDTRANS_SERVER_KEY;
+// pilihan metode di checkout kita → metode yang dibuka di popup Snap
+const SNAP_PAYMENTS = {
+  qris: ['qris', 'gopay'],
+  va:   ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'other_va', 'echannel'],
+  ewal: ['gopay', 'shopeepay'],
+};
+async function midtransCreate(order, buyer, items, methodId){
+  const payload = {
+    transaction_details: { order_id: order.id, gross_amount: order.total },
+    item_details: items,
+    customer_details: { first_name: buyer.name, email: buyer.email, phone: buyer.phone },
+    expiry: { duration: 24, unit: 'hours' },
+    ...(SNAP_PAYMENTS[methodId] ? { enabled_payments: SNAP_PAYMENTS[methodId] } : {}),
+  };
+  const call = body => fetch(MIDTRANS_BASE + '/snap/v1/transactions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json', Accept: 'application/json',
+      Authorization: 'Basic ' + Buffer.from(MIDTRANS_SERVER_KEY + ':').toString('base64'),
+    },
+    body: JSON.stringify(body),
+  });
+  let r = await call(payload);
+  if (r.status === 400 && payload.enabled_payments) {
+    // daftar metode ditolak (beda aktivasi akun) → buka semua metode
+    delete payload.enabled_payments;
+    r = await call(payload);
+  }
+  if (!r.ok) throw new Error('Midtrans ' + r.status + ': ' + (await r.text()).slice(0, 300));
+  return r.json(); // { token, redirect_url }
+}
 const gateway = {
   create(order){
     return {
@@ -143,8 +187,15 @@ const gateway = {
     };
   },
   verifySignature(req){
-    // Tanpa WEBHOOK_SECRET = mode sandbox (tombol simulasi frontend).
-    // Saat Midtrans terpasang: set WEBHOOK_SECRET & verifikasi SHA-512 asli.
+    if (GATEWAY_REAL){
+      // Verifikasi resmi Midtrans: SHA-512(order_id + status_code + gross_amount + ServerKey)
+      const b = req.body || {};
+      const sig = crypto.createHash('sha512')
+        .update(String(b.order_id) + String(b.status_code) + String(b.gross_amount) + MIDTRANS_SERVER_KEY)
+        .digest('hex');
+      return sig === b.signature_key;
+    }
+    // Mode simulasi (tanpa key): tombol [SANDBOX] frontend / WEBHOOK_SECRET manual
     return !process.env.WEBHOOK_SECRET || req.body.signature === process.env.WEBHOOK_SECRET;
   },
 };
@@ -272,7 +323,7 @@ function auth(req, res, next){
   if (!token) return bad(res, 401, 'Perlu login dulu');
   try {
     const data = jwt.verify(token, JWT_SECRET);
-    req.user = db.prepare('SELECT id, name, email, phone, kec, verified FROM users WHERE id = ?').get(data.uid);
+    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt FROM users WHERE id = ?').get(data.uid);
     if (!req.user) return bad(res, 401, 'Akun tidak ditemukan');
     next();
   } catch { return bad(res, 401, 'Sesi kedaluwarsa — login lagi ya'); }
@@ -301,9 +352,10 @@ function addRevenue(orderId, kind, amount){
 /* ================= CONFIG ================= */
 app.get('/api/config', (req, res) => {
   res.json({
-    kecamatan: KECAMATAN, cats: CATS,
-    fees: { appFee: APP_FEE, sellerCommission: SELLER_COMMISSION, driverCommission: DRIVER_COMMISSION, freeshipExtra: FREESHIP_EXTRA },
+    kecamatan: KECAMATAN, cats: CATS, kecCoords: KEC_COORDS,
+    fees: { appFee: APP_FEE, sellerCommission: SELLER_COMMISSION, driverCommission: DRIVER_COMMISSION, freeshipExtra: FREESHIP_EXTRA, codFeeRate: COD_FEE_RATE, codFeeMin: COD_FEE_MIN },
     limits: { codMaxKm: COD_MAX_KM, driverMaxKm: DRIVER_MAX_KM, freeshipCap: FREESHIP_CAP, freeshipMin: FREESHIP_MIN },
+    gateway: { real: GATEWAY_REAL, clientKey: MIDTRANS_CLIENT_KEY, snapJs: MIDTRANS_BASE + '/snap/snap.js', production: MIDTRANS_PROD },
   });
 });
 
@@ -312,7 +364,7 @@ app.get('/api/config', (req, res) => {
  * email+password selalu bisa, bahkan bila email OTP tidak sampai.
  * Verifikasi email hanya menaikkan status verified — bukan syarat login. */
 const signToken = uid => jwt.sign({ uid }, JWT_SECRET, { expiresIn: '30d' });
-const userPayload = u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec, verified: u.verified ? 1 : 0 });
+const userPayload = u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec, verified: u.verified ? 1 : 0, cod_debt: u.cod_debt || 0 });
 
 app.post('/api/auth/register', async (req, res) => {
   const { name = '', email = '', phone = '', kec = '', password = '' } = req.body;
@@ -484,7 +536,7 @@ app.post('/api/products/:id/like', auth, (req, res) => {
 });
 
 /* ================= ORDER ================= */
-app.post('/api/orders', auth, (req, res) => {
+app.post('/api/orders', auth, async (req, res) => {
   const { productId, mode, payMethod, recvName, recvAddr, meetPoint, meetTime } = req.body;
   const p = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(parseInt(productId, 10));
   if (!p) return bad(res, 404, 'Produk tidak ditemukan');
@@ -519,12 +571,31 @@ app.post('/api/orders', auth, (req, res) => {
   const total = p.price + ship + APP_FEE + gatewayFee;
 
   const id = uid();
-  const pay = gateway.create({ id, total });
-  db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, va, created_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+  let pay, snap = null;
+  if (GATEWAY_REAL){
+    // ---- MIDTRANS ASLI: buat transaksi Snap, uang masuk beneran ----
+    const items = [
+      { id: 'P' + p.id, name: p.name.slice(0, 50), price: p.price, quantity: 1 },
+      ...(ship > 0 ? [{ id: 'SHIP', name: mode === 'driver' ? 'Ongkos Driver Lebak' : 'Ongkir', price: ship, quantity: 1 }] : []),
+      { id: 'FEE', name: 'Biaya aplikasi', price: APP_FEE, quantity: 1 },
+      ...(gatewayFee > 0 ? [{ id: 'GWF', name: 'Biaya layanan pembayaran', price: gatewayFee, quantity: 1 }] : []),
+    ];
+    try { snap = await midtransCreate({ id, total }, req.user, items, payMethod); }
+    catch (e) {
+      console.error('[midtrans] gagal membuat transaksi:', e.message);
+      return bad(res, 502, 'Gateway pembayaran sedang bermasalah — coba lagi sebentar lagi');
+    }
+    pay = { real: true, snap_token: snap.token, redirect_url: snap.redirect_url, expires_at: Date.now() + 24 * 3600e3 };
+  } else {
+    pay = gateway.create({ id, total }); // mode simulasi (belum ada MIDTRANS_SERVER_KEY)
+  }
+  db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, va, snap_token, pay_url, created_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, payMethod, p.price, ship, APP_FEE, gatewayFee, total,
-         'Menunggu Pembayaran', recvName, recvAddr, pay.va, now());
-  addEvent(id, 'Menunggu Pembayaran', 'Invoice rekber diterbitkan — bayar sebelum 24 jam');
+         'Menunggu Pembayaran', recvName, recvAddr, pay.va || null, snap ? snap.token : null, snap ? snap.redirect_url : null, now());
+  addEvent(id, 'Menunggu Pembayaran', GATEWAY_REAL
+    ? 'Invoice Midtrans diterbitkan — selesaikan pembayaran sebelum 24 jam'
+    : 'Invoice rekber diterbitkan — bayar sebelum 24 jam');
   res.json({ ok: true, order: getOrder(id), payment: pay });
 });
 
@@ -550,18 +621,26 @@ app.get('/api/sales', auth, (req, res) => {
   res.json({ sales: ids.map(x => getOrder(x.id)) });
 });
 
-/* --- WEBHOOK PEMBAYARAN (pola Midtrans; tanpa timer palsu) --- */
+/* --- WEBHOOK PEMBAYARAN (notifikasi Midtrans asli / simulasi sandbox) --- */
 app.post('/api/payments/webhook', (req, res) => {
   if (!gateway.verifySignature(req)) return bad(res, 403, 'Signature tidak valid');
-  const { order_id, transaction_status = 'settlement' } = req.body;
+  const { order_id, transaction_status = 'settlement', fraud_status } = req.body;
   const o = db.prepare('SELECT * FROM orders WHERE id = ?').get(order_id);
   if (!o) return bad(res, 404, 'Order tidak ditemukan');
   if (o.status !== 'Menunggu Pembayaran') return res.json({ ok: true, note: 'sudah diproses' });
-  if (transaction_status !== 'settlement') return res.json({ ok: true, note: 'status diabaikan: ' + transaction_status });
-  db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
-  addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana aman di rekening bersama. Penjual: silakan proses pesanan! 🔔');
-  addRevenue(o.id, 'app_fee', o.app_fee);
-  res.json({ ok: true });
+  const paid = transaction_status === 'settlement'
+    || (transaction_status === 'capture' && (!fraud_status || fraud_status === 'accept'));
+  if (paid){
+    db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
+    addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana aman di rekening bersama. Penjual: silakan proses pesanan! 🔔');
+    addRevenue(o.id, 'app_fee', o.app_fee);
+    return res.json({ ok: true });
+  }
+  if (['expire', 'cancel', 'deny', 'failure'].includes(transaction_status)){
+    addEvent(o.id, 'Dibatalkan', 'Pembayaran ' + (transaction_status === 'expire' ? 'kedaluwarsa' : 'gagal/dibatalkan') + ' — pesan ulang bila masih berminat');
+    return res.json({ ok: true });
+  }
+  res.json({ ok: true, note: 'status diabaikan: ' + transaction_status }); // pending dll.
 });
 
 /* --- Aksi PENJUAL: kirim barang / serahkan ke driver / kirim hasil --- */
@@ -583,21 +662,34 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
   if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
   if (o.mode === 'cod') {
     if (o.status !== 'Janjian COD') return bad(res, 409, 'Status tidak bisa dikonfirmasi');
-    addEvent(o.id, 'Selesai', 'Ketemuan sukses — barang oke, bayar di tempat. Win-win! 🎉');
-    return res.json({ ok: true, order: getOrder(o.id) });
+    // Platform tetap dapat bagian dari COD: komisi dicatat sebagai tagihan
+    // penjual dan dipotong otomatis dari pencairan rekber berikutnya.
+    const fee = codFee(o.price);
+    addRevenue(o.id, 'cod_fee', fee);
+    db.prepare('UPDATE users SET cod_debt = cod_debt + ? WHERE id = ?').run(fee, o.seller_id);
+    addEvent(o.id, 'Selesai',
+      `Ketemuan sukses — barang oke, bayar di tempat 🎉 Komisi COD Rp${fee.toLocaleString('id-ID')} (${COD_FEE_RATE * 100}%, min Rp${COD_FEE_MIN.toLocaleString('id-ID')}) dicatat sebagai tagihan penjual & dipotong otomatis dari pencairan rekber berikutnya.`);
+    return res.json({ ok: true, order: getOrder(o.id), codFee: fee });
   }
   if (!CONFIRMABLE.includes(o.status)) return bad(res, 409, 'Barang belum dikirim penjual / sudah selesai');
   const commission = Math.round(o.price * SELLER_COMMISSION);
   const extra = db.prepare('SELECT freeship FROM products WHERE id = ?').get(o.product_id)?.freeship
     ? Math.round(o.price * FREESHIP_EXTRA) : 0;
   const driverCut = o.mode === 'driver' ? Math.round(o.ship * DRIVER_COMMISSION) : 0;
-  const net = o.price - commission - extra;
+  let net = o.price - commission - extra;
+  // lunasi tagihan komisi COD penjual (bila ada) dari pencairan ini
+  const debt = db.prepare('SELECT cod_debt FROM users WHERE id = ?').get(o.seller_id)?.cod_debt || 0;
+  const debtCut = Math.min(debt, Math.max(0, net));
+  if (debtCut > 0){
+    db.prepare('UPDATE users SET cod_debt = cod_debt - ? WHERE id = ?').run(debtCut, o.seller_id);
+    net -= debtCut;
+  }
   addRevenue(o.id, 'commission', commission);
   addRevenue(o.id, 'freeship_extra', extra);
   addRevenue(o.id, 'driver_cut', driverCut);
   addEvent(o.id, 'Selesai — Dana Cair',
-    `Pembeli konfirmasi sesuai → dana diteruskan ke penjual: Rp${net.toLocaleString('id-ID')} (komisi platform 3%${extra ? ' + program gratis ongkir 4%' : ''} dipotong) 💸`);
-  res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, extra, driverCut } });
+    `Pembeli konfirmasi sesuai → dana diteruskan ke penjual: Rp${net.toLocaleString('id-ID')} (komisi platform 3%${extra ? ' + program gratis ongkir 4%' : ''}${debtCut ? ' + pelunasan tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong) 💸`);
+  res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, extra, driverCut, debtCut } });
 });
 
 app.post('/api/orders/:id/complain', auth, (req, res) => {

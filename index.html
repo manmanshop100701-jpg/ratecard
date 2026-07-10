@@ -7,26 +7,27 @@
 <meta name="description" content="Marketplace lokal Kabupaten Lebak: jual-beli aman dengan rekber, COD terdekat, driver lokal, dan direktori kuliner lengkap dengan menu.">
 <style>
 /* ================================================================
-   LEBAK.MARKET — Desain profesional: putih bersih, hijau tua
-   sebagai warna utama, aksen amber dipakai hemat. Garis tipis,
-   bayangan lembut, tanpa dekorasi berlebih.
+   LEBAK.MARKET — Desain e-commerce profesional: header putih bersih,
+   banner promo hijau, trust-strip, dan GRID kartu produk rapat ala
+   marketplace besar. Fitur tidak berubah — hanya presentasinya.
    ================================================================ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#f7f8f7;
+  --bg:#f0f2f5;
   --card:#ffffff;
-  --ink:#1f2937;
-  --muted:#68737f;
-  --line:#e4e7ea;
-  --green:#15803d;
-  --green-2:#116232;
-  --tint:#e9f3ec;
-  --tint-line:#cfe4d6;
+  --ink:#20242b;
+  --muted:#6b7583;
+  --line:#e5e8ec;
+  --green:#0b8f4d;
+  --green-2:#087a40;
+  --tint:#e7f6ee;
+  --tint-line:#c6e8d5;
   --amber:#b45309;
-  --amber-tint:#fdf4e3;
-  --radius:14px;
-  --shadow:0 1px 3px rgba(16,24,40,.06);
-  --shadow-lg:0 8px 24px rgba(16,24,40,.10);
+  --amber-tint:#fff4e0;
+  --price:#20242b;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(20,26,36,.06);
+  --shadow-lg:0 10px 28px rgba(20,26,36,.14);
   --font:'Inter','Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',sans-serif;
 }
 html{scroll-behavior:smooth}
@@ -85,10 +86,15 @@ header{
 }
 .logo .word em{font-style:normal;color:var(--green)}
 .search{
-  flex:1;display:flex;align-items:center;gap:10px;background:#f2f4f3;border:1px solid transparent;
-  border-radius:10px;padding:9px 15px;min-width:0;color:var(--muted);transition:all .15s;
+  flex:1;display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);
+  border-radius:10px;padding:8px 8px 8px 15px;min-width:0;color:var(--muted);transition:all .15s;
 }
-.search:focus-within{background:var(--card);border-color:var(--green)}
+.search:focus-within{border-color:var(--green);box-shadow:0 0 0 3px var(--tint)}
+.search .go{
+  border:none;background:var(--green);color:#fff;border-radius:7px;width:38px;height:32px;
+  display:grid;place-items:center;flex:none;transition:background .15s;
+}
+.search .go:hover{background:var(--green-2)}
 .search input{border:none;outline:none;flex:1;font-family:inherit;font-size:14px;background:transparent;color:var(--ink);min-width:0}
 .head-actions{display:flex;gap:6px;flex:none;align-items:center}
 .icon-btn{
@@ -114,14 +120,42 @@ header{
 .login-btn:hover{background:var(--green-2)}
 @media(max-width:680px){.logo .word{display:none}}
 
-/* ============ HERO ============ */
-.hero-strip{padding:30px 0 6px}
-.hero-strip h1{font-size:clamp(21px,3.4vw,29px)}
-.hero-strip .hl{position:relative;display:inline-block;z-index:1;white-space:nowrap;color:var(--green)}
-.hero-strip .hl::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:7px;z-index:-1;background:var(--tint);border-radius:3px}
-.hero-strip p{color:var(--muted);font-size:14px;margin-top:5px;max-width:560px}
-.quick-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
-.stories{display:flex;gap:16px;overflow-x:auto;padding:18px 4px 8px;scrollbar-width:none}
+/* ============ HERO: BANNER PROMO + TRUST STRIP ============ */
+.hero-strip{padding:18px 0 4px}
+.promo-banner{
+  position:relative;overflow:hidden;border-radius:14px;color:#fff;
+  background:linear-gradient(115deg,#0b8f4d 0%,#0a7a44 55%,#075e34 100%);
+  padding:30px 34px;box-shadow:var(--shadow);
+}
+.promo-banner::after{
+  content:"";position:absolute;right:-70px;top:-70px;width:260px;height:260px;border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+.promo-banner::before{
+  content:"";position:absolute;right:60px;bottom:-90px;width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,.06);
+}
+.promo-kicker{font-size:11px;font-weight:700;letter-spacing:1.6px;opacity:.85}
+.promo-banner h1{font-size:clamp(21px,3.4vw,30px);margin:6px 0 4px;color:#fff}
+.promo-banner p{font-size:14px;opacity:.9;max-width:520px}
+.quick-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px;position:relative;z-index:1}
+.chip-light{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff;backdrop-filter:blur(2px)}
+.chip-light:hover{background:rgba(255,255,255,.24);border-color:#fff;color:#fff}
+.trust-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;
+}
+.trust-item{
+  display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);
+  border-radius:11px;padding:11px 14px;box-shadow:var(--shadow);
+}
+.trust-item .tic{
+  width:36px;height:36px;border-radius:9px;background:var(--tint);color:var(--green);
+  display:grid;place-items:center;flex:none;
+}
+.trust-item b{font-size:12.5px;display:block;line-height:1.3}
+.trust-item span{font-size:11px;color:var(--muted);line-height:1.35;display:block}
+@media(max-width:860px){.trust-strip{grid-template-columns:repeat(2,1fr)}}
+.stories{display:flex;gap:16px;overflow-x:auto;padding:16px 4px 6px;scrollbar-width:none}
 .stories::-webkit-scrollbar{display:none}
 .story{flex:none;text-align:center;width:68px}
 .story .ring{
@@ -152,49 +186,85 @@ header{
 .radius-row .chip{flex:none}
 
 /* ============ LAYOUT ============ */
-.main-grid{display:grid;grid-template-columns:1fr 316px;gap:26px;padding:24px 0 90px;align-items:start}
-@media(max-width:920px){.main-grid{grid-template-columns:1fr}.side{display:none}}
+.main-grid{display:block;padding:20px 0 90px}
+.sect-head{display:flex;align-items:center;gap:12px;margin:22px 0 12px}
+.sect-head h2{font-size:17px}
+.sect-head:first-child{margin-top:0}
 
-/* ============ FEED / POST ============ */
-.feed{display:flex;flex-direction:column;gap:18px}
-.post{
+/* ============ GRID PRODUK (ala e-commerce besar) ============ */
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:14px}
+.pcard{
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  overflow:hidden;box-shadow:var(--shadow);
+  overflow:hidden;box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;
+  transition:box-shadow .18s,transform .18s,border-color .18s;
 }
-.post.lokal{border-color:var(--tint-line)}
-.lokal-strip{
-  background:var(--tint);color:var(--green);border-bottom:1px solid var(--tint-line);
-  font-size:11.5px;font-weight:600;padding:6px 18px;letter-spacing:.2px;
+.pcard:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);border-color:#d7dbe0}
+.pcard-media{aspect-ratio:1/1;display:grid;place-items:center;position:relative;border-bottom:1px solid var(--line)}
+.pcard-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pcard-media .cond-tag{position:absolute;left:10px;top:10px}
+.pfav{
+  position:absolute;right:9px;top:9px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);
+  background:rgba(255,255,255,.94);color:var(--muted);display:grid;place-items:center;transition:all .15s;z-index:2;
 }
-.post-head{display:flex;align-items:center;gap:12px;padding:14px 18px}
-.post-head .ava{
-  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
-  font-weight:700;flex:none;background:var(--ac,var(--tint));color:var(--green);
+.pfav:hover{color:var(--amber);border-color:#ecd9b6}
+.pfav.on{color:var(--amber);background:var(--amber-tint);border-color:#ecd9b6}
+.pfav svg.ic{width:15px;height:15px}
+.sold-out{position:absolute;inset:0;background:rgba(255,255,255,.72);display:grid;place-items:center;z-index:1}
+.sold-out b{background:var(--ink);color:#fff;border-radius:9px;padding:7px 18px;font-size:12.5px;letter-spacing:1px}
+.pcard-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.pcard-name{
+  font-size:13px;font-weight:500;line-height:1.35;min-height:35px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
-.post-head .who{flex:1;min-width:0}
-.post-head .who b{display:flex;align-items:center;gap:5px;font-size:14px;flex-wrap:wrap;font-weight:600}
-.verif{color:var(--green);font-size:12px}
-.post-head .who span{font-size:12px;color:var(--muted)}
-.post-media{
+.pcard-price{font-size:15.5px;font-weight:800;color:var(--price)}
+.pcard-tags{display:flex;gap:4px;flex-wrap:wrap;min-height:20px}
+.ptag{
+  font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;
+  background:#f1f3f5;color:var(--muted);letter-spacing:.2px;
+}
+.pt-green{background:var(--tint);color:var(--green)}
+.pt-amber{background:var(--amber-tint);color:var(--amber)}
+.pcard-loc{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);margin-top:auto}
+.pcard-loc svg.ic{width:12px;height:12px}
+.pcard-seller{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.verif{color:var(--green);font-size:11px}
+
+/* strip "banyak dicari" horizontal */
+.trend-strip{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.trend-strip::-webkit-scrollbar{display:none}
+.trend-card{
+  flex:none;display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:11px;padding:9px 14px 9px 9px;cursor:pointer;box-shadow:var(--shadow);
+  transition:border-color .15s;max-width:250px;
+}
+.trend-card:hover{border-color:var(--green)}
+.trend-card .em{width:44px;height:44px;border-radius:9px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
+.trend-card b{font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;font-weight:600}
+.trend-card span{font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+/* detail produk (modal) */
+.pd-media{
   aspect-ratio:16/10;display:grid;place-items:center;position:relative;
-  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  border-bottom:1px solid var(--line);
 }
-.post-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.post-media .price-tag{
-  position:absolute;left:14px;bottom:12px;background:rgba(255,255,255,.95);
-  border:1px solid var(--line);border-radius:9px;padding:5px 13px;font-weight:700;font-size:14.5px;
-}
-.post-media .cond-tag{position:absolute;left:14px;top:12px}
-.post-media .dist-tag{
-  position:absolute;right:14px;bottom:12px;background:rgba(31,41,55,.82);color:#fff;
+.pd-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pd-media .cond-tag{position:absolute;left:12px;top:12px}
+.pd-media .dist-tag{
+  position:absolute;right:12px;bottom:10px;background:rgba(31,41,55,.82);color:#fff;
   border-radius:8px;padding:3px 10px;font-weight:600;font-size:11.5px;
 }
-.post-media .sold-out{position:absolute;inset:0;background:rgba(255,255,255,.72);display:grid;place-items:center}
-.post-media .sold-out b{
-  background:var(--ink);color:#fff;border-radius:9px;padding:8px 22px;font-size:14px;letter-spacing:1px;
+.pd-price{font-size:23px;font-weight:800;margin-bottom:2px}
+.pd-name{font-size:15.5px;font-weight:600;margin-bottom:8px}
+.pd-meta{font-size:12px;color:var(--muted);margin:8px 0 10px}
+.pd-desc{font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:12px;white-space:pre-wrap}
+.post-perks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.perk{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  border-radius:6px;padding:3px 9px;background:#f1f3f5;color:var(--muted);
 }
-.post-body{padding:14px 18px 16px}
-.post-actions{display:flex;align-items:center;gap:6px;margin-bottom:9px;flex-wrap:wrap}
+.pk-lokal{background:var(--tint);color:var(--green)}
+.pk-cod,.pk-rekber,.pk-driver,.pk-far{background:#f1f3f5;color:var(--muted)}
+.post-actions{display:flex;align-items:center;gap:6px;margin:10px 0;flex-wrap:wrap}
 .act{
   display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);
   border-radius:9px;padding:6px 13px;font-weight:600;font-size:12.5px;color:var(--muted);
@@ -202,26 +272,30 @@ header{
 }
 .act:hover{border-color:var(--green);color:var(--green)}
 .act.liked{background:var(--tint);border-color:var(--tint-line);color:var(--green)}
-.post-title{font-size:16.5px;font-weight:700;margin-bottom:3px}
-.post-desc{font-size:13.5px;color:var(--muted);margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.post-perks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
-.perk{
-  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
-  border-radius:6px;padding:3px 9px;background:#f1f3f4;color:var(--muted);
-}
-.pk-lokal{background:var(--tint);color:var(--green)}
-.pk-cod{background:#f1f3f4;color:var(--muted)}
-.pk-rekber{background:#f1f3f4;color:var(--muted)}
-.pk-driver{background:#f1f3f4;color:var(--muted)}
-.pk-far{background:#f1f3f4;color:var(--muted)}
 .post-cta{display:flex;gap:9px;flex-wrap:wrap}
 .post-cta .btn{flex:1;min-width:110px}
 .fav-btn.on{background:var(--amber-tint);border-color:#ecd9b6;color:var(--amber)}
+.seller-row{
+  background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px 13px;
+  display:flex;gap:11px;align-items:center;
+}
+.seller-row .ava{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  font-weight:700;flex:none;background:var(--ac,var(--tint));color:var(--green);
+}
 .empty-feed{
   text-align:center;background:var(--card);border:1px dashed #cdd3d8;border-radius:var(--radius);
-  padding:56px 24px;
+  padding:56px 24px;grid-column:1/-1;
 }
 .empty-feed .big{font-size:44px;display:block;margin-bottom:10px}
+
+/* footer info cara kerja */
+.info-foot{
+  margin-top:26px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;box-shadow:var(--shadow);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;
+}
+.info-foot h3{font-size:13.5px;grid-column:1/-1;margin-bottom:2px}
 
 /* tile fallback produk tanpa foto — dua nada netral bergantian */
 .g-1,.g-3,.g-5{background:#edf1ee}
@@ -231,10 +305,7 @@ header{
 .letter-s{font-size:16px;font-weight:700;color:#9aa89e;font-family:Georgia,serif}
 .em img,.thumb-img{width:100%;height:100%;object-fit:cover;border-radius:9px}
 
-/* ============ SIDEBAR ============ */
-.side{display:flex;flex-direction:column;gap:16px;position:sticky;top:150px}
-.side-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
-.side-card h3{font-size:14.5px;margin-bottom:12px;font-weight:700}
+/* ============ ELEMEN INFO (dipakai modal & footer) ============ */
 .mini-row{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #f0f2f1}
 .mini-row:last-child{border-bottom:none}
 .mini-row .em{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;overflow:hidden;background:#edf1ee}
@@ -540,14 +611,17 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   .cat-scroll .chip{padding:7px 14px;font-size:12.5px}
   .radius-row{padding:7px 2px 1px;font-size:11.5px}
   .radius-row .chip.mini{padding:4px 11px;font-size:11px}
-  .hero-strip{padding:20px 0 4px}
-  .hero-strip h1{font-size:20px}
+  .hero-strip{padding:12px 0 4px}
+  .promo-banner{padding:20px 18px}
+  .promo-banner h1{font-size:19px}
   .hero-strip .quick-row .chip{padding:7px 13px;font-size:12px}
-  .stories{padding:14px 2px 6px}
-  .main-grid{padding:16px 0 84px;gap:18px}
-  .post-media .price-tag{font-size:13px;padding:4px 11px}
-  .post-body{padding:13px 14px 15px}
-  .post-head{padding:12px 14px}
+  .trust-strip{gap:8px}
+  .trust-item{padding:9px 11px}
+  .stories{padding:12px 2px 6px}
+  .main-grid{padding:14px 0 84px}
+  .feed{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .pcard-body{padding:9px 10px 11px}
+  .pcard-price{font-size:14.5px}
   .post-cta .btn{min-width:0;padding:11px 13px;font-size:13px}
   .modal{border-radius:14px;max-height:94vh}
   .modal-head{padding:14px 16px;border-radius:14px 14px 0 0}
@@ -572,8 +646,10 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <span class="word">Lebak<em>.</em>market</span>
     </a>
     <div class="search">
-      <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input id="searchInput" type="text" placeholder="Cari barang, jasa, atau penjual di Lebak...">
+      <button class="go" onclick="loadFeed()" title="Cari">
+        <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
     </div>
     <div class="head-actions">
       <button class="icon-btn hide-mobile" onclick="showView('kuliner')" title="Kuliner Lebak">
@@ -597,12 +673,21 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 </header>
 
 <div class="wrap hero-strip" id="heroStrip">
-  <h1>Bangga Belanja <span class="hl">Produk Lebak</span></h1>
-  <p>Marketplace warga Kabupaten Lebak — penjual terdekat tampil paling atas. Rekber aman, bisa COD, driver siap antar.</p>
-  <div class="quick-row">
-    <button class="chip" onclick="showView('kuliner')">Kuliner Terdekat</button>
-    <button class="chip" onclick="openSell()">+ Jual Barangmu</button>
-    <button class="chip" onclick="openInfoBiaya()">Biaya &amp; Komisi</button>
+  <div class="promo-banner">
+    <span class="promo-kicker">MARKETPLACE WARGA KABUPATEN LEBAK</span>
+    <h1>Bangga Belanja Produk Lebak</h1>
+    <p>Penjual terdekat tampil paling atas — rekber aman, bisa COD, driver lokal siap antar hari ini.</p>
+    <div class="quick-row">
+      <button class="chip chip-light" onclick="showView('kuliner')">Kuliner Terdekat</button>
+      <button class="chip chip-light" onclick="openSell()">+ Jual Barangmu</button>
+      <button class="chip chip-light" onclick="openInfoBiaya()">Biaya &amp; Komisi</button>
+    </div>
+  </div>
+  <div class="trust-strip">
+    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><div><b>Rekber Escrow</b><span>Dana ditahan sampai barang sesuai</span></div></div>
+    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div><b>COD Ketemuan</b><span>Cek barang dulu, baru bayar</span></div></div>
+    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3V6h13v11H9m7-6h3l2 3v3h-2"/></svg></span><div><b>Driver Lokal</b><span>Antar hari ini mulai Rp10rb</span></div></div>
+    <div class="trust-item"><span class="tic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>100% Postingan Asli</b><span>Tanpa bot — semua warga sungguhan</span></div></div>
   </div>
   <div class="stories" id="stories"></div>
 </div>
@@ -612,7 +697,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   <div class="wrap">
     <div class="cat-scroll" id="catScroll"></div>
     <div class="radius-row">
-      <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink);cursor:pointer" onclick="startGeo(true)" title="Klik untuk deteksi ulang lokasi">Mendeteksi lokasi…</b> · Radius:</span>
+      <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink);cursor:pointer" onclick="openLocPicker()" title="Klik untuk atur lokasi">Mendeteksi lokasi…</b> · Radius:</span>
       <span id="radiusChips"></span>
     </div>
   </div>
@@ -622,7 +707,19 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 <div class="wrap main-grid">
   <main>
     <div id="view-feed">
+      <div id="trendWrap" class="hidden">
+        <div class="sect-head"><h2>Lagi Banyak Dicari</h2></div>
+        <div class="trend-strip" id="trending"></div>
+      </div>
+      <div class="sect-head"><h2>Produk di Sekitarmu</h2><span class="live-pill"><i></i> urut dari lokasimu</span></div>
       <div class="feed" id="feed"></div>
+      <div class="info-foot">
+        <h3>Belanja aman di Lebak.market (win-win)</h3>
+        <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber), bukan langsung ke penjual</span></div>
+        <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan di tempat ramai</span></div>
+        <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi → dana baru cair ke penjual</span></div>
+        <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan sampai beres</span></div>
+      </div>
     </div>
     <div id="view-orders" class="hidden">
       <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
@@ -638,32 +735,6 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <div class="resto-grid" id="restoGrid"></div>
     </div>
   </main>
-
-  <!-- SIDEBAR -->
-  <aside class="side">
-    <div class="side-card">
-      <h3>Lokal Pride Lebak</h3>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Penjual dari Lebak selalu <b>diprioritaskan di feed</b>. Belanja tetangga sendiri = ekonomi Lebak muter di Lebak.</p>
-      <div class="how-step"><span class="n">✓</span><span>COD-an aja kalau dekat — gratis</span></div>
-      <div class="how-step"><span class="n">✓</span><span>Driver lokal antar mulai Rp10rb</span></div>
-    </div>
-    <div class="side-card">
-      <h3>Transaksi aman (win-win)</h3>
-      <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber)</span></div>
-      <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan</span></div>
-      <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi → dana cair</span></div>
-      <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan sampai beres</span></div>
-    </div>
-    <div class="side-card">
-      <h3>Terdekat &amp; banyak dicari</h3>
-      <div id="trending"></div>
-    </div>
-    <div class="side-card">
-      <h3>Satu akun, jual &amp; beli</h3>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Tanpa daftar toko terpisah — akunmu otomatis bisa posting jualan sekaligus belanja.</p>
-      <button class="btn btn-coral btn-sm" onclick="openSell()">+ Posting Jualan</button>
-    </div>
-  </aside>
 </div>
 
 <button class="fab" onclick="openSell()">
@@ -717,6 +788,7 @@ const IC = {
   send:  icon('<path d="m22 2-7 20-4-9-9-4z"/>', 17),
   camera:icon('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 26),
   bolt:  icon('<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/>'),
+  pin:   icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>', 12),
 };
 
 /* ---------- KONSTANTA UI ---------- */
@@ -733,6 +805,8 @@ const CAT_BADGE = { jasa:'b-jasa', makanan:'b-makanan', elektronik:'b-elektronik
 const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ikan:'Ikan Hias', fashion:'Fashion', kriya:'Kriya Lebak' };
 const RADII = [ {v:5,l:'≤ 5 km'}, {v:10,l:'≤ 10 km'}, {v:25,l:'≤ 25 km'}, {v:Infinity,l:'Semua'} ];
 let COD_MAX_KM = 25, DRIVER_MAX_KM = 15, APP_FEE = 1000, FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
+let COD_FEE_RATE = 0.02, COD_FEE_MIN = 1000;
+let GATEWAY = { real: false, clientKey: '', snapJs: '' }; // diisi dari /api/config
 let KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
 const MEET_POINTS = ['Alun-alun Rangkasbitung', 'Depan Stasiun Rangkasbitung', 'Minimarket terdekat (sebut di chat)', 'Halaman Polres Lebak (paling aman)', 'Kampus / area kantor'];
 const PAY_METHODS = [
@@ -794,9 +868,17 @@ let sellImg = null; // data URL foto produk yang akan diposting
 const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
 const km = d => d === 0 ? 'Online' : d < 0.15 ? '±100 m' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
 
-/* ---------- LOKASI LIVE (GPS asli, tanpa data karangan) ---------- */
-let myLoc = store.get('loc', null);   // posisi terakhir yang diketahui {lat,lng}
-let geoLive = false;                  // true = GPS aktif & memancarkan update
+/* ---------- LOKASI LIVE (GPS asli + filter akurasi) ----------
+ * Akurasi: fix kasar (perkiraan IP/Wi-Fi, radius ratusan meter–km) DIABAIKAN
+ * bila kita sudah pegang fix yang lebih presisi — jadi titik tidak "loncat".
+ * Tingkat akurasi (±meter) ditampilkan apa adanya di label. Kalau GPS
+ * perangkat tetap meleset (umum di laptop), pengguna bisa pilih lokasi
+ * manual per kecamatan lewat openLocPicker(). */
+let myLoc = store.get('loc', null);           // posisi terakhir {lat,lng}
+let myAcc = store.get('locAcc', null);        // akurasi fix tsb (meter)
+let locManual = store.get('locManual', null); // nama kecamatan bila pilih manual
+let kecCoords = {};                            // diisi dari /api/config
+let geoLive = false;
 let geoWatchId = null;
 function havKm(a, b){
   const R = 6371, rad = x => x * Math.PI / 180;
@@ -806,24 +888,32 @@ function havKm(a, b){
 }
 function setLocLabel(html){ document.getElementById('locLabel').innerHTML = html; }
 function locFallbackLabel(){
-  setLocLabel(user ? esc(user.kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(perkiraan — klik untuk GPS)</span>'
-                   : 'GPS mati — klik untuk aktifkan');
+  setLocLabel(user ? esc(user.kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(perkiraan — atur ▾)</span>'
+                   : 'Atur lokasi ▾');
 }
-function startGeo(manual){
-  if (!navigator.geolocation){ setLocLabel('Perangkat tanpa GPS'); return; }
-  if (manual) toast('Meminta izin lokasi…');
+const accLabel = () => myAcc ? ` <span style="font-weight:600;color:var(--muted)">±${myAcc >= 1000 ? (myAcc/1000).toFixed(1) + ' km' : Math.round(myAcc) + ' m'}</span>` : '';
+function startGeo(fromUser){
+  if (!navigator.geolocation){ setLocLabel('Perangkat tanpa GPS — atur manual ▾'); return; }
+  if (fromUser){ locManual = null; store.set('locManual', null); myAcc = null; toast('Mendeteksi posisi presisi…'); }
   if (geoWatchId != null) navigator.geolocation.clearWatch(geoWatchId);
+  const opts = { enableHighAccuracy: true, maximumAge: 0, timeout: 25000 };
+  navigator.geolocation.getCurrentPosition(onGeoPos, () => {}, opts); // fix pertama secepatnya
   geoWatchId = navigator.geolocation.watchPosition(onGeoPos, () => {
     geoLive = false;
     if (!myLoc) locFallbackLabel();
-    if (manual) toast('Izin lokasi ditolak — cek pengaturan browser/HP kamu');
-  }, { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 });
+    if (fromUser) toast('Izin lokasi ditolak — aktifkan di pengaturan browser/HP, atau pilih kecamatan manual');
+  }, opts);
 }
 function onGeoPos(pos){
+  if (locManual) return; // pengguna mengunci lokasi manual
   const nl = { lat: +pos.coords.latitude.toFixed(6), lng: +pos.coords.longitude.toFixed(6) };
-  const moved = !myLoc || !geoLive || havKm(myLoc, nl) > 0.15; // update tiap geser >150 m
-  myLoc = nl; geoLive = true;
-  store.set('loc', myLoc);
+  const nAcc = pos.coords.accuracy || 99999;
+  // buang fix yang jauh lebih kasar dari yang sudah ada dan masih di dalam
+  // radius ketidakpastiannya sendiri (ciri khas lokasi IP/Wi-Fi nyasar)
+  if (geoLive && myLoc && myAcc && nAcc > myAcc * 2 && nAcc > 250 && havKm(myLoc, nl) * 1000 < nAcc) return;
+  const moved = !myLoc || !geoLive || havKm(myLoc, nl) > 0.12 || (myAcc && nAcc < myAcc / 2);
+  myLoc = nl; myAcc = Math.round(nAcc); geoLive = true;
+  store.set('loc', myLoc); store.set('locAcc', myAcc);
   if (!moved) return;
   reverseLabel();
   loadFeed(); // jarak & urutan feed dihitung ulang dari posisi baru
@@ -831,16 +921,47 @@ function onGeoPos(pos){
 }
 async function reverseLabel(){
   if (!myLoc) return;
-  const live = ' <span class="live-pill" style="vertical-align:1px"><i></i> live</span>';
+  const live = accLabel() + ' <span class="live-pill" style="vertical-align:1px"><i></i> live</span>';
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=id&lat=${myLoc.lat}&lon=${myLoc.lng}`);
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&accept-language=id&lat=${myLoc.lat}&lon=${myLoc.lng}`);
     const a = (await r.json()).address || {};
-    const place = a.village || a.suburb || a.hamlet || a.town || a.municipality || a.city_district || '';
-    const area = a.county || a.city || a.state || '';
-    setLocLabel(esc([place, area].filter(Boolean).join(', ') || 'Titik GPS ' + myLoc.lat.toFixed(3) + ', ' + myLoc.lng.toFixed(3)) + live);
+    const place = a.road || a.neighbourhood || a.village || a.suburb || a.hamlet || '';
+    const area = a.village !== place && a.village ? a.village : (a.town || a.municipality || a.city_district || a.county || a.city || '');
+    setLocLabel(esc([place, area].filter(Boolean).join(', ') || 'Titik GPS ' + myLoc.lat.toFixed(4) + ', ' + myLoc.lng.toFixed(4)) + live);
   } catch {
-    setLocLabel('Titik GPS ' + myLoc.lat.toFixed(3) + ', ' + myLoc.lng.toFixed(3) + live);
+    setLocLabel('Titik GPS ' + myLoc.lat.toFixed(4) + ', ' + myLoc.lng.toFixed(4) + live);
   }
+}
+/* Pengaturan lokasi: deteksi ulang GPS presisi atau kunci manual per kecamatan */
+function openLocPicker(){
+  const kecs = Object.keys(kecCoords).length ? Object.keys(kecCoords) : KECAMATAN;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Atur Lokasimu</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="safe-note" style="margin:0 0 14px">
+          Status: ${geoLive && !locManual ? `<b>GPS live aktif</b>${myAcc ? ' · akurasi ±' + (myAcc >= 1000 ? (myAcc/1000).toFixed(1) + ' km' : myAcc + ' m') : ''}` : locManual ? `<b>Manual: Kec. ${esc(locManual)}</b>` : '<b>GPS belum aktif</b>'}
+        </div>
+        <button class="btn btn-coral" style="width:100%" onclick="closeModal();startGeo(true)">Deteksi Ulang — GPS Presisi Tinggi</button>
+        <div class="warn-note" style="margin-top:12px"><b>Kenapa bisa meleset?</b> Di laptop/PC, browser menebak posisi dari Wi-Fi/IP sehingga bisa meleset ratusan meter — bahkan beda kota. Di HP: aktifkan GPS + izinkan "lokasi presisi/akurat" untuk situs ini. Angka ±meter di label menunjukkan seberapa yakin perangkatmu.</div>
+        <label class="f" style="margin-top:16px">Atau kunci manual di kecamatanmu (GPS diabaikan)</label>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:4px">
+          ${kecs.map(k => `<button class="chip mini ${locManual===k?'active':''}" onclick="setManualLoc('${k}')">${k}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function setManualLoc(kec){
+  const c = kecCoords[kec];
+  if (!c) return toast('Koordinat kecamatan belum termuat — coba lagi');
+  locManual = kec; myLoc = { ...c }; myAcc = null; geoLive = false;
+  store.set('locManual', kec); store.set('loc', myLoc); store.set('locAcc', null);
+  setLocLabel(esc(kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(manual)</span>');
+  closeModal(); loadFeed();
+  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderRestos();
+  toast('Lokasi dikunci di Kec. ' + kec + ' — klik label lokasi untuk kembali ke GPS');
 }
 const clock = t => new Date(t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
 const ago = t => {
@@ -1059,6 +1180,7 @@ async function openProfile(){
           <span class="dual-badge">Pembeli ✓ · Penjual ✓ — satu akun untuk semua</span>
           ${user.verified ? '' : `<div style="margin-top:10px"><button class="btn btn-mint btn-sm" onclick="reVerify()">Verifikasi email sekarang</button></div>`}
         </div>
+        ${user.cod_debt ? `<div class="warn-note" style="margin-bottom:12px"><b>Tagihan komisi COD: ${rupiah(user.cod_debt)}</b> — dipotong otomatis dari pencairan rekber berikutnya.</div>` : ''}
         <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan + Jual untuk menambah</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
         <div class="mini-row"><span class="em g-5"><span class="letter-s">R</span></span><div><b>Realtime aktif</b><span>Chat, pesanan &amp; jualan baru terdorong langsung tanpa refresh</span></div></div>
@@ -1073,7 +1195,7 @@ async function openProfile(){
 async function openInfoBiaya(){
   let rev = { total: 0, byKind: [] };
   try { rev = await api('/revenue'); } catch {}
-  const kindLabel = { app_fee:'Biaya aplikasi', commission:'Komisi penjual', driver_cut:'Komisi driver', freeship_extra:'Program gratis ongkir' };
+  const kindLabel = { app_fee:'Biaya aplikasi', commission:'Komisi penjual', driver_cut:'Komisi driver', freeship_extra:'Program gratis ongkir', cod_fee:'Komisi COD' };
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
@@ -1083,6 +1205,7 @@ async function openInfoBiaya(){
         <div class="mini-row"><span class="em g-1"><span class="letter-s">A</span></span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
         <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — 3%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">D</span></span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
+        <div class="mini-row"><span class="em g-2"><span class="letter-s">C</span></span><div><b>Komisi COD — ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)})</b><span>Dicatat sebagai tagihan penjual, dipotong otomatis dari pencairan rekber berikutnya</span></div></div>
         <div class="mini-row"><span class="em g-6"><span class="letter-s">G</span></span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge &amp; prioritas feed</span></div></div>
         <div class="menu-mini" style="margin-top:14px">
           <div class="mtitle">Pendapatan platform tercatat di server (live)</div>
@@ -1179,40 +1302,81 @@ function renderFeed(){
     const faved = favs.has(p.id);
     const out = p.stock <= 0;
     return `
-    <article class="post ${p.lebak?'lokal':''}">
-      ${p.lebak ? '<div class="lokal-strip">LOKAL PRIDE — penjual dari Kab. Lebak, diprioritaskan untukmu</div>' : ''}
-      <div class="post-head">
-        <span class="ava" style="--ac:${acOf(p.seller_id)};font-size:18px">${initOf(p.seller_name)}</span>
-        <div class="who">
-          <b>${esc(p.seller_name)} <span class="verif">✓</span></b>
-          <span>${ago(p.created_at)} · ${esc(p.loc)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span></span>
-        </div>
-        ${mine ? '<span class="mine-pill">Postinganmu</span>'
-               : `<button class="act" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>`}
+    <article class="pcard" onclick="openProduct(${p.id})">
+      <div class="pcard-media ${p.g}">
+        ${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+        <button class="pfav ${faved?'on':''}" title="Favorit" onclick="event.stopPropagation();toggleFav(${p.id})">${faved?IC.heartF:IC.heart}</button>
+        ${p.cond==='bekas' ? '<span class="cond-tag badge b-bekas">Bekas</span>' : ''}
+        ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
       </div>
-      <div class="post-media ${p.g}">
-        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
-        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
-        <span class="price-tag">${rupiah(p.price)}</span>
-        <span class="dist-tag">${km(p.dist)}</span>
-        ${out?'<div class="sold-out"><b>SOLD OUT</b></div>':''}
-      </div>
-      <div class="post-body">
-        <div class="post-actions">
-          <button class="act ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">${IC.like} ${p.likes}</button>
-          <button class="act" onclick="toast('Link produk disalin')">${IC.share} Bagikan</button>
+      <div class="pcard-body">
+        <div class="pcard-name">${esc(p.name)}</div>
+        <div class="pcard-price">${rupiah(p.price)}</div>
+        <div class="pcard-tags">
+          ${p.freeship?'<span class="ptag pt-green">Gratis Ongkir</span>':''}
+          ${p.cod && p.dist > 0 && p.dist <= COD_MAX_KM ? '<span class="ptag">COD</span>':''}
+          ${p.lebak?'<span class="ptag pt-green">Lokal Lebak</span>':''}
+          ${mine?'<span class="ptag pt-amber">Postinganmu</span>':''}
         </div>
-        <div class="post-title">${esc(p.name)}</div>
-        <div class="post-desc">${esc(p.descr)}</div>
-        <div class="post-perks">${perks(p)}</div>
-        <div class="post-cta">
-          <button class="btn btn-yellow fav-btn ${faved?'on':''}" onclick="toggleFav(${p.id})">${faved?IC.heartF+' Tersimpan':IC.heart+' Favorit'}</button>
-          ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>`
-                 : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli</button>`}
-        </div>
+        <div class="pcard-loc">${IC.pin} ${esc(p.seller_kec)} · ${km(p.dist)}</div>
+        <div class="pcard-seller">${esc(p.seller_name)} <span class="verif">✓</span> · ${p.likes} suka</div>
       </div>
     </article>`;
   }).join('');
+}
+
+/* ---------- DETAIL PRODUK (modal ala e-commerce) ---------- */
+function openProduct(id){
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const mine = user && p.seller_id === user.id;
+  const faved = favs.has(p.id);
+  const out = p.stock <= 0;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Detail Produk</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="pd-media ${p.g}">
+        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
+        <span class="dist-tag">${km(p.dist)} darimu</span>
+        ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
+      </div>
+      <div class="modal-body">
+        <div class="pd-price">${rupiah(p.price)}</div>
+        <div class="pd-name">${esc(p.name)}</div>
+        <div class="post-perks">${perks(p)}</div>
+        <div class="pd-meta">${ago(p.created_at)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span> · Stok ${p.stock}</div>
+        <p class="pd-desc">${esc(p.descr)}</p>
+        <div class="seller-row">
+          <span class="ava" style="--ac:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span>
+          <div style="flex:1;min-width:0"><b style="font-size:13.5px">${esc(p.seller_name)} <span class="verif">✓</span></b>
+            <span style="font-size:12px;color:var(--muted);display:block">${esc(p.loc)} · ${km(p.dist)} dari posisimu</span></div>
+          ${mine ? '<span class="mine-pill">Kamu</span>'
+                 : `<button class="btn btn-sm" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>`}
+        </div>
+        <div class="post-actions">
+          <button class="act ${p.liked?'liked':''}" onclick="likeFromDetail(${p.id})">${IC.like} ${p.likes} suka</button>
+          <button class="act ${faved?'liked':''}" onclick="favFromDetail(${p.id})">${faved?IC.heartF:IC.heart} ${faved?'Tersimpan':'Favorit'}</button>
+          <button class="act" onclick="toast('Link produk disalin')">${IC.share} Bagikan</button>
+        </div>
+        <div class="post-cta">
+          ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>`
+                 : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli Sekarang</button>`}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function likeFromDetail(id){
+  if (needLogin('menyukai postingan')) return;
+  await toggleLike(id);
+  openProduct(id);
+}
+function favFromDetail(id){
+  if (needLogin('menyimpan favorit')) return;
+  toggleFav(id);
+  openProduct(id);
 }
 
 async function toggleLike(id){
@@ -1233,20 +1397,21 @@ function toggleFav(id){
 }
 
 function renderTrending(){
+  const wrap = document.getElementById('trendWrap');
   const el = document.getElementById('trending');
-  const top = [...products].sort((a,b) => b.likes - a.likes).slice(0,4);
-  el.innerHTML = top.length ? top.map(p => `
-    <div class="mini-row">
+  const top = [...products].sort((a,b) => b.likes - a.likes).slice(0,8);
+  wrap.classList.toggle('hidden', !top.length);
+  el.innerHTML = top.map(p => `
+    <div class="trend-card" onclick="openProduct(${p.id})">
       <span class="em ${p.g}">${thumb(p.img, p.name)}</span>
       <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${km(p.dist)} · ${p.likes} suka</span></div>
-    </div>`).join('')
-  : `<p style="font-size:13px;color:var(--muted)">Belum ada — postingan pertama otomatis jadi tren.</p>`;
+    </div>`).join('');
 }
 
 function updateBadges(){
   const fc = document.getElementById('favCount');
   fc.textContent = favs.size; fc.classList.toggle('hidden', !favs.size);
-  const active = [...lastOrders, ...lastSales].filter(o => !o.status.startsWith('Selesai')).length;
+  const active = [...lastOrders, ...lastSales].filter(o => !o.status.startsWith('Selesai') && o.status !== 'Dibatalkan').length;
   ['orderCount','bnOrderCount'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = active; el.classList.toggle('hidden', !active); }
@@ -1509,7 +1674,53 @@ function qrisHTML(){
   }
   return `<div class="qris">${cells}</div>`;
 }
+/* Muat snap.js Midtrans sekali saja (dengan client key dari server) */
+function loadSnap(){
+  if (window.snap) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = GATEWAY.snapJs;
+    s.setAttribute('data-client-key', GATEWAY.clientKey);
+    s.onload = res; s.onerror = () => rej(new Error('Gagal memuat modul pembayaran'));
+    document.head.appendChild(s);
+  });
+}
+async function paySnap(orderId, snapToken, payUrl){
+  try {
+    await loadSnap();
+    closeModal();
+    window.snap.pay(snapToken, {
+      onSuccess: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Pembayaran berhasil — dana masuk rekber, penjual dapat notifikasi'); },
+      onPending: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Menunggu pembayaranmu — selesaikan sesuai instruksi'); },
+      onError:   () => toast('Pembayaran gagal — coba lagi dari Transaksi Saya'),
+      onClose:   () => toast('Jendela pembayaran ditutup — lanjutkan kapan saja dari Transaksi Saya'),
+    });
+  } catch (e) {
+    // popup gagal dimuat → pakai halaman pembayaran Midtrans langsung
+    if (payUrl) window.open(payUrl, '_blank');
+    else toast(e.message);
+  }
+}
 function openPayment(o){
+  if (GATEWAY.real && o.snap_token){
+    document.getElementById('modalRoot').innerHTML = `
+    <div class="overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-head"><h3>Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="pay-box">
+            <span class="count-pill">Bayar sebelum <b>24 jam</b></span>
+            <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
+            <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
+            <p style="font-size:12px;color:var(--muted)">Pembayaran diproses <b>Midtrans</b> (QRIS, VA bank, GoPay, ShopeePay, dll). Dana masuk rekber, bukan langsung ke penjual.</p>
+          </div>
+          <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="paySnap('${o.id}', '${esc(o.snap_token)}', '${esc(o.pay_url || '')}')">Bayar Sekarang</button>
+          ${o.pay_url ? `<a class="btn" style="width:100%;margin-top:10px" href="${esc(o.pay_url)}" target="_blank" rel="noopener">Buka Halaman Pembayaran (tab baru)</a>` : ''}
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
   const isQr = o.method_id === 'qris' || o.method_id === 'ewal';
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
@@ -1526,7 +1737,7 @@ function openPayment(o){
         </div>
         <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">[SANDBOX] Simulasikan Pembayaran Berhasil</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Satu-satunya bagian simulasi yang tersisa — tombol ini menembak <b>/api/payments/webhook</b>, jalur yang sama dengan Midtrans/Xendit asli.
+          Mode simulasi — aktifkan Midtrans asli dengan mengisi <b>MIDTRANS_SERVER_KEY</b> &amp; <b>MIDTRANS_CLIENT_KEY</b> di server, maka tombol ini otomatis diganti pembayaran sungguhan.
         </p>
       </div>
     </div>
@@ -1569,7 +1780,7 @@ const STAT_CLASS = {
   'Menunggu Pembayaran':'sb-unpaid', 'Dana Ditahan (Rekber)':'sb-held',
   'Dikirim':'sb-move','Diantar Driver':'sb-move','Hasil Dikirim':'sb-move',
   'Janjian COD':'sb-cod', 'Komplain — Ditinjau':'sb-unpaid',
-  'Selesai — Dana Cair':'sb-done','Selesai':'sb-done',
+  'Selesai — Dana Cair':'sb-done','Selesai':'sb-done','Dibatalkan':'sb-cod',
 };
 const CONFIRMABLE = ['Dikirim','Diantar Driver','Hasil Dikirim'];
 function setOrdTab(t){ ordTab = t; renderOrders(); }
@@ -1600,7 +1811,7 @@ function orderCard(o, asSeller){
         </div>`).join('')}
     </div>
     <div class="order-btns">
-      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va})})'>Bayar Sekarang</button>` : ''}
+      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va, snap_token:o.snap_token, pay_url:o.pay_url})})'>Bayar Sekarang</button>` : ''}
       ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? 'Serahkan ke Driver' : isJasa ? 'Kirim Hasil Kerja' : 'Tandai Dikirim'}</button>` : ''}
       ${asSeller && o.status === 'Menunggu Pembayaran' ? `<span class="live-pill"><i></i> menunggu pembeli bayar</span>` : ''}
       ${!asSeller && CONFIRMABLE.includes(o.status) ? `
@@ -1752,7 +1963,7 @@ function openSell(){
         <input class="f" id="sStock" type="number" min="1" value="1">
         <label class="f">Deskripsi (untuk barang bekas: jujur soal minus)</label>
         <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
-        <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan (radius ${COD_MAX_KM} km)</label></div>
+        <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan (radius ${COD_MAX_KM} km) — komisi COD ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) jadi tagihan, dipotong dari pencairan rekber berikutnya</label></div>
         <div class="check-row"><input type="checkbox" id="sFreeship"><label for="sFreeship">Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge &amp; prioritas (komisi +4%)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">Posting Sekarang</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Komisi penjual 3% hanya dipotong saat transaksi sukses. Posting gratis.</p>
@@ -1823,15 +2034,24 @@ async function submitSell(){
 async function init(){
   renderAuthSlot(); renderCats();
   document.getElementById('searchInput').addEventListener('input', searchInput);
-  if (myLoc) reverseLabel(); // posisi terakhir langsung tampil, lalu GPS memperbarui
-  startGeo(); // lokasi LIVE: watchPosition terus mengikuti pergerakanmu
   try {
     const cfg = await api('/config');
     KECAMATAN = cfg.kecamatan;
+    kecCoords = cfg.kecCoords || {};
     APP_FEE = cfg.fees.appFee;
+    COD_FEE_RATE = cfg.fees.codFeeRate ?? COD_FEE_RATE;
+    COD_FEE_MIN = cfg.fees.codFeeMin ?? COD_FEE_MIN;
     COD_MAX_KM = cfg.limits.codMaxKm; DRIVER_MAX_KM = cfg.limits.driverMaxKm;
     FREESHIP_CAP = cfg.limits.freeshipCap; FREESHIP_MIN = cfg.limits.freeshipMin;
+    if (cfg.gateway) GATEWAY = cfg.gateway;
   } catch (e) { toast(e.message); }
+  if (locManual && kecCoords[locManual]){
+    myLoc = { ...kecCoords[locManual] };
+    setLocLabel(esc(locManual) + ', Lebak <span style="font-weight:600;color:var(--muted)">(manual)</span>');
+  } else {
+    if (myLoc) reverseLabel(); // posisi terakhir langsung tampil, lalu GPS memperbarui
+    startGeo(); // lokasi LIVE: watchPosition terus mengikuti pergerakanmu
+  }
   if (token){
     try { user = (await api('/me')).user; store.set('user', user); afterLogin(); renderAuthSlot(); }
     catch { await loadFeed(); }

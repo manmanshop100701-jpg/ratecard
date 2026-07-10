@@ -108,9 +108,12 @@ db.exec(`
   );
 `);
 
-// Migrasi ringan untuk database lama (sebelum kolom img/lat/lng ada)
+// Migrasi ringan untuk database lama (sebelum kolom img/lat/lng/dst ada)
 try { db.exec('ALTER TABLE products ADD COLUMN img TEXT'); } catch {}
 try { db.exec('ALTER TABLE products ADD COLUMN lat REAL'); } catch {}
 try { db.exec('ALTER TABLE products ADD COLUMN lng REAL'); } catch {}
+try { db.exec('ALTER TABLE users ADD COLUMN cod_debt INTEGER NOT NULL DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE orders ADD COLUMN snap_token TEXT'); } catch {}
+try { db.exec('ALTER TABLE orders ADD COLUMN pay_url TEXT'); } catch {}
 
 module.exports = db;
