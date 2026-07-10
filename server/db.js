@@ -40,7 +40,9 @@ db.exec(`
     stock INTEGER NOT NULL,
     cond TEXT NOT NULL DEFAULT 'baru',
     loc TEXT NOT NULL,
-    dist REAL NOT NULL,          -- km dari pusat (demo; produksi: koordinat + Haversine)
+    dist REAL NOT NULL,          -- warisan lama; kini jarak dihitung live via Haversine dari lat/lng
+    lat REAL,                    -- posisi GPS penjual saat posting (fallback: titik pusat kecamatan)
+    lng REAL,
     cod INTEGER NOT NULL DEFAULT 1,
     freeship INTEGER NOT NULL DEFAULT 0,
     lebak INTEGER NOT NULL DEFAULT 1,
@@ -106,7 +108,9 @@ db.exec(`
   );
 `);
 
-// Migrasi ringan untuk database lama (sebelum kolom img ada)
+// Migrasi ringan untuk database lama (sebelum kolom img/lat/lng ada)
 try { db.exec('ALTER TABLE products ADD COLUMN img TEXT'); } catch {}
+try { db.exec('ALTER TABLE products ADD COLUMN lat REAL'); } catch {}
+try { db.exec('ALTER TABLE products ADD COLUMN lng REAL'); } catch {}
 
 module.exports = db;

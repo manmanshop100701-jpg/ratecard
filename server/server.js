@@ -30,7 +30,6 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
 const db = require('./db');
-const { RESTOS } = require('./seed');
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'lebak-market-dev-secret-ganti-di-produksi';
@@ -77,6 +76,41 @@ const COD_MAX_KM = 25, DRIVER_MAX_KM = 15;
 const FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 const KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
 const CATS = ['jasa','makanan','elektronik','ikan','fashion','kriya'];
+
+/* ---- Lokasi live ----
+ * Produk menyimpan koordinat GPS penjual saat posting. Jarak SELALU
+ * dihitung ulang dengan Haversine terhadap posisi live si penonton
+ * (dikirim frontend dari navigator.geolocation). Bila GPS tidak ada,
+ * fallback ke titik pusat kecamatan domisili (koordinat asli, bukan acak). */
+const KEC_COORDS = {
+  Rangkasbitung: { lat:-6.3592, lng:106.2494 },
+  Cibadak:       { lat:-6.3942, lng:106.2318 },
+  Warunggunung:  { lat:-6.4032, lng:106.1795 },
+  Kalanganyar:   { lat:-6.3628, lng:106.2856 },
+  Cikulur:       { lat:-6.4400, lng:106.1682 },
+  Cimarga:       { lat:-6.4270, lng:106.2725 },
+  Maja:          { lat:-6.3320, lng:106.3960 },
+  Sajira:        { lat:-6.4447, lng:106.3768 },
+  Cileles:       { lat:-6.5310, lng:106.1230 },
+  Leuwidamar:    { lat:-6.5406, lng:106.2565 },
+  Malingping:    { lat:-6.7644, lng:106.0128 },
+  Bayah:         { lat:-6.9236, lng:106.2743 },
+};
+function havKm(a, b){
+  const R = 6371, rad = x => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const s = Math.sin(dLat/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+// koordinat valid dalam kotak Indonesia; selain itu dianggap tidak ada
+function parseCoords(lat, lng){
+  const la = parseFloat(lat), ln = parseFloat(lng);
+  if (isNaN(la) || isNaN(ln) || la < -11 || la > 6 || ln < 95 || ln > 141) return null;
+  return { lat: la, lng: ln };
+}
+const prodCoords = p => (p.lat != null && p.lng != null)
+  ? { lat: p.lat, lng: p.lng }
+  : (KEC_COORDS[p.seller_kec] || KEC_COORDS.Rangkasbitung);
 
 const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
@@ -238,7 +272,7 @@ function auth(req, res, next){
   if (!token) return bad(res, 401, 'Perlu login dulu');
   try {
     const data = jwt.verify(token, JWT_SECRET);
-    req.user = db.prepare('SELECT id, name, email, phone, kec FROM users WHERE id = ?').get(data.uid);
+    req.user = db.prepare('SELECT id, name, email, phone, kec, verified FROM users WHERE id = ?').get(data.uid);
     if (!req.user) return bad(res, 401, 'Akun tidak ditemukan');
     next();
   } catch { return bad(res, 401, 'Sesi kedaluwarsa — login lagi ya'); }
@@ -273,7 +307,13 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-/* ================= AUTH ================= */
+/* ================= AUTH =================
+ * Akun DIBUAT LANGSUNG saat daftar (verified=0) sehingga login dengan
+ * email+password selalu bisa, bahkan bila email OTP tidak sampai.
+ * Verifikasi email hanya menaikkan status verified — bukan syarat login. */
+const signToken = uid => jwt.sign({ uid }, JWT_SECRET, { expiresIn: '30d' });
+const userPayload = u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec, verified: u.verified ? 1 : 0 });
+
 app.post('/api/auth/register', async (req, res) => {
   const { name = '', email = '', phone = '', kec = '', password = '' } = req.body;
   const em = String(email).trim().toLowerCase();
@@ -286,18 +326,34 @@ app.post('/api/auth/register', async (req, res) => {
   if (String(password).length < 6) return bad(res, 400, 'Password minimal 6 karakter');
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const pass_hash = await bcrypt.hash(password, 10);
+  const r = db.prepare('INSERT INTO users (name, email, phone, kec, pass_hash, verified, created_at) VALUES (?,?,?,?,?,0,?)')
+    .run(name.trim(), em, phone, kec, pass_hash, now());
+  const id = Number(r.lastInsertRowid);
   db.prepare('INSERT OR REPLACE INTO otps (email, code, payload, expires_at, attempts) VALUES (?,?,?,?,0)')
     .run(em, code, JSON.stringify({ name: name.trim(), phone, kec, pass_hash }), now() + 10 * 60e3);
   sendOtpEmail(em, code);
-  res.json({ ok: true, message: 'Kode verifikasi dikirim ke ' + em, ...(OTP_IN_RESPONSE ? { devCode: code } : {}) });
+  res.json({
+    ok: true, token: signToken(id),
+    user: { id, name: name.trim(), email: em, phone, kec, verified: 0 },
+    message: 'Akun aktif! Kode verifikasi email dikirim ke ' + em,
+    ...(OTP_IN_RESPONSE ? { devCode: code } : {}),
+  });
 });
 
 app.post('/api/auth/resend', (req, res) => {
   const em = String(req.body.email || '').trim().toLowerCase();
   const row = db.prepare('SELECT * FROM otps WHERE email = ?').get(em);
-  if (!row) return bad(res, 404, 'Tidak ada pendaftaran menunggu untuk email ini');
   const code = String(Math.floor(100000 + Math.random() * 900000));
-  db.prepare('UPDATE otps SET code = ?, expires_at = ?, attempts = 0 WHERE email = ?').run(code, now() + 10 * 60e3, em);
+  if (row) {
+    db.prepare('UPDATE otps SET code = ?, expires_at = ?, attempts = 0 WHERE email = ?').run(code, now() + 10 * 60e3, em);
+  } else {
+    // akun sudah ada tapi belum verifikasi (mis. tadinya melewati OTP)
+    const u = db.prepare('SELECT id, verified FROM users WHERE email = ?').get(em);
+    if (!u) return bad(res, 404, 'Tidak ada pendaftaran menunggu untuk email ini');
+    if (u.verified) return bad(res, 400, 'Email ini sudah terverifikasi');
+    db.prepare('INSERT OR REPLACE INTO otps (email, code, payload, expires_at, attempts) VALUES (?,?,?,?,0)')
+      .run(em, code, '{}', now() + 10 * 60e3);
+  }
   sendOtpEmail(em, code);
   res.json({ ok: true, message: 'Kode baru dikirim', ...(OTP_IN_RESPONSE ? { devCode: code } : {}) });
 });
@@ -314,21 +370,42 @@ app.post('/api/auth/verify', (req, res) => {
     return bad(res, 400, 'Kode salah — cek lagi ya');
   }
   const p = JSON.parse(row.payload);
-  const r = db.prepare('INSERT INTO users (name, email, phone, kec, pass_hash, verified, created_at) VALUES (?,?,?,?,?,1,?)')
-    .run(p.name, em, p.phone, p.kec, p.pass_hash, now());
+  let u = db.prepare('SELECT * FROM users WHERE email = ?').get(em);
+  if (u) {
+    db.prepare('UPDATE users SET verified = 1 WHERE id = ?').run(u.id);
+    u.verified = 1;
+  } else {
+    // akun dari alur lama (register sebelum perbaikan) — buat sekarang
+    const r = db.prepare('INSERT INTO users (name, email, phone, kec, pass_hash, verified, created_at) VALUES (?,?,?,?,?,1,?)')
+      .run(p.name, em, p.phone, p.kec, p.pass_hash, now());
+    u = { id: Number(r.lastInsertRowid), name: p.name, email: em, phone: p.phone, kec: p.kec, verified: 1 };
+  }
   db.prepare('DELETE FROM otps WHERE email = ?').run(em);
-  const token = jwt.sign({ uid: Number(r.lastInsertRowid) }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ ok: true, token, user: { id: Number(r.lastInsertRowid), name: p.name, email: em, phone: p.phone, kec: p.kec } });
+  res.json({ ok: true, token: signToken(u.id), user: userPayload(u) });
 });
 
 app.post('/api/auth/login', async (req, res) => {
   const em = String(req.body.email || '').trim().toLowerCase();
-  const u = db.prepare('SELECT * FROM users WHERE email = ?').get(em);
-  if (!u) return bad(res, 404, 'Email belum terdaftar — daftar dulu yuk');
-  const ok = await bcrypt.compare(String(req.body.password || ''), u.pass_hash);
-  if (!ok) return bad(res, 401, 'Password salah');
-  const token = jwt.sign({ uid: u.id }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ ok: true, token, user: { id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec } });
+  const pw = String(req.body.password || '');
+  let u = db.prepare('SELECT * FROM users WHERE email = ?').get(em);
+  if (!u) {
+    // Penyelamat: pendaftar alur lama yang OTP-nya tak pernah sampai —
+    // datanya masih tersimpan di tabel otps. Password cocok = akun dibuat.
+    const row = db.prepare('SELECT * FROM otps WHERE email = ?').get(em);
+    if (row) {
+      const p = JSON.parse(row.payload);
+      if (p.pass_hash && await bcrypt.compare(pw, p.pass_hash)) {
+        const r = db.prepare('INSERT INTO users (name, email, phone, kec, pass_hash, verified, created_at) VALUES (?,?,?,?,?,0,?)')
+          .run(p.name, em, p.phone, p.kec, p.pass_hash, now());
+        db.prepare('DELETE FROM otps WHERE email = ?').run(em);
+        u = db.prepare('SELECT * FROM users WHERE email = ?').get(em);
+      }
+    }
+    if (!u) return bad(res, 404, 'Email belum terdaftar — daftar dulu yuk');
+  } else if (!await bcrypt.compare(pw, u.pass_hash)) {
+    return bad(res, 401, 'Password salah');
+  }
+  res.json({ ok: true, token: signToken(u.id), user: userPayload(u) });
 });
 
 app.get('/api/me', auth, (req, res) => res.json({ user: req.user }));
@@ -341,7 +418,21 @@ const PRODUCT_SELECT = `
 
 app.get('/api/products', optionalAuth, (req, res) => {
   const { cat, radius, q } = req.query;
-  let rows = db.prepare(PRODUCT_SELECT + ' ORDER BY p.lebak DESC, p.created_at DESC').all();
+  // posisi penonton: GPS live dari frontend > pusat kecamatan akunnya > Rangkasbitung
+  let viewer = parseCoords(req.query.lat, req.query.lng);
+  if (!viewer && req.userId) {
+    const me = db.prepare('SELECT kec FROM users WHERE id = ?').get(req.userId);
+    viewer = me ? KEC_COORDS[me.kec] : null;
+  }
+  viewer = viewer || KEC_COORDS.Rangkasbitung;
+  let rows = db.prepare(PRODUCT_SELECT).all();
+  rows.forEach(p => {
+    const c = prodCoords(p);
+    p.lat = c.lat; p.lng = c.lng;
+    // min 0.01 km — dist 0 punya arti khusus "jasa online" di alur order
+    p.dist = Math.max(0.01, +havKm(viewer, c).toFixed(2));
+  });
+  rows.sort((a, b) => b.lebak - a.lebak || a.dist - b.dist || b.created_at - a.created_at);
   if (cat && cat !== 'all') rows = rows.filter(p => p.cat === cat);
   const r = parseFloat(radius);
   if (!isNaN(r)) rows = rows.filter(p => p.dist <= r);
@@ -369,11 +460,13 @@ app.post('/api/products', auth, (req, res) => {
     if (!imgPath) return bad(res, 400, 'Foto tidak valid (maks 5MB, format JPG/PNG/WebP)');
   }
   const g = 'g-' + (1 + Math.floor(Math.random() * 6));
+  // posisi GPS live penjual saat posting; tanpa izin GPS → pusat kecamatan domisili
+  const pos = parseCoords(req.body.lat, req.body.lng) || KEC_COORDS[req.user.kec] || KEC_COORDS.Rangkasbitung;
   const r = db.prepare(`INSERT INTO products
-    (seller_id, cat, name, price, stock, cond, loc, dist, cod, freeship, lebak, emoji, g, img, descr, created_at)
-    VALUES (?,?,?,?,?,?,?,0.5,?,?,1,'',?,?,?,?)`)
+    (seller_id, cat, name, price, stock, cond, loc, dist, lat, lng, cod, freeship, lebak, emoji, g, img, descr, created_at)
+    VALUES (?,?,?,?,?,?,?,0.5,?,?,?,?,1,'',?,?,?,?)`)
     .run(req.user.id, cat, name.trim(), pr, st, cond === 'bekas' ? 'bekas' : 'baru',
-         req.user.kec + ', Lebak', cod ? 1 : 0, freeship ? 1 : 0,
+         req.user.kec + ', Lebak', pos.lat, pos.lng, cod ? 1 : 0, freeship ? 1 : 0,
          g, imgPath, String(descr).trim() || 'Tanpa deskripsi.', now());
   const prod = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(Number(r.lastInsertRowid));
   sseBroadcast('product', { id: prod.id, name: prod.name, seller: prod.seller_name }, req.user.id);
@@ -398,6 +491,9 @@ app.post('/api/orders', auth, (req, res) => {
   if (p.seller_id === req.user.id) return bad(res, 400, 'Tidak bisa membeli barang sendiri 😄');
   if (p.stock < 1) return bad(res, 409, 'Stok habis');
   const isJasa = p.dist === 0;
+  // jarak nyata pembeli→penjual: GPS live pembeli, fallback pusat kecamatannya
+  const buyerPos = parseCoords(req.body.buyerLat, req.body.buyerLng) || KEC_COORDS[req.user.kec] || KEC_COORDS.Rangkasbitung;
+  p.dist = Math.max(0.01, +havKm(buyerPos, prodCoords(p)).toFixed(2));
 
   if (mode === 'cod') {
     if (!p.cod || isJasa || p.dist > COD_MAX_KM) return bad(res, 400, 'COD tidak tersedia untuk produk ini');
@@ -551,8 +647,9 @@ app.post('/api/chats/:peerId', auth, (req, res) => {
   res.json({ ok: true });
 });
 
-/* ================= KULINER & REVENUE ================= */
-app.get('/api/restos', (req, res) => res.json({ restos: [...RESTOS].sort((a, b) => a.dist - b.dist) }));
+/* ================= REVENUE =================
+ * (Direktori kuliner kini diambil frontend langsung dari OpenStreetMap
+ *  di sekitar lokasi live pengguna — tidak ada lagi data resto karangan.) */
 app.get('/api/revenue', (req, res) => {
   const total = db.prepare('SELECT COALESCE(SUM(amount),0) t FROM revenue').get().t;
   const byKind = db.prepare('SELECT kind, SUM(amount) amount, COUNT(*) n FROM revenue GROUP BY kind').all();

@@ -612,7 +612,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   <div class="wrap">
     <div class="cat-scroll" id="catScroll"></div>
     <div class="radius-row">
-      <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink)">Rangkasbitung, Lebak</b> · Radius:</span>
+      <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink);cursor:pointer" onclick="startGeo(true)" title="Klik untuk deteksi ulang lokasi">Mendeteksi lokasi…</b> · Radius:</span>
       <span id="radiusChips"></span>
     </div>
   </div>
@@ -633,8 +633,8 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <div class="view-tabs">
         <button class="chip" onclick="showView('feed')">← Kembali belanja</button>
       </div>
-      <h2 style="margin-bottom:6px">Kuliner &amp; Nongkrong di Lebak</h2>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:22px">Resto, warung, dan coffeeshop terdekat — lengkap dengan menu &amp; harga. Datang dan pesan langsung di tempatnya.</p>
+      <h2 style="margin-bottom:6px">Kuliner &amp; Nongkrong di Sekitarmu</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:22px">Tempat makan <b>asli</b> di sekitar lokasi live kamu — nama, alamat, dan jarak dari peta OpenStreetMap, bukan data karangan.</p>
       <div class="resto-grid" id="restoGrid"></div>
     </div>
   </main>
@@ -792,7 +792,56 @@ let es = null;
 let sellImg = null; // data URL foto produk yang akan diposting
 
 const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
-const km = d => d === 0 ? 'Online' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
+const km = d => d === 0 ? 'Online' : d < 0.15 ? '±100 m' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
+
+/* ---------- LOKASI LIVE (GPS asli, tanpa data karangan) ---------- */
+let myLoc = store.get('loc', null);   // posisi terakhir yang diketahui {lat,lng}
+let geoLive = false;                  // true = GPS aktif & memancarkan update
+let geoWatchId = null;
+function havKm(a, b){
+  const R = 6371, rad = x => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const s = Math.sin(dLat/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function setLocLabel(html){ document.getElementById('locLabel').innerHTML = html; }
+function locFallbackLabel(){
+  setLocLabel(user ? esc(user.kec) + ', Lebak <span style="font-weight:600;color:var(--muted)">(perkiraan — klik untuk GPS)</span>'
+                   : 'GPS mati — klik untuk aktifkan');
+}
+function startGeo(manual){
+  if (!navigator.geolocation){ setLocLabel('Perangkat tanpa GPS'); return; }
+  if (manual) toast('Meminta izin lokasi…');
+  if (geoWatchId != null) navigator.geolocation.clearWatch(geoWatchId);
+  geoWatchId = navigator.geolocation.watchPosition(onGeoPos, () => {
+    geoLive = false;
+    if (!myLoc) locFallbackLabel();
+    if (manual) toast('Izin lokasi ditolak — cek pengaturan browser/HP kamu');
+  }, { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 });
+}
+function onGeoPos(pos){
+  const nl = { lat: +pos.coords.latitude.toFixed(6), lng: +pos.coords.longitude.toFixed(6) };
+  const moved = !myLoc || !geoLive || havKm(myLoc, nl) > 0.15; // update tiap geser >150 m
+  myLoc = nl; geoLive = true;
+  store.set('loc', myLoc);
+  if (!moved) return;
+  reverseLabel();
+  loadFeed(); // jarak & urutan feed dihitung ulang dari posisi baru
+  if (!document.getElementById('view-kuliner').classList.contains('hidden')) renderRestos();
+}
+async function reverseLabel(){
+  if (!myLoc) return;
+  const live = ' <span class="live-pill" style="vertical-align:1px"><i></i> live</span>';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=id&lat=${myLoc.lat}&lon=${myLoc.lng}`);
+    const a = (await r.json()).address || {};
+    const place = a.village || a.suburb || a.hamlet || a.town || a.municipality || a.city_district || '';
+    const area = a.county || a.city || a.state || '';
+    setLocLabel(esc([place, area].filter(Boolean).join(', ') || 'Titik GPS ' + myLoc.lat.toFixed(3) + ', ' + myLoc.lng.toFixed(3)) + live);
+  } catch {
+    setLocLabel('Titik GPS ' + myLoc.lat.toFixed(3) + ', ' + myLoc.lng.toFixed(3) + live);
+  }
+}
 const clock = t => new Date(t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
 const ago = t => {
   const s = Math.floor((Date.now() - t)/1000);
@@ -908,6 +957,10 @@ async function doRegister(){
   if (body.password !== document.getElementById('aPass2').value) return toast('Ulangan password tidak sama');
   try {
     const r = await api('/auth/register', { method:'POST', body });
+    // Akun langsung aktif & login — verifikasi email tinggal pelengkap
+    token = r.token; user = r.user;
+    store.set('token', token); store.set('user', user);
+    renderAuthSlot(); afterLogin();
     pendingReg = { email: body.email };
     openOtp();
     if (r.devCode) setTimeout(() => toast('[Mode pilot] Kode verifikasimu: ' + r.devCode), 700);
@@ -920,6 +973,7 @@ function openOtp(){
     <div class="modal">
       <div class="modal-head"><h3>Verifikasi Email</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
+        <div class="safe-note" style="margin:0 0 14px"><b>Akunmu sudah aktif ✓</b> — kamu sudah bisa login, belanja, dan jualan sekarang juga. Verifikasi email hanya menambah badge terpercaya di profilmu.</div>
         <div class="auth-hero">
           <b>Cek inbox emailmu</b>
           <p>Kode 6 digit dikirim ke <b>${esc(pendingReg.email)}</b> — berlaku 10 menit, maks. 5 percobaan. Tidak ada di inbox? Cek folder spam.</p>
@@ -928,10 +982,10 @@ function openOtp(){
         <input class="f" id="aOtp" inputmode="numeric" maxlength="6" placeholder="______"
           style="text-align:center;font-size:24px;font-weight:800;letter-spacing:10px"
           onkeydown="if(event.key==='Enter')verifyOtp()">
-        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">Verifikasi &amp; Buat Akun</button>
+        <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="verifyOtp()">Verifikasi Email</button>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="closeModal();toast('Siap! Verifikasi email bisa kapan saja dari halaman akun')">Lewati — verifikasi nanti</button>
         <p style="font-size:12.5px;text-align:center;margin-top:14px;color:var(--muted)">
           Tidak menerima kode? <a href="#" style="font-weight:800;color:var(--coral)" onclick="resendOtp();return false">Kirim ulang</a>
-          · <a href="#" style="font-weight:800" onclick="openAuth('register');return false">Ganti email</a>
         </p>
       </div>
     </div>
@@ -952,7 +1006,17 @@ async function verifyOtp(){
     token = r.token; user = r.user; pendingReg = null;
     store.set('token', token); store.set('user', user);
     renderAuthSlot(); closeModal(); afterLogin();
-    toast('Email terverifikasi — wilujeng sumping, ' + user.name.split(' ')[0] + '!');
+    toast('Email terverifikasi ✓ — wilujeng sumping, ' + user.name.split(' ')[0] + '!');
+  } catch (e) { toast(e.message); }
+}
+/* Verifikasi ulang dari halaman akun (untuk yang tadinya melewati OTP) */
+async function reVerify(){
+  if (!user) return;
+  try {
+    const r = await api('/auth/resend', { method:'POST', body:{ email: user.email } });
+    pendingReg = { email: user.email };
+    openOtp();
+    if (r.devCode) setTimeout(() => toast('[Mode pilot] Kode verifikasimu: ' + r.devCode), 700);
   } catch (e) { toast(e.message); }
 }
 async function doLogin(){
@@ -975,7 +1039,7 @@ function doLogout(){
   toast('Sampai jumpa lagi!');
 }
 function afterLogin(){
-  document.getElementById('locLabel').textContent = user.kec + ', Lebak';
+  if (!geoLive && !myLoc) locFallbackLabel(); // label GPS live tidak ditimpa
   connectSSE();
   refreshBadges();
   loadFeed();
@@ -991,8 +1055,9 @@ async function openProfile(){
         <div class="auth-hero">
           <span class="big" style="font-family:Georgia,serif;font-weight:800">${initOf(user.name)}</span>
           <b>${esc(user.name)}</b>
-          <p>${esc(user.email)} · ${esc(user.phone)}<br>${esc(user.kec)}, Kab. Lebak, Banten · Email terverifikasi ✓</p>
+          <p>${esc(user.email)} · ${esc(user.phone)}<br>${esc(user.kec)}, Kab. Lebak, Banten · ${user.verified ? 'Email terverifikasi ✓' : 'Email belum diverifikasi'}</p>
           <span class="dual-badge">Pembeli ✓ · Penjual ✓ — satu akun untuk semua</span>
+          ${user.verified ? '' : `<div style="margin-top:10px"><button class="btn btn-mint btn-sm" onclick="reVerify()">Verifikasi email sekarang</button></div>`}
         </div>
         <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang — tekan + Jual untuk menambah</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
@@ -1085,6 +1150,7 @@ async function loadFeed(){
   if (activeCat !== 'all') params.set('cat', activeCat);
   if (radiusKm !== Infinity) params.set('radius', radiusKm);
   if (q) params.set('q', q);
+  if (myLoc){ params.set('lat', myLoc.lat); params.set('lng', myLoc.lng); }
   try {
     const r = await api('/products?' + params.toString());
     products = r.products;
@@ -1418,7 +1484,7 @@ async function placeCod(){
   buy.time = document.getElementById('bTime').value.trim();
   if (!buy.time) { toast('Isi waktu janjiannya dulu'); return; }
   try {
-    await api('/orders', { method:'POST', body:{ productId: buy.pid, mode:'cod', meetPoint: buy.meet, meetTime: buy.time } });
+    await api('/orders', { method:'POST', body:{ productId: buy.pid, mode:'cod', meetPoint: buy.meet, meetTime: buy.time, buyerLat: myLoc?.lat, buyerLng: myLoc?.lng } });
     closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
     toast('Janjian COD dibuat — penjual langsung dapat notifikasi');
   } catch (e) { toast(e.message); }
@@ -1428,6 +1494,7 @@ async function placeRekber(){
     const r = await api('/orders', { method:'POST', body:{
       productId: buy.pid, mode: buy.mode, payMethod: buy.pay,
       recvName: buy.name, recvAddr: buy.addr,
+      buyerLat: myLoc?.lat, buyerLng: myLoc?.lng,
     }});
     await refreshBadges();
     openPayment(r.order);
@@ -1569,46 +1636,84 @@ async function renderOrders(){
       </div>`);
 }
 
-/* ---------- KULINER ---------- */
-let restos = [];
+/* ---------- KULINER (tempat asli dari OpenStreetMap, sekitar lokasi live) ---------- */
+let restos = [], restosAt = null; // posisi saat data terakhir diambil
+const OSM_TYPE = { restaurant:'Resto', cafe:'Cafe', fast_food:'Cepat Saji', food_court:'Food Court', ice_cream:'Es Krim' };
+const OVERPASS_MIRRORS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+async function fetchNearbyFood(loc){
+  const q = `[out:json][timeout:25];
+    nwr["amenity"~"^(restaurant|cafe|fast_food|food_court|ice_cream)$"]["name"](around:15000,${loc.lat},${loc.lng});
+    out center 80;`;
+  let lastErr;
+  for (const url of OVERPASS_MIRRORS){
+    try {
+      const r = await fetch(url, { method:'POST', body:'data=' + encodeURIComponent(q), headers:{ 'Content-Type':'application/x-www-form-urlencoded' } });
+      if (!r.ok) throw new Error('Overpass ' + r.status);
+      const els = (await r.json()).elements || [];
+      return els.map(e => {
+        const t = e.tags || {};
+        const lat = e.lat ?? e.center?.lat, lng = e.lon ?? e.center?.lon;
+        if (!t.name || lat == null) return null;
+        const addr = t['addr:full'] || [t['addr:street'], t['addr:housenumber']].filter(Boolean).join(' No. ') || '';
+        return {
+          id: e.type + '/' + e.id, name: t.name, lat, lng,
+          type: OSM_TYPE[t.amenity] || 'Tempat Makan',
+          cuisine: (t.cuisine || '').split(';')[0].replace(/_/g,' '),
+          addr, open: t.opening_hours || '', phone: t.phone || t['contact:phone'] || '',
+          g: 'g-' + (1 + Math.abs(e.id) % 6),
+        };
+      }).filter(Boolean);
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Peta tidak dapat dihubungi');
+}
 async function renderRestos(){
-  try { restos = (await api('/restos')).restos; }
-  catch (e) { document.getElementById('restoGrid').innerHTML = `<div class="empty-feed"><h3>${esc(e.message)}</h3></div>`; return; }
-  document.getElementById('restoGrid').innerHTML = restos.map(r => `
+  const grid = document.getElementById('restoGrid');
+  if (!myLoc){
+    grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Aktifkan lokasi dulu</h3>
+      <p style="color:var(--muted);font-size:14px;margin:8px 0 18px">Kami butuh posisi GPS-mu untuk menampilkan tempat makan <b>asli</b> di sekitarmu (data OpenStreetMap).</p>
+      <button class="btn btn-coral" onclick="startGeo(true)">Izinkan Akses Lokasi</button></div>`;
+    return;
+  }
+  if (!restos.length || !restosAt || havKm(restosAt, myLoc) > 1){
+    grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Mencari tempat makan di sekitarmu…</h3><p style="color:var(--muted);font-size:14px">Membaca peta OpenStreetMap dari posisi live kamu.</p></div>`;
+    try { restos = await fetchNearbyFood(myLoc); restosAt = { ...myLoc }; }
+    catch (e) { grid.innerHTML = `<div class="empty-feed" style="grid-column:1/-1"><h3>Peta tidak dapat dihubungi</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)} — coba lagi sebentar lagi.</p></div>`; return; }
+  }
+  restos.forEach(r => { r.dist = havKm(myLoc, r); });
+  restos.sort((a, b) => a.dist - b.dist);
+  grid.innerHTML = (restos.length ? restos.map(r => `
     <div class="resto-card">
       <div class="resto-media ${r.g}">
         <span class="letter">${initOf(r.name)}</span>
-        <span class="type-tag">${r.type}${r.wifi?' · WiFi':''}</span>
+        <span class="type-tag">${r.type}${r.cuisine ? ' · ' + esc(r.cuisine) : ''}</span>
         <span class="dist-tag">${km(r.dist)}</span>
       </div>
       <div class="resto-body">
         <h4>${esc(r.name)}</h4>
-        <div class="resto-meta">★ ${r.rating} · ${r.open} · ${esc(r.addr)}</div>
-        <div class="menu-mini">
-          <div class="mtitle">Menu andalan</div>
-          ${r.menu.slice(0,3).map(([n,h]) => `<div class="menu-line"><span>${esc(n)}</span><b>${rupiah(h)}</b></div>`).join('')}
-        </div>
-        <button class="btn btn-yellow btn-sm" onclick="openResto(${r.id})">Menu Lengkap &amp; Lokasi</button>
+        <div class="resto-meta">${[r.addr, r.open ? 'Buka: ' + r.open : ''].filter(Boolean).map(esc).join(' · ') || 'Alamat belum terdata di peta'}</div>
+        <button class="btn btn-yellow btn-sm" onclick="openResto('${r.id}')">Detail &amp; Petunjuk Arah</button>
       </div>
-    </div>`).join('');
+    </div>`).join('')
+  : `<div class="empty-feed" style="grid-column:1/-1"><h3>Belum ada tempat makan terdata</h3><p style="color:var(--muted);font-size:14px">Radius 15 km dari posisimu belum terpetakan di OpenStreetMap. Kamu bisa bantu memetakan di openstreetmap.org!</p></div>`)
+  + `<p style="grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center">Data tempat: © OpenStreetMap contributors · jarak dihitung live dari GPS-mu</p>`;
 }
 function openResto(id){
   const r = restos.find(x => x.id === id);
   if (!r) return;
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}`;
+  const osm = `https://www.openstreetmap.org/${r.id}`;
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <div class="modal-head"><h3>${esc(r.name)}</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
-        <div class="resto-info-row"><span><b>${r.type}</b> · ★ ${r.rating}${r.wifi?' · WiFi gratis':''}</span></div>
-        <div class="resto-info-row"><span>${esc(r.addr)} — <b>${km(r.dist)} dari lokasimu</b></span></div>
-        <div class="resto-info-row"><span>Buka ${r.open}</span></div>
-        <div class="menu-mini" style="margin-top:14px">
-          <div class="mtitle">Menu lengkap &amp; harga</div>
-          ${r.menu.map(([n,h]) => `<div class="menu-line"><span>${esc(n)}</span><b>${rupiah(h)}</b></div>`).join('')}
-        </div>
-        <div class="warn-note">Lebak.market hanya menampilkan lokasi &amp; menu — datang dan pesan langsung di tempatnya. Bukan layanan pesan-antar.</div>
-        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="toast('Membuka petunjuk arah ke ${esc(r.name)} (demo peta)')">Petunjuk Arah</button>
+        <div class="resto-info-row"><span><b>${r.type}</b>${r.cuisine ? ' · ' + esc(r.cuisine) : ''}</span></div>
+        <div class="resto-info-row"><span>${r.addr ? esc(r.addr) + ' — ' : ''}<b>${km(r.dist)} dari posisimu (live)</b></span></div>
+        ${r.open ? `<div class="resto-info-row"><span>Jam buka: ${esc(r.open)}</span></div>` : ''}
+        ${r.phone ? `<div class="resto-info-row"><span>Telp: <a href="tel:${esc(r.phone)}" style="font-weight:700">${esc(r.phone)}</a></span></div>` : ''}
+        <div class="safe-note" style="margin-top:14px">Tempat ini nyata — datanya dari <a href="${osm}" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">OpenStreetMap</a>. Datang dan pesan langsung di lokasinya.</div>
+        <a class="btn btn-coral" style="width:100%;margin-top:16px" href="${gmaps}" target="_blank" rel="noopener">Petunjuk Arah (Google Maps)</a>
       </div>
     </div>
   </div>`;
@@ -1706,6 +1811,7 @@ async function submitSell(){
       cod: document.getElementById('sCod').checked,
       freeship: document.getElementById('sFreeship').checked,
       img: sellImg,
+      lat: myLoc?.lat, lng: myLoc?.lng, // posisi live penjual saat posting
     }});
     closeModal(); sellImg = null;
     activeCat = 'all'; renderCats(); await loadFeed();
@@ -1717,6 +1823,8 @@ async function submitSell(){
 async function init(){
   renderAuthSlot(); renderCats();
   document.getElementById('searchInput').addEventListener('input', searchInput);
+  if (myLoc) reverseLabel(); // posisi terakhir langsung tampil, lalu GPS memperbarui
+  startGeo(); // lokasi LIVE: watchPosition terus mengikuti pergerakanmu
   try {
     const cfg = await api('/config');
     KECAMATAN = cfg.kecamatan;
