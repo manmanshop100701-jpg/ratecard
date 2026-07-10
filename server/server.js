@@ -623,7 +623,8 @@ app.post('/api/orders', auth, async (req, res) => {
   if (!p) return bad(res, 404, 'Produk tidak ditemukan');
   if (p.seller_id === req.user.id) return bad(res, 400, 'Tidak bisa membeli barang sendiri 😄');
   if (p.stock < 1) return bad(res, 409, 'Stok habis');
-  const isJasa = p.dist === 0;
+  // jasa = pengerjaan online: TANPA ongkir, tanpa COD/driver
+  const isJasa = p.cat === 'jasa' || p.dist === 0;
   // jarak nyata pembeli→penjual: GPS live pembeli, fallback pusat kecamatannya
   const buyerPos = parseCoords(req.body.buyerLat, req.body.buyerLng) || KEC_COORDS[req.user.kec] || KEC_COORDS.Rangkasbitung;
   p.dist = Math.max(0.01, +havKm(buyerPos, prodCoords(p)).toFixed(2));
@@ -695,7 +696,7 @@ app.post('/api/orders', auth, async (req, res) => {
 });
 
 function getOrder(id){
-  const o = db.prepare(`SELECT o.*, p.name pname, p.emoji, p.g, p.img, p.cond, p.dist,
+  const o = db.prepare(`SELECT o.*, p.name pname, p.emoji, p.g, p.img, p.cond, p.dist, p.cat,
       su.name seller_name, bu.name buyer_name
     FROM orders o
     JOIN products p ON p.id = o.product_id
@@ -753,7 +754,7 @@ app.post('/api/orders/:id/ship', auth, (req, res) => {
   const o = getOrder(req.params.id);
   if (!o || o.seller_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
   if (o.status !== 'Dana Ditahan (Rekber)') return bad(res, 409, 'Pesanan belum dibayar / sudah diproses');
-  const isJasa = o.dist === 0;
+  const isJasa = o.cat === 'jasa' || o.dist === 0;
   if (o.mode === 'driver') addEvent(o.id, 'Diantar Driver', `Penjual menyerahkan barang ke Driver Lebak — menuju alamat pembeli 🛵`);
   else if (isJasa) addEvent(o.id, 'Hasil Dikirim', 'Penjual mengirim hasil kerja — silakan review, lalu konfirmasi agar dana cair 🎨');
   else addEvent(o.id, 'Dikirim', 'Penjual menyerahkan paket ke ekspedisi — resi terbit 📦');

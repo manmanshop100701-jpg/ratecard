@@ -168,6 +168,43 @@ header{
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.5);
 }
 
+/* ============ STORY VIEWER (layar penuh ala FB) ============ */
+.overlay.story-ov{background:rgba(0,0,0,.93)}
+.sv{
+  position:relative;width:min(430px,94vw);height:min(86vh,760px);border-radius:16px;
+  overflow:hidden;background:#15181c;animation:pop .2s ease;
+}
+.sv-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#15181c}
+.sv-letter{position:absolute;inset:0;display:grid;place-items:center;font-size:110px}
+.sv-shade{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.5),transparent 22%,transparent 58%,rgba(0,0,0,.72));
+}
+.sv-nav{position:absolute;top:70px;bottom:96px;width:50%;z-index:2;border:none;background:transparent;cursor:pointer}
+.sv-nav.left{left:0}.sv-nav.right{right:0}
+.sv-top{position:absolute;left:0;right:0;top:0;z-index:3;padding:11px 13px 0}
+.sv-bars{display:flex;gap:4px}
+.sv-bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.32)}
+.sv-bars i.done{background:#fff}
+.sv-bars i.now{background:#fff;animation:pulse 1.6s infinite}
+.sv-head{display:flex;align-items:center;gap:9px;margin-top:11px;color:#fff}
+.sv-head .ava{
+  width:37px;height:37px;border-radius:50%;display:grid;place-items:center;flex:none;
+  color:var(--green);font-weight:700;font-size:15px;
+}
+.sv-head b{font-size:13.5px;display:block;line-height:1.3}
+.sv-head small{font-size:11.5px;color:rgba(255,255,255,.75);display:block}
+.sv-x{
+  margin-left:auto;width:33px;height:33px;border-radius:50%;border:none;flex:none;
+  background:rgba(255,255,255,.16);color:#fff;font-size:14px;display:grid;place-items:center;
+}
+.sv-cap{position:absolute;left:0;right:0;bottom:82px;z-index:3;padding:0 18px;color:#fff;pointer-events:none}
+.sv-cap b{font-size:17.5px;display:block;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.sv-cap span{font-size:15px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.sv-foot{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;gap:9px;padding:13px 15px}
+.sv-foot .btn{flex:1;border:none}
+.sv-foot .btn-ghost{background:rgba(255,255,255,.93);color:var(--ink)}
+
 /* ============ KATEGORI + RADIUS ============ */
 .cat-bar{
   position:sticky;top:56px;z-index:80;background:rgba(255,255,255,.96);
@@ -1309,26 +1346,76 @@ function renderStories(){
   if (!sellers.length){ el.innerHTML = ''; el.style.display = 'none'; return; }
   el.style.display = '';
   el.innerHTML = sellers.map(p => `
-    <button class="story ${p.g}" title="Lihat jualan ${esc(p.seller_name)}" onclick="storySearch('${esc(p.seller_name)}')">
+    <button class="story ${p.g}" title="Lihat story ${esc(p.seller_name)}" onclick="openStory(${p.seller_id})">
       ${p.img ? `<img src="${esc(p.img)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : `<span class="letter">${initOf(p.seller_name)}</span>`}
       <span class="ring"><span class="ava" style="background:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span></span>
       <span>${esc(p.seller_name)}</span>
     </button>`).join('');
 }
-function storySearch(name){
-  document.getElementById('searchInput').value = name;
-  showView('feed'); loadFeed();
+
+/* ---------- STORY VIEWER (jualan penjual sebagai story ala FB) ---------- */
+let storyState = null, storyTimer = null;
+function endStory(){ clearTimeout(storyTimer); storyState = null; }
+function openStory(sellerId){
+  const items = products.filter(p => p.seller_id === sellerId);
+  if (!items.length) return toast('Penjual ini belum punya postingan tayang');
+  storyState = { items, idx: 0 };
+  renderStoryView();
+}
+function storyNav(d){
+  if (!storyState) return;
+  const next = storyState.idx + d;
+  if (next < 0) { renderStoryView(); return; }
+  if (next >= storyState.items.length) return closeModal();
+  storyState.idx = next;
+  renderStoryView();
+}
+function renderStoryView(){
+  clearTimeout(storyTimer);
+  const { items, idx } = storyState;
+  const p = items[idx];
+  const mine = user && p.seller_id === user.id;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay story-ov" onclick="if(event.target===this)closeModal()">
+    <div class="sv ${p.img ? '' : p.g}">
+      ${p.img ? `<img class="sv-img" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter sv-letter">${initOf(p.name)}</span>`}
+      <div class="sv-shade"></div>
+      <button class="sv-nav left" onclick="storyNav(-1)" aria-label="Sebelumnya"></button>
+      <button class="sv-nav right" onclick="storyNav(1)" aria-label="Berikutnya"></button>
+      <div class="sv-top">
+        <div class="sv-bars">${items.map((_, i) => `<i class="${i < idx ? 'done' : i === idx ? 'now' : ''}"></i>`).join('')}</div>
+        <div class="sv-head">
+          <span class="ava" style="background:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span>
+          <div><b>${esc(p.seller_name)} <span class="verif">✓</span></b><small>${esc(p.seller_kec)} · ${km(p.dist)} · ${ago(p.created_at)}</small></div>
+          <button class="sv-x" onclick="closeModal()">✕</button>
+        </div>
+      </div>
+      <div class="sv-cap"><b>${esc(p.name)}</b><span>${rupiah(p.price)}${p.stock <= 0 ? ' · HABIS' : ''}</span></div>
+      <div class="sv-foot">
+        <button class="btn btn-coral" onclick="endStory();openProduct(${p.id})">Lihat Produk</button>
+        ${mine ? '' : `<button class="btn btn-ghost" onclick="endStory();openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>`}
+      </div>
+    </div>
+  </div>`;
+  storyTimer = setTimeout(() => storyNav(1), 5000); // auto-lanjut ala FB
 }
 
 /* ---------- FEED ---------- */
+/* jasa = pengerjaan online: tanpa ongkir, tanpa COD/driver */
+const isJasaP = p => p.cat === 'jasa' || p.dist === 0;
 function perks(p){
   const out = [];
   if (p.lebak) out.push('<span class="perk pk-lokal">Lokal Lebak</span>');
+  if (isJasaP(p)){
+    out.push('<span class="perk pk-lokal">Jasa online — TANPA ONGKIR</span>');
+    out.push('<span class="perk pk-rekber">Rekber</span>');
+    return out.join('');
+  }
   if (p.freeship) out.push('<span class="perk pk-cod">GRATIS ONGKIR</span>');
-  else if (p.dist > 0 && p.price >= FREESHIP_MIN) out.push('<span class="perk pk-driver">Voucher ongkir s.d. ' + rupiah(FREESHIP_CAP) + '</span>');
-  if (p.cod && p.dist <= COD_MAX_KM && p.dist > 0) out.push('<span class="perk pk-cod">Bisa COD</span>');
+  else if (p.price >= FREESHIP_MIN) out.push('<span class="perk pk-driver">Voucher ongkir s.d. ' + rupiah(FREESHIP_CAP) + '</span>');
+  if (p.cod && p.dist <= COD_MAX_KM) out.push('<span class="perk pk-cod">Bisa COD</span>');
   out.push('<span class="perk pk-rekber">Rekber</span>');
-  if (p.dist > 0 && p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">Driver mulai 10rb</span>');
+  if (p.dist <= DRIVER_MAX_KM) out.push('<span class="perk pk-driver">Driver mulai 10rb</span>');
   return out.join('');
 }
 
@@ -1383,10 +1470,12 @@ function renderFeed(){
         <div class="post-title">${esc(p.name)}</div>
         <div class="post-desc">${esc(p.descr)}</div>
         <div class="post-tags">
-          ${p.freeship?'<span class="ptag pt-green">Gratis Ongkir</span>':''}
-          ${p.cod && p.dist > 0 && p.dist <= COD_MAX_KM ? '<span class="ptag">Bisa COD</span>':''}
-          <span class="ptag">Rekber</span>
-          ${p.dist > 0 && p.dist <= DRIVER_MAX_KM ? '<span class="ptag">Driver mulai 10rb</span>':''}
+          ${isJasaP(p) ? '<span class="ptag pt-green">Jasa Online — Tanpa Ongkir</span><span class="ptag">Rekber</span>' : `
+            ${p.freeship?'<span class="ptag pt-green">Gratis Ongkir</span>':''}
+            ${p.cod && p.dist <= COD_MAX_KM ? '<span class="ptag">Bisa COD</span>':''}
+            <span class="ptag">Rekber</span>
+            ${p.dist <= DRIVER_MAX_KM ? '<span class="ptag">Driver mulai 10rb</span>':''}
+          `}
           ${p.lebak?'<span class="ptag pt-green">Lokal Lebak</span>':''}
         </div>
       </div>
@@ -1546,6 +1635,7 @@ function openFavs(){
 function closeModal(){
   openThread = null;
   clearInterval(chatPoll); chatPoll = null;
+  clearTimeout(storyTimer); storyState = null;
   document.getElementById('modalRoot').innerHTML = '';
 }
 
@@ -1639,9 +1729,9 @@ function buyItemHTML(p){
 }
 function renderBuy(){
   const p = products.find(x => x.id === buy.pid);
-  const codOk = p.cod && p.dist > 0 && p.dist <= COD_MAX_KM;
-  const drvOk = p.dist > 0 && p.dist <= DRIVER_MAX_KM;
-  const isJasa = p.dist === 0;
+  const isJasa = isJasaP(p);
+  const codOk = !isJasa && p.cod && p.dist <= COD_MAX_KM;
+  const drvOk = !isJasa && p.dist <= DRIVER_MAX_KM;
   const stepDots = `<div class="steps-ind">${[1,2,3].map(i => `<i class="${buy.step>=i?'on':''}"></i>`).join('')}</div>`;
   let body = '';
 
@@ -1704,7 +1794,7 @@ function renderBuy(){
         </div>`).join('')}
       <div style="background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-top:14px">
         <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
-        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
+        <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir — jasa online, hasil dikirim digital':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
         ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
         ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
@@ -1897,7 +1987,7 @@ function setOrdTab(t){ ordTab = t; renderOrders(); }
 
 function orderCard(o, asSeller){
   const shippable = asSeller && o.status === 'Dana Ditahan (Rekber)';
-  const isJasa = o.dist === 0;
+  const isJasa = o.cat === 'jasa' || o.dist === 0;
   return `
   <div class="order-card">
     <div class="order-top">
@@ -2062,9 +2152,10 @@ function openSell(){
         <label class="f">Nama produk / jasa</label>
         <input class="f" id="sName" placeholder="cth: Gula Aren Cetak 1kg">
         <label class="f">Kategori</label>
-        <select class="f" id="sCat">
+        <select class="f" id="sCat" onchange="onSellCat()">
           ${CATS.filter(c => c.id!=='all').map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
         </select>
+        <div id="jasaNote" class="safe-note hidden" style="margin-top:10px">Kategori <b>Jasa</b> = pengerjaan online: pembeli TIDAK dikenai ongkir, hasil dikirim via email/WA/chat. Pembayaran tetap aman lewat rekber.</div>
         <label class="f">Kondisi</label>
         <select class="f" id="sCond"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
         <label class="f">Harga (Rp)</label>
@@ -2073,13 +2164,19 @@ function openSell(){
         <input class="f" id="sStock" type="number" min="1" value="1">
         <label class="f">Deskripsi (untuk barang bekas: jujur soal minus)</label>
         <textarea class="f" id="sDesc" placeholder="Kondisi, kelengkapan, minus, alasan jual..."></textarea>
-        <div class="check-row"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan (radius ${COD_MAX_KM} km) — komisi COD ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) jadi tagihan, dipotong dari pencairan rekber berikutnya</label></div>
-        <div class="check-row"><input type="checkbox" id="sFreeship"><label for="sFreeship">Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge &amp; prioritas (komisi +4%)</label></div>
+        <div class="check-row" id="rowCod"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan (radius ${COD_MAX_KM} km) — komisi COD ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) jadi tagihan, dipotong dari pencairan rekber berikutnya</label></div>
+        <div class="check-row" id="rowFreeship"><input type="checkbox" id="sFreeship"><label for="sFreeship">Ikut program <b>Gratis Ongkir</b> — ongkir ditanggung tokomu, dapat badge &amp; prioritas (komisi +4%)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">Posting Sekarang</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Komisi penjual 3% hanya dipotong saat transaksi sukses. Posting gratis.</p>
       </div>
     </div>
   </div>`;
+}
+function onSellCat(){
+  const jasa = document.getElementById('sCat').value === 'jasa';
+  document.getElementById('jasaNote').classList.toggle('hidden', !jasa);
+  document.getElementById('rowCod').classList.toggle('hidden', jasa);
+  document.getElementById('rowFreeship').classList.toggle('hidden', jasa);
 }
 function compressImage(file){
   return new Promise((resolve, reject) => {
