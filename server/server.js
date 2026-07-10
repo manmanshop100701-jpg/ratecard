@@ -441,6 +441,8 @@ function walletTxn(userId, kind, amount, note, orderId = null){
 /* ================= CONFIG ================= */
 app.get('/api/config', (req, res) => {
   res.json({
+    // indikator penyimpanan: "persisten" = volume /data terpasang, data awet
+    storage: (process.env.DB_PATH || '').startsWith('/data') || fs.existsSync('/data') ? 'persisten ✓' : 'EPHEMERAL — data hilang tiap deploy! Pasang Volume /data di Railway',
     kecamatan: KECAMATAN, cats: CATS, kecCoords: KEC_COORDS,
     fees: { appFee: APP_FEE, sellerCommission: SELLER_COMMISSION, driverCommission: DRIVER_COMMISSION, freeshipExtra: FREESHIP_EXTRA, codFeeRate: COD_FEE_RATE, codFeeMin: COD_FEE_MIN },
     limits: { codMaxKm: COD_MAX_KM, driverMaxKm: DRIVER_MAX_KM, freeshipCap: FREESHIP_CAP, freeshipMin: FREESHIP_MIN },
