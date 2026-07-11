@@ -847,9 +847,20 @@ app.post('/api/admin/payments/:id/reject', (req, res) => {
   addEvent(o.id, 'Dibatalkan', 'Pembayaran ditolak/tidak ditemukan oleh admin.');
   res.json({ ok: true });
 });
-/* Info tujuan pembayaran (QRIS + rekening) — publik utk pembeli */
+/* Info tujuan pembayaran (QRIS + rekening) — publik utk pembeli.
+ * Default bawaan di bawah bisa ditimpa kapan saja lewat /admin.html. */
+const PAY_INFO_DEFAULT = [
+  'GOPAY  083102568122',
+  'DANA   087710347760',
+  'BANK JAGO  507728035278',
+  'SEABANK    901713783157',
+  'a/n IMAN SAEPULLOH',
+].join('\n');
 app.get('/api/paycfg', (req, res) => {
-  res.json({ qris: getSetting('qris_path'), info: getSetting('pay_info') });
+  res.json({
+    qris: getSetting('qris_path') || (fs.existsSync(path.join(__dirname, '..', 'qris.png')) ? '/qris.png' : null),
+    info: getSetting('pay_info') || PAY_INFO_DEFAULT,
+  });
 });
 app.post('/api/admin/paycfg', (req, res) => {
   if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
