@@ -41,7 +41,7 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 | `POST /api/products` | Posting jualan (auth) — menyimpan koordinat GPS penjual saat posting (fallback: pusat kecamatan domisili) |
 | `POST /api/orders` | Buat order rekber/driver/COD — **semua biaya dihitung server** (anti manipulasi) |
 | `POST /api/orders/:id/proof` · `/api/admin/payments*` | Pembayaran manual: unggah bukti transfer → admin verifikasi di `/admin.html` |
-| `POST /api/orders/:id/confirm` | Escrow release: komisi 3% (+4% freeship) dipotong, sisanya "dicairkan" ke penjual |
+| `POST /api/orders/:id/confirm` | Escrow release: komisi 1,5% (+4% freeship) dipotong, sisanya "dicairkan" ke penjual |
 | `POST /api/orders/:id/complain` | Tahan dana, tandai sengketa |
 | `GET /api/events` | **Realtime SSE**: push chat, status order, & produk baru ke pengguna online |
 | `GET /api/sales` · `POST /api/orders/:id/ship` | Sisi penjual: daftar penjualan + aksi kirim (ekspedisi/driver/hasil jasa) |
@@ -110,4 +110,4 @@ Penjual mengunggah foto asli dari galeri/kamera saat posting; foto dikompresi ot
 
 ## ✨ Fitur Produk (ringkas)
 
-Register langsung aktif + verifikasi email opsional · 1 akun jual & beli · **lokasi live GPS dengan filter akurasi** (±meter ditampilkan; bisa dikunci manual per kecamatan) · **UI ala Facebook** (3 kolom, post cards, stories, composer) · feed prioritas Lebak + kategori & radius dari posisi nyata · favorit · chat · rekber escrow win-win · **pembayaran Transfer/QRIS manual** dengan kode unik + verifikasi admin, plus saldo internal · COD titik temu aman (validasi jarak GPS) dengan **komisi COD 2% tercatat sebagai tagihan penjual** · Driver Lebak resmi (Rp10rb + Rp2.500/km, ≤15 km) · gratis ongkir (ditanggung penjual / voucher plafon) · kuliner asli dari OpenStreetMap + petunjuk arah Google Maps · monetisasi transparan · responsif penuh dengan bottom nav mobile.
+Register langsung aktif + verifikasi email opsional · 1 akun jual & beli · **lokasi live GPS dengan filter akurasi** (±meter ditampilkan; bisa dikunci manual per kecamatan) · **UI ala Facebook** (3 kolom, post cards, stories, composer) · feed prioritas Lebak + kategori & radius dari posisi nyata · favorit · chat · rekber escrow win-win · **pembayaran Transfer/QRIS manual** dengan kode unik + verifikasi admin, plus saldo internal · COD titik temu aman (validasi jarak GPS) dengan **komisi COD 1,5% tercatat sebagai tagihan penjual** · Driver Lebak resmi (Rp10rb + Rp2.500/km, ≤15 km) · gratis ongkir (ditanggung penjual / voucher plafon) · kuliner asli dari OpenStreetMap + petunjuk arah Google Maps · monetisasi transparan · responsif penuh dengan bottom nav mobile.

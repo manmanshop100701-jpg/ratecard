@@ -205,6 +205,21 @@ header{
 .sv-foot .btn{flex:1;border:none}
 .sv-foot .btn-ghost{background:rgba(255,255,255,.93);color:var(--ink)}
 
+/* ============ AVATAR FOTO & GALERI ============ */
+.ava img,.ava-btn img,.sv-head .ava img,.story .ava img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ava-btn{overflow:hidden;padding:0}
+.pf-ava{width:78px;height:78px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--tint);color:var(--green);font-weight:800;font-size:30px;margin:0 auto 8px}
+.pf-ava img{width:100%;height:100%;object-fit:cover}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo-grid .ph{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.photo-grid .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-grid .ph .x-btn{position:absolute;top:4px;right:4px;width:24px;height:24px;font-size:11px;background:rgba(255,255,255,.95)}
+.photo-grid .add{display:grid;place-items:center;cursor:pointer;background:var(--bg);border:1px dashed #c9ced4;color:var(--muted);font-size:24px;border-radius:10px;aspect-ratio:1/1}
+.imgs-count{position:absolute;left:12px;bottom:10px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:3px 9px;font-weight:600;font-size:11.5px}
+.pd-thumbs{display:flex;gap:7px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none}
+.pd-thumbs img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer;flex:none}
+.pd-thumbs img.on{border-color:var(--green)}
+
 /* ============ KATEGORI + RADIUS ============ */
 .cat-bar{
   position:sticky;top:56px;z-index:80;background:rgba(255,255,255,.96);
@@ -922,6 +937,8 @@ function shipBreakdown(p, mode){
 const AC = ['#e9f3ec','#f0efe9'];
 const acOf = id => AC[(id||0) % AC.length];
 const initOf = n => (String(n||'?').trim()[0] || '?').toUpperCase();
+const avaEl = (name, avatar) => avatar ? `<img src="${esc(avatar)}" alt="">` : initOf(name);
+let SELLER_COMM = 0.015; // dari /api/config
 
 /* ---------- API CLIENT ---------- */
 const store = {
@@ -958,7 +975,7 @@ let openThread = null;
 let chatPoll = null;
 let pendingReg = null;
 let es = null;
-let sellImg = null; // data URL foto produk yang akan diposting
+let sellImgs = []; // galeri foto produk yang akan diposting (maks 5)
 
 const rupiah = n => 'Rp' + n.toLocaleString('id-ID');
 const km = d => d === 0 ? 'Online' : d < 0.15 ? '±100 m' : d.toLocaleString('id-ID',{maximumFractionDigits:1}) + ' km';
@@ -1109,11 +1126,11 @@ function connectSSE(){
 function renderAuthSlot(){
   const slot = document.getElementById('authSlot');
   slot.innerHTML = user
-    ? `<button class="ava-btn" onclick="openProfile()" title="${esc(user.name)}">${initOf(user.name)}</button>`
+    ? `<button class="ava-btn" onclick="openProfile()" title="${esc(user.name)}">${avaEl(user.name, user.avatar)}</button>`
     : `<button class="login-btn" onclick="openAuth('login')">Masuk</button>`;
   // composer ala FB ikut menyapa pengguna
   const ava = document.getElementById('composerAva'), ask = document.getElementById('composerAsk');
-  if (ava) ava.textContent = user ? initOf(user.name) : '?';
+  if (ava) ava.innerHTML = user ? avaEl(user.name, user.avatar) : '?';
   if (ask) ask.textContent = user ? `Mau jual apa hari ini, ${user.name.split(' ')[0]}?` : 'Mau jual apa hari ini?';
 }
 function needLogin(action){
@@ -1267,7 +1284,12 @@ async function openProfile(){
       <div class="modal-head"><h3>Akun Saya</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
         <div class="auth-hero">
-          <span class="big" style="font-family:Georgia,serif;font-weight:800">${initOf(user.name)}</span>
+          <span class="pf-ava">${avaEl(user.name, user.avatar)}</span>
+          <input type="file" id="avaFile" accept="image/*" style="display:none" onchange="onAvatar(event)">
+          <div style="margin-bottom:6px">
+            <button class="chip mini" onclick="document.getElementById('avaFile').click()">${user.avatar ? 'Ganti foto' : '+ Foto profil'}</button>
+            ${user.avatar ? '<button class="chip mini" onclick="delAvatar()">Hapus foto</button>' : ''}
+          </div>
           <b>${esc(user.name)}</b>
           <p>${esc(user.email)} · ${esc(user.phone)}<br>${esc(user.kec)}, Kab. Lebak, Banten · ${user.verified ? 'Email terverifikasi ✓' : 'Email belum diverifikasi'}</p>
           ${user.verified ? '' : `<div style="margin-top:10px"><button class="btn btn-mint btn-sm" onclick="reVerify()">Verifikasi email sekarang</button></div>`}
@@ -1285,6 +1307,25 @@ async function openProfile(){
       </div>
     </div>
   </div>`;
+}
+
+async function onAvatar(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const img = await compressImage(f);
+    const r = await api('/me/avatar', { method:'POST', body:{ img } });
+    user.avatar = r.avatar; store.set('user', user);
+    renderAuthSlot(); openProfile();
+    toast('Foto profil diperbarui');
+  } catch (err) { toast(err.message); }
+}
+async function delAvatar(){
+  try {
+    await api('/me/avatar', { method:'POST', body:{ img: null } });
+    user.avatar = null; store.set('user', user);
+    renderAuthSlot(); openProfile();
+  } catch (e) { toast(e.message); }
 }
 
 /* ---------- SALDO & PENARIKAN ---------- */
@@ -1343,7 +1384,7 @@ async function openInfoBiaya(){
       <div class="modal-body">
         <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Rincian biaya platform:</p>
         <div class="mini-row"><span class="em g-1"><span class="letter-s">A</span></span><div><b>Biaya aplikasi — ${rupiah(APP_FEE)}/transaksi</b><span>Dibayar pembeli, tertera jelas di rincian checkout</span></div></div>
-        <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — 3%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
+        <div class="mini-row"><span class="em g-5"><span class="letter-s">K</span></span><div><b>Komisi penjual — ${SELLER_COMM*100}%</b><span>Dipotong otomatis saat dana rekber dicairkan</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">D</span></span><div><b>Komisi driver — 10% dari ongkos</b><span>Tarif resmi: Rp10.000 (0–3 km) + Rp2.500/km berikutnya</span></div></div>
         <div class="mini-row"><span class="em g-2"><span class="letter-s">C</span></span><div><b>Komisi COD — ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)})</b><span>Dicatat sebagai tagihan penjual, dipotong otomatis dari pencairan rekber berikutnya</span></div></div>
         <div class="mini-row"><span class="em g-6"><span class="letter-s">G</span></span><div><b>Program Gratis Ongkir — +4%</b><span>Opsional untuk penjual; dapat badge &amp; prioritas feed</span></div></div>
@@ -1392,7 +1433,7 @@ function renderStories(){
   el.innerHTML = sellers.map(p => `
     <button class="story ${p.g}" title="Lihat story ${esc(p.seller_name)}" onclick="openStory(${p.seller_id})">
       ${p.img ? `<img src="${esc(p.img)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : `<span class="letter">${initOf(p.seller_name)}</span>`}
-      <span class="ring"><span class="ava" style="background:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span></span>
+      <span class="ring"><span class="ava" style="background:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span></span>
       <span>${esc(p.seller_name)}</span>
     </button>`).join('');
 }
@@ -1429,7 +1470,7 @@ function renderStoryView(){
       <div class="sv-top">
         <div class="sv-bars">${items.map((_, i) => `<i class="${i < idx ? 'done' : i === idx ? 'now' : ''}"></i>`).join('')}</div>
         <div class="sv-head">
-          <span class="ava" style="background:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span>
+          <span class="ava" style="background:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span>
           <div><b>${esc(p.seller_name)} <span class="verif">✓</span></b><small>${esc(p.seller_kec)} · ${km(p.dist)} · ${ago(p.created_at)}</small></div>
           <button class="sv-x" onclick="closeModal()">✕</button>
         </div>
@@ -1476,6 +1517,10 @@ async function loadFeed(){
   try {
     const r = await api('/products?' + params.toString());
     products = r.products;
+    products.forEach(p => {
+      try { p.imgs = p.imgs ? JSON.parse(p.imgs) : (p.img ? [p.img] : []); }
+      catch { p.imgs = p.img ? [p.img] : []; }
+    });
     renderFeed(); renderStories(); renderTrending();
   } catch (e) {
     document.getElementById('feed').innerHTML =
@@ -1502,7 +1547,7 @@ function renderFeed(){
     return `
     <article class="post">
       <div class="post-head">
-        <span class="ava" style="--ac:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span>
+        <span class="ava" style="--ac:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span>
         <div class="who">
           <b>${esc(p.seller_name)} <span class="verif">✓</span> ${mine?'<span class="ptag pt-amber">Postinganmu</span>':''}</b>
           <span>${ago(p.created_at)} · ${esc(p.seller_kec)} · ${km(p.dist)} darimu · ${CAT_LABEL[p.cat]||p.cat}</span>
@@ -1524,6 +1569,7 @@ function renderFeed(){
       </div>
       <div class="post-media ${p.g}" onclick="openProduct(${p.id})" title="Lihat detail">
         ${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+        ${p.imgs && p.imgs.length > 1 ? `<span class="imgs-count">${p.imgs.length} foto</span>` : ''}
         <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
         <span class="dist-tag">${km(p.dist)}</span>
         ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
@@ -1547,9 +1593,11 @@ function renderFeed(){
 }
 
 /* ---------- DETAIL PRODUK (modal ala e-commerce) ---------- */
-function openProduct(id){
+function openProduct(id, imgIdx = 0){
   const p = products.find(x => x.id === id);
   if (!p) return;
+  const gal = p.imgs && p.imgs.length ? p.imgs : (p.img ? [p.img] : []);
+  const mainImg = gal[imgIdx] || gal[0] || null;
   const mine = user && p.seller_id === user.id;
   const faved = favs.has(p.id);
   const out = p.stock <= 0;
@@ -1558,11 +1606,12 @@ function openProduct(id){
     <div class="modal">
       <div class="modal-head"><h3>Detail Produk</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="pd-media ${p.g}">
-        ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+        ${mainImg ? `<img src="${esc(mainImg)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
         <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
         <span class="dist-tag">${km(p.dist)} darimu</span>
         ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
       </div>
+      ${gal.length > 1 ? `<div class="pd-thumbs">${gal.map((u, i) => `<img src="${esc(u)}" class="${i === imgIdx ? 'on' : ''}" onclick="openProduct(${p.id}, ${i})" alt="">`).join('')}</div>` : ''}
       <div class="modal-body">
         <div class="pd-price">${rupiah(p.price)}</div>
         <div class="pd-name">${esc(p.name)}</div>
@@ -1570,7 +1619,7 @@ function openProduct(id){
         <div class="pd-meta">${ago(p.created_at)} · <span class="badge ${CAT_BADGE[p.cat]||''}">${CAT_LABEL[p.cat]||p.cat}</span> · Stok ${p.stock}</div>
         <p class="pd-desc">${esc(p.descr)}</p>
         <div class="seller-row">
-          <span class="ava" style="--ac:${acOf(p.seller_id)}">${initOf(p.seller_name)}</span>
+          <span class="ava" style="--ac:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span>
           <div style="flex:1;min-width:0"><b style="font-size:13.5px">${esc(p.seller_name)} <span class="verif">✓</span></b>
             <span style="font-size:12px;color:var(--muted);display:block">${esc(p.loc)} · ${km(p.dist)} dari posisimu</span></div>
           ${mine ? '<span class="mine-pill">Kamu</span>'
@@ -1746,7 +1795,7 @@ async function openChatList(){
       <div class="drawer-body">
         ${chats.length ? chats.map(c => `
           <div class="chat-list-row" onclick="openChatWith(${c.peer.id}, '${esc(c.peer.name)}')">
-            <span class="ava" style="--ac:${acOf(c.peer.id)};font-weight:800">${initOf(c.peer.name)}</span>
+            <span class="ava" style="--ac:${acOf(c.peer.id)};font-weight:800">${avaEl(c.peer.name, c.peer.avatar)}</span>
             <div class="inf"><b>${esc(c.peer.name)} · ${esc(c.peer.kec)}</b><span>${c.last.from_me?'Kamu: ':''}${esc(c.last.text)}</span></div>
             ${c.unread ? '<span class="dot-unread"></span>' : ''}
           </div>`).join('')
@@ -1973,6 +2022,15 @@ async function complain(orderId){
   } catch (e) { toast(e.message); }
 }
 
+async function hideOrder(orderId){
+  if (!confirm('Hapus transaksi ini dari riwayatmu? (pihak lain masih bisa melihat miliknya)')) return;
+  try {
+    await api('/orders/' + orderId + '/hide', { method:'POST' });
+    await refreshBadges(); renderOrders();
+    toast('Dihapus dari riwayat');
+  } catch (e) { toast(e.message); }
+}
+
 /* ---------- ORDERS VIEW ---------- */
 const STAT_CLASS = {
   'Menunggu Pembayaran':'sb-unpaid', 'Dana Ditahan (Rekber)':'sb-held',
@@ -2017,6 +2075,7 @@ function orderCard(o, asSeller){
         <button class="btn btn-sm" onclick="complain('${o.id}')">Ajukan Komplain</button>` : ''}
       ${!asSeller && o.status === 'Janjian COD' ? `<button class="btn btn-mint btn-sm" onclick="confirmDone('${o.id}')">Sudah Ketemu &amp; Barang Oke</button>` : ''}
       ${asSeller && o.status === 'Janjian COD' ? `<span class="live-pill"><i></i> tunggu ketemuan — hubungi via chat</span>` : ''}
+      ${['Selesai','Selesai — Dana Cair','Dibatalkan'].includes(o.status) ? `<button class="btn btn-sm" onclick="hideOrder('${o.id}')">Hapus dari Riwayat</button>` : ''}
     </div>
   </div>`;
 }
@@ -2237,22 +2296,16 @@ function openWisata(i){
 /* ---------- SELL (dengan foto asli) ---------- */
 function openSell(){
   if (needLogin('posting jualan')) return;
-  sellImg = null;
+  sellImgs = [];
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <div class="modal-head"><h3>Posting Jualan Baru</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
       <div class="modal-body">
         <div class="safe-note" style="margin:0 0 14px">Posting sebagai <b>${esc(user.name)}</b> · Kec. ${esc(user.kec)}</div>
-        <label class="f">Foto barang</label>
-        <input type="file" id="sFile" accept="image/*" style="display:none" onchange="onPhoto(event)">
-        <div id="photoBox">
-          <div class="photo-drop" onclick="document.getElementById('sFile').click()">
-            ${IC.camera}
-            <span>Ambil foto / pilih dari galeri</span>
-            <span style="font-size:11.5px;font-weight:600">Maks 5 MB — dikompresi otomatis</span>
-          </div>
-        </div>
+        <label class="f">Foto barang (maks 5 foto)</label>
+        <input type="file" id="sFile" accept="image/*" multiple style="display:none" onchange="onPhoto(event)">
+        <div id="photoBox"></div>
         <label class="f">Nama produk / jasa</label>
         <input class="f" id="sName" placeholder="cth: Gula Aren Cetak 1kg">
         <label class="f">Kategori</label>
@@ -2276,10 +2329,11 @@ function openSell(){
         <div class="check-row" id="rowCod"><input type="checkbox" id="sCod" checked><label for="sCod">Buka COD ketemuan — komisi ${COD_FEE_RATE*100}% (min ${rupiah(COD_FEE_MIN)}) per transaksi COD</label></div>
         <div class="check-row" id="rowFreeship"><input type="checkbox" id="sFreeship"><label for="sFreeship">Gratis ongkir ditanggung penjual (komisi +4%, prioritas feed)</label></div>
         <button class="btn btn-coral" style="width:100%;margin-top:20px" onclick="submitSell()">Posting Sekarang</button>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Posting gratis · komisi 3% per transaksi sukses</p>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Posting gratis · komisi ${SELLER_COMM*100}% per transaksi sukses</p>
       </div>
     </div>
   </div>`;
+  renderPhotoBox();
 }
 function onSellCat(){
   const cat = document.getElementById('sCat').value;
@@ -2306,27 +2360,35 @@ function compressImage(file){
     img.src = URL.createObjectURL(file);
   });
 }
-async function onPhoto(e){
-  const f = e.target.files[0];
-  if (!f) return;
-  try {
-    sellImg = await compressImage(f);
-    document.getElementById('photoBox').innerHTML = `
-      <div class="photo-prev">
-        <img src="${sellImg}" alt="Pratinjau foto">
-        <button class="x-btn" onclick="removePhoto()" title="Hapus foto">✕</button>
+function renderPhotoBox(){
+  const box = document.getElementById('photoBox');
+  if (!box) return;
+  if (!sellImgs.length){
+    box.innerHTML = `
+      <div class="photo-drop" onclick="document.getElementById('sFile').click()">
+        ${IC.camera}
+        <span>Ambil foto / pilih dari galeri (bisa banyak)</span>
+        <span style="font-size:11.5px;font-weight:600">Maks 5 foto — dikompresi otomatis</span>
       </div>`;
-  } catch (err) { toast(err.message); }
+    return;
+  }
+  box.innerHTML = `<div class="photo-grid">
+    ${sellImgs.map((u, i) => `<div class="ph"><img src="${u}" alt="">${i===0?'<span class="imgs-count" style="left:6px;bottom:6px">Utama</span>':''}<button class="x-btn" onclick="removePhoto(${i})" title="Hapus">✕</button></div>`).join('')}
+    ${sellImgs.length < 5 ? `<div class="add" onclick="document.getElementById('sFile').click()">+</div>` : ''}
+  </div>`;
 }
-function removePhoto(){
-  sellImg = null;
-  document.getElementById('sFile').value = '';
-  document.getElementById('photoBox').innerHTML = `
-    <div class="photo-drop" onclick="document.getElementById('sFile').click()">
-      ${IC.camera}
-      <span>Ambil foto / pilih dari galeri</span>
-      <span style="font-size:11.5px;font-weight:600">Maks 5 MB — dikompresi otomatis</span>
-    </div>`;
+async function onPhoto(e){
+  const files = [...e.target.files].slice(0, 5 - sellImgs.length);
+  for (const f of files){
+    try { sellImgs.push(await compressImage(f)); }
+    catch (err) { toast(err.message); }
+  }
+  e.target.value = '';
+  renderPhotoBox();
+}
+function removePhoto(i){
+  sellImgs.splice(i, 1);
+  renderPhotoBox();
 }
 async function submitSell(){
   try {
@@ -2339,11 +2401,11 @@ async function submitSell(){
       descr: document.getElementById('sDesc').value,
       cod: document.getElementById('sCod').checked,
       freeship: document.getElementById('sFreeship').checked,
-      img: sellImg,
+      imgs: sellImgs,
       shipCost: document.getElementById('sCat').value === 'ternak' ? document.getElementById('sShipCost').value : undefined,
       lat: myLoc?.lat, lng: myLoc?.lng, // posisi live penjual saat posting
     }});
-    closeModal(); sellImg = null;
+    closeModal(); sellImgs = [];
     activeCat = 'all'; renderCats(); await loadFeed();
     toast('Produk berhasil diposting');
   } catch (e) { toast(e.message); }
@@ -2358,6 +2420,7 @@ async function init(){
     KECAMATAN = cfg.kecamatan;
     kecCoords = cfg.kecCoords || {};
     APP_FEE = cfg.fees.appFee;
+    SELLER_COMM = cfg.fees.sellerCommission ?? SELLER_COMM;
     COD_FEE_RATE = cfg.fees.codFeeRate ?? COD_FEE_RATE;
     COD_FEE_MIN = cfg.fees.codFeeMin ?? COD_FEE_MIN;
     COD_MAX_KM = cfg.limits.codMaxKm; DRIVER_MAX_KM = cfg.limits.driverMaxKm;

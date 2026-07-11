@@ -141,5 +141,9 @@ try { db.exec('ALTER TABLE orders ADD COLUMN pay_url TEXT'); } catch {}
 try { db.exec('ALTER TABLE products ADD COLUMN ship_cost INTEGER'); } catch {} // ongkir tetap dari penjual (peternakan dll.)
 try { db.exec("UPDATE products SET cat = 'ternak' WHERE cat = 'ikan'"); } catch {} // Ikan Hias → Peternakan
 try { db.exec('ALTER TABLE orders ADD COLUMN pay_proof TEXT'); } catch {} // bukti transfer (pembayaran manual)
+try { db.exec('ALTER TABLE users ADD COLUMN avatar TEXT'); } catch {} // foto profil
+try { db.exec('ALTER TABLE products ADD COLUMN imgs TEXT'); } catch {} // galeri foto produk (JSON array path)
+try { db.exec('ALTER TABLE orders ADD COLUMN buyer_hide INTEGER NOT NULL DEFAULT 0'); } catch {} // sembunyikan dari riwayat pembeli
+try { db.exec('ALTER TABLE orders ADD COLUMN seller_hide INTEGER NOT NULL DEFAULT 0'); } catch {} // sembunyikan dari riwayat penjual
 
 module.exports = db;

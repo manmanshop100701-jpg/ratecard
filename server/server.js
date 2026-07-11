@@ -71,13 +71,13 @@ app.use(express.static(path.join(__dirname, '..')));
 
 /* ================= KONSTANTA BISNIS ================= */
 const APP_FEE = 1000;
-const SELLER_COMMISSION = 0.03;
+const SELLER_COMMISSION = 0.015; // 1,5% per transaksi sukses
 const DRIVER_COMMISSION = 0.10;
 const FREESHIP_EXTRA = 0.04;
 /* Komisi COD: transaksi COD tidak lewat rekber, jadi komisi penjual
  * dicatat sebagai TAGIHAN (users.cod_debt) dan dipotong otomatis dari
  * pencairan rekber berikutnya — platform tetap dapat bagian. */
-const COD_FEE_RATE = 0.02, COD_FEE_MIN = 1000;
+const COD_FEE_RATE = 0.015, COD_FEE_MIN = 500;
 const codFee = price => Math.max(COD_FEE_MIN, Math.round(price * COD_FEE_RATE));
 const COD_MAX_KM = 25, DRIVER_MAX_KM = 15;
 const FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
@@ -258,7 +258,7 @@ function auth(req, res, next){
   if (!token) return bad(res, 401, 'Perlu login dulu');
   try {
     const data = jwt.verify(token, JWT_SECRET);
-    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance FROM users WHERE id = ?').get(data.uid);
+    req.user = db.prepare('SELECT id, name, email, phone, kec, verified, cod_debt, balance, avatar FROM users WHERE id = ?').get(data.uid);
     if (!req.user) return bad(res, 401, 'Akun tidak ditemukan');
     next();
   } catch { return bad(res, 401, 'Sesi berakhir — silakan login kembali'); }
@@ -317,7 +317,7 @@ app.get('/api/config', (req, res) => {
  * email+password selalu bisa, bahkan bila email OTP tidak sampai.
  * Verifikasi email hanya menaikkan status verified — bukan syarat login. */
 const signToken = uid => jwt.sign({ uid }, JWT_SECRET, { expiresIn: '30d' });
-const userPayload = u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec, verified: u.verified ? 1 : 0, cod_debt: u.cod_debt || 0, balance: u.balance || 0 });
+const userPayload = u => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, kec: u.kec, verified: u.verified ? 1 : 0, cod_debt: u.cod_debt || 0, balance: u.balance || 0, avatar: u.avatar || null });
 
 app.post('/api/auth/register', async (req, res) => {
   const { name = '', email = '', phone = '', kec = '', password = '' } = req.body;
@@ -415,9 +415,21 @@ app.post('/api/auth/login', async (req, res) => {
 
 app.get('/api/me', auth, (req, res) => res.json({ user: req.user }));
 
+/* Foto profil: kirim {img: dataURL} untuk pasang, {img: null} untuk hapus */
+app.post('/api/me/avatar', auth, (req, res) => {
+  if (req.body.img === null){
+    db.prepare('UPDATE users SET avatar = NULL WHERE id = ?').run(req.user.id);
+    return res.json({ ok: true, avatar: null });
+  }
+  const img = saveImage(req.body.img);
+  if (!img) return bad(res, 400, 'Foto tidak valid (maks 5MB, JPG/PNG/WebP)');
+  db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(img, req.user.id);
+  res.json({ ok: true, avatar: img });
+});
+
 /* ================= PRODUK (100% postingan pengguna asli) ================= */
 const PRODUCT_SELECT = `
-  SELECT p.*, u.name seller_name, u.kec seller_kec,
+  SELECT p.*, u.name seller_name, u.kec seller_kec, u.avatar seller_avatar,
     (SELECT COUNT(*) FROM likes l WHERE l.product_id = p.id) likes
   FROM products p JOIN users u ON u.id = p.seller_id`;
 
@@ -466,20 +478,25 @@ app.post('/api/products', auth, (req, res) => {
     if (isNaN(shipCostVal) || shipCostVal < 0 || shipCostVal > 10_000_000) return bad(res, 400, 'Ongkir dari penjual tidak valid');
   }
   if (cat === 'ternak' && shipCostVal === null) return bad(res, 400, 'Kategori Peternakan wajib mengisi ongkir dari penjual (kirim hewan hidup)');
-  let imgPath = null;
-  if (img){
-    imgPath = saveImage(img);
-    if (!imgPath) return bad(res, 400, 'Foto tidak valid (maks 5MB, format JPG/PNG/WebP)');
+  // galeri: terima array imgs (maks 5) atau img tunggal (kompatibilitas lama)
+  const imgsIn = Array.isArray(req.body.imgs) ? req.body.imgs.slice(0, 5) : (img ? [img] : []);
+  const imgPaths = [];
+  for (const d of imgsIn){
+    const saved = saveImage(d);
+    if (!saved) return bad(res, 400, 'Foto tidak valid (maks 5MB per foto, JPG/PNG/WebP)');
+    imgPaths.push(saved);
   }
+  const imgPath = imgPaths[0] || null;
   const g = 'g-' + (1 + Math.floor(Math.random() * 6));
   // posisi GPS live penjual saat posting; tanpa izin GPS → pusat kecamatan domisili
   const pos = parseCoords(req.body.lat, req.body.lng) || KEC_COORDS[req.user.kec] || KEC_COORDS.Rangkasbitung;
   const r = db.prepare(`INSERT INTO products
-    (seller_id, cat, name, price, stock, cond, loc, dist, lat, lng, cod, freeship, lebak, emoji, g, img, descr, ship_cost, created_at)
-    VALUES (?,?,?,?,?,?,?,0.5,?,?,?,?,1,'',?,?,?,?,?)`)
+    (seller_id, cat, name, price, stock, cond, loc, dist, lat, lng, cod, freeship, lebak, emoji, g, img, imgs, descr, ship_cost, created_at)
+    VALUES (?,?,?,?,?,?,?,0.5,?,?,?,?,1,'',?,?,?,?,?,?)`)
     .run(req.user.id, cat, name.trim(), pr, st, cond === 'bekas' ? 'bekas' : 'baru',
          req.user.kec + ', Lebak', pos.lat, pos.lng, cod ? 1 : 0, freeship ? 1 : 0,
-         g, imgPath, String(descr).trim() || 'Tanpa deskripsi.', shipCostVal, now());
+         g, imgPath, imgPaths.length ? JSON.stringify(imgPaths) : null,
+         String(descr).trim() || 'Tanpa deskripsi.', shipCostVal, now());
   const prod = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(Number(r.lastInsertRowid));
   sseBroadcast('product', { id: prod.id, name: prod.name, seller: prod.seller_name }, req.user.id);
   res.json({ ok: true, product: prod });
@@ -576,11 +593,11 @@ function getOrder(id){
 }
 
 app.get('/api/orders', auth, (req, res) => {
-  const ids = db.prepare('SELECT id FROM orders WHERE buyer_id = ? ORDER BY created_at DESC').all(req.user.id);
+  const ids = db.prepare('SELECT id FROM orders WHERE buyer_id = ? AND buyer_hide = 0 ORDER BY created_at DESC').all(req.user.id);
   res.json({ orders: ids.map(x => getOrder(x.id)) });
 });
 app.get('/api/sales', auth, (req, res) => {
-  const ids = db.prepare('SELECT id FROM orders WHERE seller_id = ? ORDER BY created_at DESC').all(req.user.id);
+  const ids = db.prepare('SELECT id FROM orders WHERE seller_id = ? AND seller_hide = 0 ORDER BY created_at DESC').all(req.user.id);
   res.json({ sales: ids.map(x => getOrder(x.id)) });
 });
 
@@ -696,7 +713,7 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
   // dana cair MASUK KE SALDO penjual — bisa ditarik atau dibelanjakan lagi
   walletTxn(o.seller_id, 'escrow_in', net, 'Dana cair: ' + o.pname.slice(0, 40), o.id);
   addEvent(o.id, 'Selesai — Dana Cair',
-    `Rp${net.toLocaleString('id-ID')} masuk ke saldo penjual (komisi 3%${extra ? ' + gratis ongkir 4%' : ''}${debtCut ? ' + tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong).`);
+    `Rp${net.toLocaleString('id-ID')} masuk ke saldo penjual (komisi ${SELLER_COMMISSION*100}%${extra ? ' + gratis ongkir 4%' : ''}${debtCut ? ' + tagihan COD Rp' + debtCut.toLocaleString('id-ID') : ''} dipotong).`);
   res.json({ ok: true, order: getOrder(o.id), payout: { net, commission, extra, driverCut, debtCut } });
 });
 
@@ -726,6 +743,17 @@ app.post('/api/orders/:id/complain', auth, (req, res) => {
   res.json({ ok: true, order: getOrder(o.id) });
 });
 
+/* --- Hapus dari riwayat (sembunyikan per sisi; hanya transaksi final) --- */
+const FINAL_STATUSES = ['Selesai', 'Selesai — Dana Cair', 'Dibatalkan'];
+app.post('/api/orders/:id/hide', auth, (req, res) => {
+  const o = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+  if (!o || (o.buyer_id !== req.user.id && o.seller_id !== req.user.id)) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (!FINAL_STATUSES.includes(o.status)) return bad(res, 409, 'Hanya transaksi selesai/dibatalkan yang bisa dihapus dari riwayat');
+  const col = o.buyer_id === req.user.id ? 'buyer_hide' : 'seller_hide';
+  db.prepare(`UPDATE orders SET ${col} = 1 WHERE id = ?`).run(o.id);
+  res.json({ ok: true });
+});
+
 /* ================= CHAT NYATA antar pengguna ================= */
 app.get('/api/chats', auth, (req, res) => {
   const rows = db.prepare(`
@@ -735,7 +763,7 @@ app.get('/api/chats', auth, (req, res) => {
       SELECT sender_id peer_id, at, CASE WHEN read = 0 THEN 1 ELSE 0 END unread FROM messages WHERE recipient_id = @me
     ) GROUP BY peer_id ORDER BY last_at DESC`).all({ me: req.user.id });
   const chats = rows.map(r => {
-    const peer = db.prepare('SELECT id, name, kec FROM users WHERE id = ?').get(r.peer_id);
+    const peer = db.prepare('SELECT id, name, kec, avatar FROM users WHERE id = ?').get(r.peer_id);
     const last = db.prepare(`SELECT sender_id, text, at FROM messages
       WHERE (sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)
       ORDER BY at DESC LIMIT 1`).get(req.user.id, r.peer_id, r.peer_id, req.user.id);
@@ -745,7 +773,7 @@ app.get('/api/chats', auth, (req, res) => {
 });
 app.get('/api/chats/:peerId', auth, (req, res) => {
   const pid = parseInt(req.params.peerId, 10);
-  const peer = db.prepare('SELECT id, name, kec FROM users WHERE id = ?').get(pid);
+  const peer = db.prepare('SELECT id, name, kec, avatar FROM users WHERE id = ?').get(pid);
   if (!peer) return bad(res, 404, 'Pengguna tidak ditemukan');
   db.prepare('UPDATE messages SET read = 1 WHERE recipient_id = ? AND sender_id = ?').run(req.user.id, pid);
   const msgs = db.prepare(`SELECT sender_id, text, at FROM messages
