@@ -89,7 +89,6 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
 | `ADMIN_KEY` | Kunci admin — buka `/api/admin/withdrawals?key=ADMIN_KEY` untuk melihat daftar permintaan penarikan saldo penjual |
 | `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |
-| `WEBHOOK_SECRET` | Kosong = tombol sandbox aktif; isi saat Midtrans asli terpasang |
 | `PORT` | Diisi otomatis oleh platform |
 
 ### 📧 Mengaktifkan email OTP via Gmail (5 menit)
@@ -111,4 +110,4 @@ Penjual mengunggah foto asli dari galeri/kamera saat posting; foto dikompresi ot
 
 ## ✨ Fitur Produk (ringkas)
 
-Register langsung aktif + verifikasi email opsional · 1 akun jual & beli · **lokasi live GPS dengan filter akurasi** (±meter ditampilkan; bisa dikunci manual per kecamatan) · **UI grid produk ala e-commerce besar** (banner promo, trust strip, kartu produk, modal detail) · feed prioritas Lebak + kategori & radius dari posisi nyata · favorit · chat · rekber escrow win-win · **pembayaran Midtrans asli** (QRIS/VA/e-wallet; simulasi otomatis saat key belum diisi) · COD titik temu aman (validasi jarak GPS) dengan **komisi COD 2% tercatat sebagai tagihan penjual** · Driver Lebak resmi (Rp10rb + Rp2.500/km, ≤15 km) · gratis ongkir (ditanggung penjual / voucher plafon) · kuliner asli dari OpenStreetMap + petunjuk arah Google Maps · monetisasi transparan · responsif penuh dengan bottom nav mobile.
+Register langsung aktif + verifikasi email opsional · 1 akun jual & beli · **lokasi live GPS dengan filter akurasi** (±meter ditampilkan; bisa dikunci manual per kecamatan) · **UI ala Facebook** (3 kolom, post cards, stories, composer) · feed prioritas Lebak + kategori & radius dari posisi nyata · favorit · chat · rekber escrow win-win · **pembayaran Transfer/QRIS manual** dengan kode unik + verifikasi admin, plus saldo internal · COD titik temu aman (validasi jarak GPS) dengan **komisi COD 2% tercatat sebagai tagihan penjual** · Driver Lebak resmi (Rp10rb + Rp2.500/km, ≤15 km) · gratis ongkir (ditanggung penjual / voucher plafon) · kuliner asli dari OpenStreetMap + petunjuk arah Google Maps · monetisasi transparan · responsif penuh dengan bottom nav mobile.
