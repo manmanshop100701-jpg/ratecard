@@ -40,7 +40,7 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 | `GET /api/products` | Filter `cat`/`radius`/`q` + `lat`/`lng` posisi live penonton — jarak dihitung **Haversine asli**, urut Lebak dulu lalu terdekat |
 | `POST /api/products` | Posting jualan (auth) — menyimpan koordinat GPS penjual saat posting (fallback: pusat kecamatan domisili) |
 | `POST /api/orders` | Buat order rekber/driver/COD — **semua biaya dihitung server** (anti manipulasi) |
-| `POST /api/payments/webhook` | Jalur notifikasi gateway (persis pola Midtrans) → dana ditahan, stok dipotong, status berjalan otomatis |
+| `POST /api/orders/:id/proof` · `/api/admin/payments*` | Pembayaran manual: unggah bukti transfer → admin verifikasi di `/admin.html` |
 | `POST /api/orders/:id/confirm` | Escrow release: komisi 3% (+4% freeship) dipotong, sisanya "dicairkan" ke penjual |
 | `POST /api/orders/:id/complain` | Tahan dana, tandai sengketa |
 | `GET /api/events` | **Realtime SSE**: push chat, status order, & produk baru ke pengguna online |
@@ -58,21 +58,6 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 Tanpa payment gateway — pembeli membayar ke **QRIS/rekening milik pemilik platform** (diatur di `/admin.html`), total diberi **kode unik Rp1–499** untuk pencocokan mutasi, pembeli mengunggah bukti, lalu **admin memverifikasi satu klik** di `/admin.html` → dana berstatus ditahan rekber dan alur berjalan normal. Saldo internal juga bisa dipakai membayar (tanpa biaya).
 
 Integrasi gateway (Duitku/Midtrans) telah dihapus dari kode — lihat riwayat git bila ingin dipasang kembali.
-
-## Opsi A — Duitku (ramah pendaftar perorangan, cukup KTP + rekening)
-1. Daftar di [duitku.com](https://duitku.com) → buat **Proyek** → catat **Merchant Code** (mis. `DS12345`) dan **API Key**
-2. Set env: `DUITKU_MERCHANT_CODE` + `DUITKU_API_KEY` (akun baru = mode **sandbox** dulu; uang belum sungguhan)
-3. Di pengaturan proyek Duitku, isi **Callback URL**: `https://domainmu.com/api/payments/webhook` (signature MD5 resmi Duitku diverifikasi otomatis oleh server)
-4. Uji checkout: pembeli diarahkan ke halaman pembayaran Duitku (QRIS/VA/e-wallet dipilih di sana)
-5. Proyek disetujui untuk produksi → set `DUITKU_IS_PRODUCTION=1` → **uang masuk sungguhan** ke saldo Duitku-mu, dicairkan ke rekening
-
-### Opsi B — Midtrans
-1. Daftar [Midtrans](https://midtrans.com) → dashboard → **Settings → Access Keys**
-2. Set env: `MIDTRANS_SERVER_KEY` + `MIDTRANS_CLIENT_KEY` (mulai dari key **Sandbox** `SB-Mid-...`)
-3. Dashboard → **Settings → Payment → Notification URL** → `https://domainmu.com/api/payments/webhook` (signature SHA-512 diverifikasi otomatis)
-4. Lolos review → key produksi + `MIDTRANS_IS_PRODUCTION=1`
-
-Tambahan: set `PUBLIC_URL` (mis. `https://tokomu.up.railway.app`) agar callback/return URL gateway selalu benar; tanpa itu server menebak dari header request. Begitu key terisi, tombol "[SANDBOX] Simulasikan Pembayaran" otomatis diganti pembayaran asli.
 
 ## ☁️ Deploy ke Cloud (Railway / Render)
 
@@ -102,7 +87,6 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | `SMTP_HOST/PORT/USER/PASS` | SMTP umum lainnya |
 | `OTP_IN_RESPONSE` | Otomatis: `0` saat email terpasang, `1` (mode pilot, kode tampil di aplikasi) saat belum |
 | `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
-| `PUBLIC_URL` | URL publik situs untuk callback/return gateway (mis. `https://tokomu.up.railway.app`) |
 | `ADMIN_KEY` | Kunci admin — buka `/api/admin/withdrawals?key=ADMIN_KEY` untuk melihat daftar permintaan penarikan saldo penjual |
 | `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |
 | `WEBHOOK_SECRET` | Kosong = tombol sandbox aktif; isi saat Midtrans asli terpasang |
