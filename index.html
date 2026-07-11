@@ -908,15 +908,8 @@ const CAT_LABEL = { jasa:'Jasa', makanan:'Makanan', elektronik:'Elektronik', ter
 const RADII = [ {v:5,l:'≤ 5 km'}, {v:10,l:'≤ 10 km'}, {v:25,l:'≤ 25 km'}, {v:Infinity,l:'Semua'} ];
 let COD_MAX_KM = 25, DRIVER_MAX_KM = 15, APP_FEE = 1000, FREESHIP_CAP = 20000, FREESHIP_MIN = 100000;
 let COD_FEE_RATE = 0.02, COD_FEE_MIN = 1000;
-let GATEWAY = { real: false, clientKey: '', snapJs: '' }; // diisi dari /api/config
 let KECAMATAN = ['Rangkasbitung','Cibadak','Warunggunung','Kalanganyar','Cikulur','Cimarga','Maja','Sajira','Cileles','Leuwidamar','Malingping','Bayah'];
 const MEET_POINTS = ['Alun-alun Rangkasbitung', 'Depan Stasiun Rangkasbitung', 'Minimarket terdekat (sebut di chat)', 'Halaman Polres Lebak (paling aman)', 'Kampus / area kantor'];
-const PAY_METHODS = [
-  { id:'qris', name:'QRIS',                 fee:s=>Math.round(s*0.007), feeLabel:'Biaya 0,7%',  desc:'Scan dari semua e-wallet & m-banking' },
-  { id:'va',   name:'Virtual Account Bank', fee:()=>4000,               feeLabel:'Biaya Rp4.000', desc:'BCA, BRI, Mandiri, BNI' },
-  { id:'ewal', name:'E-Wallet',             fee:s=>Math.round(s*0.015), feeLabel:'Biaya 1,5%',  desc:'GoPay, OVO, DANA, ShopeePay' },
-];
-const PAY_IC = { qris:'QR', va:'VA', ewal:'E' };
 const driverFee = d => d <= 3 ? 10000 : 10000 + Math.ceil(d - 3) * 2500;
 const shipCost = p => p.dist === 0 ? 0 : p.dist <= 25 ? 12000 : p.dist <= 100 ? 18000 : 38000;
 function shipBreakdown(p, mode){
@@ -1832,8 +1825,7 @@ function renderBuy(){
   else {
     const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
     const shipPaid = Math.max(0, bd.base - bd.seller - bd.subsidy);
-    const m = PAY_METHODS.find(x => x.id === buy.pay);
-    const fee = (buy.pay === 'saldo' || buy.pay === 'manual') ? 0 : m ? m.fee(p.price + shipPaid + APP_FEE) : 0;
+    const fee = 0; // manual: kode unik ditambahkan server · saldo: gratis
     const saldoNeed = p.price + shipPaid + APP_FEE; // bayar saldo = tanpa biaya layanan
     const saldoOk = user && (user.balance || 0) >= saldoNeed;
     body = `${stepDots}
@@ -1848,12 +1840,7 @@ function renderBuy(){
         <div><b>Saldo Lebak.market</b><span>${user ? 'Saldomu: ' + rupiah(user.balance || 0) : ''} · tanpa biaya layanan${saldoOk ? '' : ' · saldo belum cukup (butuh ' + rupiah(saldoNeed) + ')'}</span></div>
         <span class="rad"></span>
       </div>
-      ${PAY_METHODS.map(pm => `
-        <div class="pay-opt ${buy.pay===pm.id?'sel':''}" onclick="buy.pay='${pm.id}';renderBuy()">
-          <span class="ic" style="font-weight:800;font-size:13px">${PAY_IC[pm.id]}</span>
-          <div><b>${pm.name}</b><span>${pm.desc} · ${pm.feeLabel}</span></div>
-          <span class="rad"></span>
-        </div>`).join('')}
+
       <div style="background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-top:14px">
         <div class="sum-row"><span>Harga barang</span><span>${rupiah(p.price)}</span></div>
         <div class="sum-row"><span>${buy.mode==='driver'?'Ongkos Driver Lebak ('+km(p.dist)+')':isJasa?'Ongkir — jasa online, hasil dikirim digital':p.ship_cost!=null?'Ongkir (ditetapkan penjual)':'Ongkir ekspedisi ('+km(p.dist)+')'}</span><span>${bd.base ? rupiah(bd.base) : 'Gratis'}</span></div>
@@ -1862,7 +1849,7 @@ function renderBuy(){
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
         ${buy.pay==='manual'
           ? `<div class="sum-row"><span>Kode unik (untuk pencocokan transfer)</span><span>Rp1–499</span></div>`
-          : `<div class="sum-row"><span>Biaya layanan${buy.pay==='saldo'?' (Saldo — gratis)':m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>`}
+          : `<div class="sum-row"><span>Biaya layanan (Saldo — gratis)</span><span>Rp0</span></div>`}
         <div class="sum-row total"><span>Total</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
       </div>
       <div class="safe-note">Dana ditahan sistem dan cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
@@ -1921,15 +1908,11 @@ async function refreshMe(){
   try { user = (await api('/me')).user; store.set('user', user); renderAuthSlot(); } catch {}
 }
 
-function qrisHTML(){
-  let cells = '';
-  for (let i = 0; i < 17*17; i++){
-    const r = Math.sin(i*997.13) * 10000;
-    cells += `<i class="${(r - Math.floor(r)) > .52 ? 'b' : ''}"></i>`;
-  }
-  return `<div class="qris">${cells}</div>`;
+/* ---- PEMBAYARAN: full manual (Transfer/QRIS + verifikasi admin) ---- */
+function openPayment(o){
+  if (o.method_id === 'manual') return openManualPay(o);
+  toast('Metode pembayaran pesanan lama tidak tersedia — silakan pesan ulang');
 }
-/* ---- PEMBAYARAN MANUAL: QRIS/rekening milik toko + unggah bukti ---- */
 async function openManualPay(o){
   let cfg = {};
   try { cfg = await api('/paycfg'); } catch {}
@@ -1944,7 +1927,7 @@ async function openManualPay(o){
           <h2 style="margin:10px 0 2px">${rupiah(o.total)}</h2>
           <p style="font-size:12.5px;color:var(--amber);font-weight:600">Transfer PERSIS sejumlah ini — 3 digit terakhir adalah kode unik pesananmu.</p>
           ${cfg.qris ? `<img src="${esc(cfg.qris)}" alt="QRIS" style="width:220px;max-width:100%;margin:14px auto 4px;display:block;border:1px solid var(--line);border-radius:12px">` : ''}
-          ${cfg.info ? `<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:13px;text-align:left;white-space:pre-wrap">${esc(cfg.info)}</div>` : (!cfg.qris ? '<p style="font-size:12.5px;color:var(--muted);margin-top:10px">Tujuan pembayaran belum diatur admin — hubungi admin.</p>' : '')}
+          ${cfg.info ? `<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:13px;text-align:left;white-space:pre-wrap">${esc(cfg.info)}</div>` : (!cfg.qris ? '<p style="font-size:12.5px;color:var(--muted);margin-top:10px">Tujuan pembayaran belum diatur admin.</p>' : '')}
         </div>
         ${waiting
           ? `<div class="safe-note" style="margin-top:14px">Bukti pembayaran sudah terkirim — menunggu verifikasi admin. Status berubah otomatis setelah diverifikasi.</div>`
@@ -1964,105 +1947,6 @@ async function sendProof(e, orderId){
     closeModal(); await refreshBadges(); ordTab = 'beli'; showView('orders');
     toast('Bukti terkirim — menunggu verifikasi admin');
   } catch (err) { toast(err.message); }
-}
-
-/* Muat snap.js Midtrans sekali saja (dengan client key dari server) */
-function loadSnap(){
-  if (window.snap) return Promise.resolve();
-  return new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = GATEWAY.snapJs;
-    s.setAttribute('data-client-key', GATEWAY.clientKey);
-    s.onload = res; s.onerror = () => rej(new Error('Gagal memuat modul pembayaran'));
-    document.head.appendChild(s);
-  });
-}
-async function paySnap(orderId, snapToken, payUrl){
-  try {
-    await loadSnap();
-    closeModal();
-    window.snap.pay(snapToken, {
-      onSuccess: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Pembayaran berhasil — dana ditahan rekber'); },
-      onPending: async () => { await refreshBadges(); ordTab='beli'; showView('orders'); toast('Menunggu pembayaran'); },
-      onError:   () => toast('Pembayaran gagal — coba lagi dari Transaksi Saya'),
-      onClose:   () => toast('Lanjutkan pembayaran dari menu Transaksi'),
-    });
-  } catch (e) {
-    // popup gagal dimuat → pakai halaman pembayaran Midtrans langsung
-    if (payUrl) window.open(payUrl, '_blank');
-    else toast(e.message);
-  }
-}
-function openPayment(o){
-  if (o.method_id === 'manual'){ openManualPay(o); return; }
-  if (GATEWAY.real && !o.snap_token && o.pay_url){
-    // Duitku (atau gateway hosted lain): pembeli menyelesaikan pembayaran
-    // di halaman resmi gateway — metode (QRIS/VA/e-wallet) dipilih di sana.
-    document.getElementById('modalRoot').innerHTML = `
-    <div class="overlay" onclick="if(event.target===this)closeModal()">
-      <div class="modal">
-        <div class="modal-head"><h3>Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
-        <div class="modal-body">
-          <div class="pay-box">
-            <span class="count-pill">Bayar sebelum <b>24 jam</b></span>
-            <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
-            ${o.va ? `<div class="va-num">${String(o.va).replace(/(\d{4})(?=\d)/g,'$1 ')}</div>` : ''}
-            <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-            <p style="font-size:12px;color:var(--muted)">Dana ditahan rekber sampai barang dikonfirmasi.</p>
-          </div>
-          <a class="btn btn-coral" style="width:100%;margin-top:18px" href="${esc(o.pay_url)}" target="_blank" rel="noopener" onclick="setTimeout(()=>{closeModal();ordTab='beli';showView('orders');toast('Selesaikan pembayaran di tab baru')},400)">Bayar Sekarang</a>
-        </div>
-      </div>
-    </div>`;
-    return;
-  }
-  if (GATEWAY.real && o.snap_token){
-    document.getElementById('modalRoot').innerHTML = `
-    <div class="overlay" onclick="if(event.target===this)closeModal()">
-      <div class="modal">
-        <div class="modal-head"><h3>Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
-        <div class="modal-body">
-          <div class="pay-box">
-            <span class="count-pill">Bayar sebelum <b>24 jam</b></span>
-            <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
-            <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-            <p style="font-size:12px;color:var(--muted)">Dana ditahan rekber sampai barang dikonfirmasi.</p>
-          </div>
-          <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="paySnap('${o.id}', '${esc(o.snap_token)}', '${esc(o.pay_url || '')}')">Bayar Sekarang</button>
-          ${o.pay_url ? `<a class="btn" style="width:100%;margin-top:10px" href="${esc(o.pay_url)}" target="_blank" rel="noopener">Buka Halaman Pembayaran (tab baru)</a>` : ''}
-        </div>
-      </div>
-    </div>`;
-    return;
-  }
-  const isQr = o.method_id === 'qris' || o.method_id === 'ewal';
-  document.getElementById('modalRoot').innerHTML = `
-  <div class="overlay" onclick="if(event.target===this)closeModal()">
-    <div class="modal">
-      <div class="modal-head"><h3>Bayar ke Rekber</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
-      <div class="modal-body">
-        <div class="pay-box">
-          <span class="count-pill">Bayar sebelum <b>23:59:59</b></span>
-          <p style="font-size:13px;color:var(--muted);margin-top:12px">Order <b>${o.id}</b> · ${o.method}</p>
-          ${isQr ? qrisHTML() + `<p style="font-size:12.5px;color:var(--muted)">Scan pakai e-wallet / m-banking apa pun</p>`
-                 : `<div class="va-num">${String(o.va).replace(/(\d{4})(?=\d)/g,'$1 ')}</div><p style="font-size:12.5px;color:var(--muted)">Salin nomor VA lalu transfer dari m-banking</p>`}
-          <h2 style="margin:14px 0 2px">${rupiah(o.total)}</h2>
-          <p style="font-size:12px;color:var(--muted)">Dana ditahan di rekening bersama (escrow)</p>
-        </div>
-        <button class="btn btn-mint" style="width:100%;margin-top:18px" onclick="simulatePaid('${o.id}')">[SANDBOX] Simulasikan Pembayaran Berhasil</button>
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">
-          Mode simulasi — gateway pembayaran belum diaktifkan.
-        </p>
-      </div>
-    </div>
-  </div>`;
-}
-async function simulatePaid(orderId){
-  try {
-    await api('/payments/webhook', { method:'POST', body:{ order_id: orderId, transaction_status:'settlement' } });
-    closeModal(); await loadFeed(); await refreshBadges(); ordTab = 'beli'; showView('orders');
-    toast('Pembayaran diterima — dana ditahan rekber');
-  } catch (e) { toast(e.message); }
 }
 
 /* ---------- AKSI PESANAN ---------- */
@@ -2125,7 +2009,7 @@ function orderCard(o, asSeller){
         </div>`).join('')}
     </div>
     <div class="order-btns">
-      ${!asSeller && ['Menunggu Pembayaran','Menunggu Verifikasi'].includes(o.status) ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va, snap_token:o.snap_token, pay_url:o.pay_url, status:o.status})})'>${o.status==='Menunggu Verifikasi'?'Lihat Status Bayar':'Bayar Sekarang'}</button>` : ''}
+      ${!asSeller && ['Menunggu Pembayaran','Menunggu Verifikasi'].includes(o.status) ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, status:o.status})})'>${o.status==='Menunggu Verifikasi'?'Lihat Status Bayar':'Bayar Sekarang'}</button>` : ''}
       ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? 'Serahkan ke Driver' : isJasa ? 'Kirim Hasil Kerja' : 'Tandai Dikirim'}</button>` : ''}
       ${asSeller && o.status === 'Menunggu Pembayaran' ? `<span class="live-pill"><i></i> menunggu pembeli bayar</span>` : ''}
       ${!asSeller && CONFIRMABLE.includes(o.status) ? `
@@ -2478,7 +2362,6 @@ async function init(){
     COD_FEE_MIN = cfg.fees.codFeeMin ?? COD_FEE_MIN;
     COD_MAX_KM = cfg.limits.codMaxKm; DRIVER_MAX_KM = cfg.limits.driverMaxKm;
     FREESHIP_CAP = cfg.limits.freeshipCap; FREESHIP_MIN = cfg.limits.freeshipMin;
-    if (cfg.gateway) GATEWAY = cfg.gateway;
   } catch (e) { toast(e.message); }
   if (locManual && kecCoords[locManual]){
     myLoc = { ...kecCoords[locManual] };

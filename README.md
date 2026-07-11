@@ -53,11 +53,13 @@ Database SQLite (`server/data.db`) dibuat otomatis; hapus file itu untuk reset t
 
 **Keamanan yang sudah diterapkan:** password di-bcrypt, sesi JWT, harga/ongkir/komisi dihitung ulang di server (input frontend tidak dipercaya), OTP dibatasi umur & percobaan, escape output di frontend.
 
-## 💳 Payment Gateway ASLI (Duitku ATAU Midtrans — sudah terpasang di kode)
+## 💳 Pembayaran: Transfer/QRIS Manual + Saldo
 
-Dua penyedia didukung; isi key salah satu dan pembayaran sungguhan aktif otomatis. Tanpa key, aplikasi jalan di mode simulasi. **Bila keduanya diisi, Duitku yang dipakai.**
+Tanpa payment gateway — pembeli membayar ke **QRIS/rekening milik pemilik platform** (diatur di `/admin.html`), total diberi **kode unik Rp1–499** untuk pencocokan mutasi, pembeli mengunggah bukti, lalu **admin memverifikasi satu klik** di `/admin.html` → dana berstatus ditahan rekber dan alur berjalan normal. Saldo internal juga bisa dipakai membayar (tanpa biaya).
 
-### Opsi A — Duitku (ramah pendaftar perorangan, cukup KTP + rekening)
+Integrasi gateway (Duitku/Midtrans) telah dihapus dari kode — lihat riwayat git bila ingin dipasang kembali.
+
+## Opsi A — Duitku (ramah pendaftar perorangan, cukup KTP + rekening)
 1. Daftar di [duitku.com](https://duitku.com) → buat **Proyek** → catat **Merchant Code** (mis. `DS12345`) dan **API Key**
 2. Set env: `DUITKU_MERCHANT_CODE` + `DUITKU_API_KEY` (akun baru = mode **sandbox** dulu; uang belum sungguhan)
 3. Di pengaturan proyek Duitku, isi **Callback URL**: `https://domainmu.com/api/payments/webhook` (signature MD5 resmi Duitku diverifikasi otomatis oleh server)
@@ -100,10 +102,6 @@ Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Pro
 | `SMTP_HOST/PORT/USER/PASS` | SMTP umum lainnya |
 | `OTP_IN_RESPONSE` | Otomatis: `0` saat email terpasang, `1` (mode pilot, kode tampil di aplikasi) saat belum |
 | `DB_PATH` | Lokasi file SQLite (arahkan ke volume/disk agar persisten) |
-| `DUITKU_MERCHANT_CODE` + `DUITKU_API_KEY` | Kredensial Duitku — mengaktifkan pembayaran **sungguhan** (prioritas di atas Midtrans) |
-| `DUITKU_IS_PRODUCTION` | `1` = produksi (passport.duitku.com); kosong = sandbox |
-| `MIDTRANS_SERVER_KEY` + `MIDTRANS_CLIENT_KEY` | Kredensial Midtrans — alternatif gateway |
-| `MIDTRANS_IS_PRODUCTION` | `1` = mode produksi (app.midtrans.com); kosong = sandbox |
 | `PUBLIC_URL` | URL publik situs untuk callback/return gateway (mis. `https://tokomu.up.railway.app`) |
 | `ADMIN_KEY` | Kunci admin — buka `/api/admin/withdrawals?key=ADMIN_KEY` untuk melihat daftar permintaan penarikan saldo penjual |
 | `UPLOAD_DIR` | Folder foto produk (arahkan ke volume agar foto awet) |
