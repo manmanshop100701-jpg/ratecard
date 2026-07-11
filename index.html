@@ -1833,11 +1833,16 @@ function renderBuy(){
     const bd = isJasa ? { base:0, seller:0, subsidy:0 } : shipBreakdown(p, buy.mode);
     const shipPaid = Math.max(0, bd.base - bd.seller - bd.subsidy);
     const m = PAY_METHODS.find(x => x.id === buy.pay);
-    const fee = buy.pay === 'saldo' ? 0 : m ? m.fee(p.price + shipPaid + APP_FEE) : 0;
+    const fee = (buy.pay === 'saldo' || buy.pay === 'manual') ? 0 : m ? m.fee(p.price + shipPaid + APP_FEE) : 0;
     const saldoNeed = p.price + shipPaid + APP_FEE; // bayar saldo = tanpa biaya layanan
     const saldoOk = user && (user.balance || 0) >= saldoNeed;
     body = `${stepDots}
       <p style="font-size:13px;font-weight:800;margin-bottom:12px">Bayar ke rekber pakai:</p>
+      <div class="pay-opt ${buy.pay==='manual'?'sel':''}" onclick="buy.pay='manual';renderBuy()">
+        <span class="ic" style="font-weight:800;font-size:13px">TF</span>
+        <div><b>Transfer / QRIS</b><span>Bayar ke QRIS/rekening toko lalu unggah bukti · verifikasi oleh admin</span></div>
+        <span class="rad"></span>
+      </div>
       <div class="pay-opt ${saldoOk ? (buy.pay==='saldo'?'sel':'') : 'off'}" ${saldoOk?`onclick="buy.pay='saldo';renderBuy()"`:''}>
         <span class="ic" style="font-weight:800;font-size:13px">S</span>
         <div><b>Saldo Lebak.market</b><span>${user ? 'Saldomu: ' + rupiah(user.balance || 0) : ''} · tanpa biaya layanan${saldoOk ? '' : ' · saldo belum cukup (butuh ' + rupiah(saldoNeed) + ')'}</span></div>
@@ -1855,7 +1860,9 @@ function renderBuy(){
         ${bd.seller ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Gratis ongkir — ditanggung penjual</span><span>−${rupiah(bd.seller)}</span></div>` : ''}
         ${bd.subsidy ? `<div class="sum-row" style="color:#15803d;font-weight:800"><span>Voucher gratis ongkir</span><span>−${rupiah(bd.subsidy)}</span></div>` : ''}
         <div class="sum-row"><span>Biaya aplikasi</span><span>${rupiah(APP_FEE)}</span></div>
-        <div class="sum-row"><span>Biaya layanan${buy.pay==='saldo'?' (Saldo — gratis)':m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>
+        ${buy.pay==='manual'
+          ? `<div class="sum-row"><span>Kode unik (untuk pencocokan transfer)</span><span>Rp1–499</span></div>`
+          : `<div class="sum-row"><span>Biaya layanan${buy.pay==='saldo'?' (Saldo — gratis)':m?' ('+m.name+')':''}</span><span>${rupiah(fee)}</span></div>`}
         <div class="sum-row total"><span>Total</span><span>${rupiah(p.price + shipPaid + APP_FEE + fee)}</span></div>
       </div>
       <div class="safe-note">Dana ditahan sistem dan cair setelah kamu konfirmasi ${isJasa?'hasil kerja':'barang'} sesuai.</div>
@@ -1922,6 +1929,43 @@ function qrisHTML(){
   }
   return `<div class="qris">${cells}</div>`;
 }
+/* ---- PEMBAYARAN MANUAL: QRIS/rekening milik toko + unggah bukti ---- */
+async function openManualPay(o){
+  let cfg = {};
+  try { cfg = await api('/paycfg'); } catch {}
+  const waiting = o.status === 'Menunggu Verifikasi';
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Pembayaran Transfer / QRIS</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="pay-box">
+          <p style="font-size:13px;color:var(--muted)">Order <b>${o.id}</b></p>
+          <h2 style="margin:10px 0 2px">${rupiah(o.total)}</h2>
+          <p style="font-size:12.5px;color:var(--amber);font-weight:600">Transfer PERSIS sejumlah ini — 3 digit terakhir adalah kode unik pesananmu.</p>
+          ${cfg.qris ? `<img src="${esc(cfg.qris)}" alt="QRIS" style="width:220px;max-width:100%;margin:14px auto 4px;display:block;border:1px solid var(--line);border-radius:12px">` : ''}
+          ${cfg.info ? `<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:13px;text-align:left;white-space:pre-wrap">${esc(cfg.info)}</div>` : (!cfg.qris ? '<p style="font-size:12.5px;color:var(--muted);margin-top:10px">Tujuan pembayaran belum diatur admin — hubungi admin.</p>' : '')}
+        </div>
+        ${waiting
+          ? `<div class="safe-note" style="margin-top:14px">Bukti pembayaran sudah terkirim — menunggu verifikasi admin. Status berubah otomatis setelah diverifikasi.</div>`
+          : `<input type="file" id="proofFile" accept="image/*" style="display:none" onchange="sendProof(event,'${o.id}')">
+             <button class="btn btn-coral" style="width:100%;margin-top:14px" onclick="document.getElementById('proofFile').click()">Saya Sudah Bayar — Unggah Bukti</button>
+             <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Pesanan diproses setelah pembayaran diverifikasi (maks beberapa jam).</p>`}
+      </div>
+    </div>
+  </div>`;
+}
+async function sendProof(e, orderId){
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const img = await compressImage(f);
+    await api('/orders/' + orderId + '/proof', { method:'POST', body:{ img } });
+    closeModal(); await refreshBadges(); ordTab = 'beli'; showView('orders');
+    toast('Bukti terkirim — menunggu verifikasi admin');
+  } catch (err) { toast(err.message); }
+}
+
 /* Muat snap.js Midtrans sekali saja (dengan client key dari server) */
 function loadSnap(){
   if (window.snap) return Promise.resolve();
@@ -1950,6 +1994,7 @@ async function paySnap(orderId, snapToken, payUrl){
   }
 }
 function openPayment(o){
+  if (o.method_id === 'manual'){ openManualPay(o); return; }
   if (GATEWAY.real && !o.snap_token && o.pay_url){
     // Duitku (atau gateway hosted lain): pembeli menyelesaikan pembayaran
     // di halaman resmi gateway — metode (QRIS/VA/e-wallet) dipilih di sana.
@@ -2048,7 +2093,7 @@ async function complain(orderId){
 const STAT_CLASS = {
   'Menunggu Pembayaran':'sb-unpaid', 'Dana Ditahan (Rekber)':'sb-held',
   'Dikirim':'sb-move','Diantar Driver':'sb-move','Hasil Dikirim':'sb-move',
-  'Janjian COD':'sb-cod', 'Komplain — Ditinjau':'sb-unpaid',
+  'Janjian COD':'sb-cod', 'Komplain — Ditinjau':'sb-unpaid', 'Menunggu Verifikasi':'sb-held',
   'Selesai — Dana Cair':'sb-done','Selesai':'sb-done','Dibatalkan':'sb-cod',
 };
 const CONFIRMABLE = ['Dikirim','Diantar Driver','Hasil Dikirim'];
@@ -2080,7 +2125,7 @@ function orderCard(o, asSeller){
         </div>`).join('')}
     </div>
     <div class="order-btns">
-      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va, snap_token:o.snap_token, pay_url:o.pay_url})})'>Bayar Sekarang</button>` : ''}
+      ${!asSeller && ['Menunggu Pembayaran','Menunggu Verifikasi'].includes(o.status) ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, va:o.va, snap_token:o.snap_token, pay_url:o.pay_url, status:o.status})})'>${o.status==='Menunggu Verifikasi'?'Lihat Status Bayar':'Bayar Sekarang'}</button>` : ''}
       ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? 'Serahkan ke Driver' : isJasa ? 'Kirim Hasil Kerja' : 'Tandai Dikirim'}</button>` : ''}
       ${asSeller && o.status === 'Menunggu Pembayaran' ? `<span class="live-pill"><i></i> menunggu pembeli bayar</span>` : ''}
       ${!asSeller && CONFIRMABLE.includes(o.status) ? `

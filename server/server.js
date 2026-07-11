@@ -429,6 +429,15 @@ function addEvent(orderId, status, note, notify = true){
 function addRevenue(orderId, kind, amount){
   if (amount > 0) db.prepare('INSERT INTO revenue (order_id, kind, amount, at) VALUES (?,?,?,?)').run(orderId, kind, amount, now());
 }
+const getSetting = k => db.prepare('SELECT v FROM settings WHERE k = ?').get(k)?.v || null;
+const setSetting = (k, v) => db.prepare('INSERT INTO settings (k, v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').run(k, v);
+const adminOk = req => process.env.ADMIN_KEY && (req.query.key === process.env.ADMIN_KEY || req.body?.key === process.env.ADMIN_KEY);
+/* tandai order sebagai LUNAS → dana ditahan rekber (dipakai webhook & verifikasi admin) */
+function markPaid(o){
+  db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
+  addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana ditahan rekber. Menunggu penjual memproses.');
+  addRevenue(o.id, 'app_fee', o.app_fee);
+}
 /* ---- SALDO pengguna (wallet internal) ----
  * Dana escrow yang cair masuk ke saldo penjual; saldo bisa ditarik
  * (diproses admin dari saldo gateway) atau dipakai belanja lagi. */
@@ -665,13 +674,17 @@ app.post('/api/orders', auth, async (req, res) => {
   if (!['rekber', 'driver'].includes(mode)) return bad(res, 400, 'Mode transaksi tidak dikenal');
   if (mode === 'driver' && (isJasa || p.dist > DRIVER_MAX_KM)) return bad(res, 400, 'Driver hanya untuk penjual ≤ ' + DRIVER_MAX_KM + ' km');
   const paySaldo = payMethod === 'saldo';
-  const gw = paySaldo ? { name: 'Saldo Lebak.market', fee: () => 0 } : GATEWAY_FEES[payMethod];
+  const payManual = payMethod === 'manual';
+  const gw = paySaldo ? { name: 'Saldo Lebak.market', fee: () => 0 }
+    : payManual ? { name: 'Transfer/QRIS Manual', fee: () => 0 }
+    : GATEWAY_FEES[payMethod];
   if (!gw) return bad(res, 400, 'Metode pembayaran tidak dikenal');
   if (!recvName || !recvAddr) return bad(res, 400, 'Isi nama & alamat/kontak penerima');
 
   const bd = isJasa ? { base: 0, seller: 0, subsidy: 0 } : shipBreakdown(p, mode);
   const ship = Math.max(0, bd.base - bd.seller - bd.subsidy);
-  const gatewayFee = gw.fee(p.price + ship + APP_FEE);
+  // pembayaran manual: kode unik Rp1–499 ditambahkan agar mutasi mudah dicocokkan
+  const gatewayFee = payManual ? 1 + Math.floor(Math.random() * 499) : gw.fee(p.price + ship + APP_FEE);
   const total = p.price + ship + APP_FEE + gatewayFee;
 
   if (paySaldo){
@@ -693,6 +706,15 @@ app.post('/api/orders', auth, async (req, res) => {
 
   const id = uid();
   let pay, snapToken = null, payUrl = null, vaNum = null;
+  if (payManual){
+    // ---- TRANSFER/QRIS MANUAL: bayar ke rekening/QRIS pemilik, verifikasi admin ----
+    db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, created_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'manual', p.price, ship, APP_FEE, gatewayFee, total,
+           'Menunggu Pembayaran', recvName, recvAddr, now());
+    addEvent(id, 'Menunggu Pembayaran', 'Transfer PERSIS sejumlah total (termasuk kode unik) lalu unggah bukti pembayaran.');
+    return res.json({ ok: true, order: getOrder(id), payment: { manual: true } });
+  }
   if (GATEWAY_KIND === 'duitku'){
     // ---- DUITKU ASLI: buat transaksi, pembeli diarahkan ke paymentUrl ----
     try {
@@ -776,9 +798,7 @@ app.post('/api/payments/webhook', (req, res) => {
   if (!o) return bad(res, 404, 'Order tidak ditemukan');
   if (o.status !== 'Menunggu Pembayaran') return res.json({ ok: true, note: 'sudah diproses' });
   if (paid){
-    db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(o.product_id);
-    addEvent(o.id, 'Dana Ditahan (Rekber)', 'Pembayaran terverifikasi — dana ditahan rekber. Menunggu penjual memproses.');
-    addRevenue(o.id, 'app_fee', o.app_fee);
+    markPaid(o);
     return res.json({ ok: true });
   }
   if (failed){
@@ -786,6 +806,60 @@ app.post('/api/payments/webhook', (req, res) => {
     return res.json({ ok: true });
   }
   res.json({ ok: true, note: 'status diabaikan' }); // pending dll.
+});
+
+/* --- PEMBAYARAN MANUAL: pembeli unggah bukti transfer --- */
+app.post('/api/orders/:id/proof', auth, (req, res) => {
+  const o = getOrder(req.params.id);
+  if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (o.method_id !== 'manual') return bad(res, 400, 'Pesanan ini tidak memakai pembayaran manual');
+  if (!['Menunggu Pembayaran', 'Menunggu Verifikasi'].includes(o.status)) return bad(res, 409, 'Pesanan sudah diproses');
+  const img = saveImage(req.body.img);
+  if (!img) return bad(res, 400, 'Bukti tidak valid (maks 5MB, JPG/PNG/WebP)');
+  db.prepare('UPDATE orders SET pay_proof = ? WHERE id = ?').run(img, o.id);
+  addEvent(o.id, 'Menunggu Verifikasi', 'Bukti pembayaran diunggah — menunggu verifikasi admin.');
+  res.json({ ok: true, order: getOrder(o.id) });
+});
+
+/* --- ADMIN: verifikasi pembayaran manual + pengaturan QRIS --- */
+app.get('/api/admin/payments', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const rows = db.prepare(`
+    SELECT o.id, o.total, o.status, o.pay_proof, o.created_at, p.name pname, u.name buyer, u.email, u.phone
+    FROM orders o JOIN products p ON p.id = o.product_id JOIN users u ON u.id = o.buyer_id
+    WHERE o.method_id = 'manual' AND o.status IN ('Menunggu Pembayaran','Menunggu Verifikasi')
+    ORDER BY o.created_at DESC LIMIT 200`).all();
+  res.json({ payments: rows });
+});
+app.post('/api/admin/payments/:id/approve', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const o = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+  if (!o) return bad(res, 404, 'Order tidak ditemukan');
+  if (!['Menunggu Pembayaran', 'Menunggu Verifikasi'].includes(o.status)) return res.json({ ok: true, note: 'sudah diproses' });
+  markPaid(o);
+  res.json({ ok: true });
+});
+app.post('/api/admin/payments/:id/reject', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const o = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+  if (!o) return bad(res, 404, 'Order tidak ditemukan');
+  if (!['Menunggu Pembayaran', 'Menunggu Verifikasi'].includes(o.status)) return res.json({ ok: true, note: 'sudah diproses' });
+  addEvent(o.id, 'Dibatalkan', 'Pembayaran ditolak/tidak ditemukan oleh admin.');
+  res.json({ ok: true });
+});
+/* Info tujuan pembayaran (QRIS + rekening) — publik utk pembeli */
+app.get('/api/paycfg', (req, res) => {
+  res.json({ qris: getSetting('qris_path'), info: getSetting('pay_info') });
+});
+app.post('/api/admin/paycfg', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  if (req.body.qrisImg){
+    const img = saveImage(req.body.qrisImg);
+    if (!img) return bad(res, 400, 'Gambar QRIS tidak valid (maks 5MB)');
+    setSetting('qris_path', img);
+  }
+  if (req.body.info !== undefined) setSetting('pay_info', String(req.body.info).slice(0, 1000));
+  res.json({ ok: true, qris: getSetting('qris_path'), info: getSetting('pay_info') });
 });
 
 /* --- Aksi PENJUAL: kirim barang / serahkan ke driver / kirim hasil --- */

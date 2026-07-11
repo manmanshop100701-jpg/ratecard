@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin — Lebak.market</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1c1e21;font-size:14px;padding:20px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:19px;margin-bottom:4px}
+h2{font-size:15px;margin:22px 0 10px}
+.muted{color:#65676b;font-size:12.5px}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.1);padding:14px 16px;margin-bottom:10px}
+input,textarea{width:100%;border:1px solid #e4e6eb;border-radius:8px;padding:9px 12px;font:inherit;margin-top:6px}
+button{border:none;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn-g{background:#0b8f4d;color:#fff}
+.btn-r{background:#fdecec;color:#c0392b}
+.btn-o{background:#e4e6eb;color:#1c1e21}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.tag{font-size:11px;font-weight:700;border-radius:5px;padding:2px 8px;background:#fff4e0;color:#b45309}
+img.proof{max-width:100%;max-height:340px;border:1px solid #e4e6eb;border-radius:8px;margin-top:8px;display:block}
+img.qris{width:180px;border:1px solid #e4e6eb;border-radius:8px;margin-top:8px;display:block}
+.amount{font-size:17px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Admin Lebak.market</h1>
+  <p class="muted">Verifikasi pembayaran manual, penarikan saldo, dan pengaturan tujuan pembayaran.</p>
+
+  <div class="card">
+    <b>Kunci Admin (ADMIN_KEY)</b>
+    <input id="key" type="password" placeholder="Masukkan ADMIN_KEY">
+    <div class="row"><button class="btn-g" onclick="saveKey()">Masuk</button></div>
+  </div>
+
+  <div id="panel" style="display:none">
+    <h2>Pembayaran Manual — Menunggu Verifikasi</h2>
+    <div id="payments"></div>
+
+    <h2>Permintaan Penarikan Saldo</h2>
+    <div id="withdrawals"></div>
+
+    <h2>Pengaturan Tujuan Pembayaran</h2>
+    <div class="card">
+      <b>QRIS toko</b>
+      <div id="qrisNow"></div>
+      <input type="file" id="qrisFile" accept="image/*">
+      <b style="display:block;margin-top:14px">Info rekening / e-wallet (tampil ke pembeli)</b>
+      <textarea id="payInfo" rows="4" placeholder="cth:&#10;BRI 1234567890 a.n. Nama Kamu&#10;DANA 08xxxxxxxxxx a.n. Nama Kamu"></textarea>
+      <div class="row"><button class="btn-g" onclick="saveCfg()">Simpan Pengaturan</button></div>
+    </div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let KEY = localStorage.getItem('lm_admin_key') || '';
+if (KEY) { $('key').value = KEY; load(); }
+function saveKey(){ KEY = $('key').value.trim(); localStorage.setItem('lm_admin_key', KEY); load(); }
+const rupiah = n => 'Rp' + Number(n).toLocaleString('id-ID');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(path, opt = {}){
+  const url = '/api' + path + (path.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(KEY);
+  const r = await fetch(url, opt.method ? { method: opt.method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(opt.body || {}) } : undefined);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Gagal (' + r.status + ')');
+  return d;
+}
+
+async function load(){
+  try {
+    const [pay, wd, cfg] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), fetch('/api/paycfg').then(r => r.json())]);
+    $('panel').style.display = '';
+    $('payments').innerHTML = pay.payments.length ? pay.payments.map(p => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <span class="amount">${rupiah(p.total)}</span>
+          <span class="tag">${esc(p.status)}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">${esc(p.id)} · ${esc(p.pname)}<br>Pembeli: ${esc(p.buyer)} · ${esc(p.email)} · ${esc(p.phone)} · ${new Date(p.created_at).toLocaleString('id-ID')}</div>
+        ${p.pay_proof ? `<img class="proof" src="${esc(p.pay_proof)}" alt="bukti">` : '<p class="muted" style="margin-top:8px">Belum ada bukti diunggah.</p>'}
+        <div class="row">
+          <button class="btn-g" onclick="act('${p.id}','approve')">✓ Terima — Dana Ditahan Rekber</button>
+          <button class="btn-r" onclick="if(confirm('Tolak pembayaran ini?'))act('${p.id}','reject')">Tolak</button>
+        </div>
+      </div>`).join('') : '<div class="card muted">Tidak ada pembayaran menunggu.</div>';
+    $('withdrawals').innerHTML = wd.withdrawals.length ? wd.withdrawals.map(w => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between"><span class="amount">${rupiah(w.amount)}</span><span class="muted">${esc(w.tanggal)}</span></div>
+        <div class="muted" style="margin-top:4px">${esc(w.name)} · ${esc(w.email)} · ${esc(w.phone)}<br>${esc(w.note)}</div>
+      </div>`).join('') : '<div class="card muted">Belum ada permintaan penarikan.</div>';
+    $('qrisNow').innerHTML = cfg.qris ? `<img class="qris" src="${esc(cfg.qris)}" alt="QRIS">` : '<p class="muted" style="margin-top:6px">Belum ada QRIS terpasang.</p>';
+    if (cfg.info) $('payInfo').value = cfg.info;
+  } catch (e) { alert(e.message); }
+}
+async function act(id, what){
+  try { await api('/admin/payments/' + id + '/' + what, { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function saveCfg(){
+  try {
+    const body = { info: $('payInfo').value };
+    const f = $('qrisFile').files[0];
+    if (f) body.qrisImg = await new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 900, sc = Math.min(1, MAX / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/png'));
+      };
+      img.onerror = () => rej(new Error('File bukan gambar'));
+      img.src = URL.createObjectURL(f);
+    });
+    await api('/admin/paycfg', { method:'POST', body });
+    alert('Tersimpan'); load();
+  } catch (e) { alert(e.message); }
+}
+</script>
+</body>
+</html>

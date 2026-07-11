@@ -114,6 +114,11 @@ db.exec(`
     at INTEGER NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS settings (
+    k TEXT PRIMARY KEY,
+    v TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS wallet_txns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id),
@@ -135,5 +140,6 @@ try { db.exec('ALTER TABLE orders ADD COLUMN snap_token TEXT'); } catch {}
 try { db.exec('ALTER TABLE orders ADD COLUMN pay_url TEXT'); } catch {}
 try { db.exec('ALTER TABLE products ADD COLUMN ship_cost INTEGER'); } catch {} // ongkir tetap dari penjual (peternakan dll.)
 try { db.exec("UPDATE products SET cat = 'ternak' WHERE cat = 'ikan'"); } catch {} // Ikan Hias → Peternakan
+try { db.exec('ALTER TABLE orders ADD COLUMN pay_proof TEXT'); } catch {} // bukti transfer (pembayaran manual)
 
 module.exports = db;
