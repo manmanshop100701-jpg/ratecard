@@ -640,6 +640,20 @@ app.post('/api/admin/payments/:id/reject', (req, res) => {
   addEvent(o.id, 'Dibatalkan', 'Pembayaran ditolak/tidak ditemukan oleh admin.');
   res.json({ ok: true });
 });
+/* Semua transaksi terbaru (read-only) — pantauan admin */
+app.get('/api/admin/orders', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const rows = db.prepare(`
+    SELECT o.id, o.total, o.status, o.method, o.mode, o.created_at, p.name pname,
+           bu.name buyer, su.name seller
+    FROM orders o
+    JOIN products p ON p.id = o.product_id
+    JOIN users bu ON bu.id = o.buyer_id
+    JOIN users su ON su.id = o.seller_id
+    ORDER BY o.created_at DESC LIMIT 100`).all();
+  res.json({ orders: rows });
+});
+
 /* Info tujuan pembayaran (QRIS + rekening) — publik utk pembeli.
  * Default bawaan di bawah bisa ditimpa kapan saja lewat /admin.html. */
 const PAY_INFO_DEFAULT = [

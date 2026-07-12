@@ -43,6 +43,9 @@ img.qris{width:180px;border:1px solid #e4e6eb;border-radius:8px;margin-top:8px;d
     <h2>Permintaan Penarikan Saldo</h2>
     <div id="withdrawals"></div>
 
+    <h2>Semua Transaksi Terbaru</h2>
+    <div id="orders"></div>
+
     <h2>Pengaturan Tujuan Pembayaran</h2>
     <div class="card">
       <b>QRIS toko</b>
@@ -72,7 +75,7 @@ async function api(path, opt = {}){
 
 async function load(){
   try {
-    const [pay, wd, cfg] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), fetch('/api/paycfg').then(r => r.json())]);
+    const [pay, wd, ords, cfg] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), api('/admin/orders'), fetch('/api/paycfg').then(r => r.json())]);
     $('panel').style.display = '';
     $('payments').innerHTML = pay.payments.length ? pay.payments.map(p => `
       <div class="card">
@@ -92,6 +95,15 @@ async function load(){
         <div class="row" style="margin:0;justify-content:space-between"><span class="amount">${rupiah(w.amount)}</span><span class="muted">${esc(w.tanggal)}</span></div>
         <div class="muted" style="margin-top:4px">${esc(w.name)} · ${esc(w.email)} · ${esc(w.phone)}<br>${esc(w.note)}</div>
       </div>`).join('') : '<div class="card muted">Belum ada permintaan penarikan.</div>';
+    $('orders').innerHTML = ords.orders.length ? ords.orders.map(o => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <span class="amount">${rupiah(o.total)}</span>
+          <span class="tag">${esc(o.status)}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">${esc(o.id)} · ${esc(o.pname)} · ${esc(o.method || o.mode)}<br>
+        Pembeli: ${esc(o.buyer)} → Penjual: ${esc(o.seller)} · ${new Date(o.created_at).toLocaleString('id-ID')}</div>
+      </div>`).join('') : '<div class="card muted">Belum ada transaksi.</div>';
     $('qrisNow').innerHTML = cfg.qris ? `<img class="qris" src="${esc(cfg.qris)}" alt="QRIS">` : '<p class="muted" style="margin-top:6px">Belum ada QRIS terpasang.</p>';
     if (cfg.info) $('payInfo').value = cfg.info;
   } catch (e) { alert(e.message); }
