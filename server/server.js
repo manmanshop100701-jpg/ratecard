@@ -743,6 +743,18 @@ app.post('/api/orders/:id/complain', auth, (req, res) => {
   res.json({ ok: true, order: getOrder(o.id) });
 });
 
+/* --- Pembeli membatalkan pesanan yang BELUM dibayar --- */
+app.post('/api/orders/:id/cancel', auth, (req, res) => {
+  const o = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+  if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');
+  if (o.status !== 'Menunggu Pembayaran')
+    return bad(res, 409, o.status === 'Menunggu Verifikasi'
+      ? 'Bukti bayar sudah dikirim — tunggu verifikasi admin (hubungi admin bila keliru)'
+      : 'Pesanan ini sudah berjalan dan tidak bisa dibatalkan sepihak');
+  addEvent(o.id, 'Dibatalkan', 'Dibatalkan oleh pembeli sebelum pembayaran.');
+  res.json({ ok: true, order: getOrder(o.id) });
+});
+
 /* --- Hapus dari riwayat (sembunyikan per sisi; hanya transaksi final) --- */
 const FINAL_STATUSES = ['Selesai', 'Selesai — Dana Cair', 'Dibatalkan'];
 app.post('/api/orders/:id/hide', auth, (req, res) => {

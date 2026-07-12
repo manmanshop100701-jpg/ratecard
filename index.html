@@ -207,6 +207,7 @@ header{
 
 /* ============ AVATAR FOTO & GALERI ============ */
 .ava img,.ava-btn img,.sv-head .ava img,.story .ava img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.post-head .ava,.composer .ava,.chat-list-row .ava,.seller-row .ava,.sv-head .ava,.story .ava{overflow:hidden}
 .ava-btn{overflow:hidden;padding:0}
 .pf-ava{width:78px;height:78px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--tint);color:var(--green);font-weight:800;font-size:30px;margin:0 auto 8px}
 .pf-ava img{width:100%;height:100%;object-fit:cover}
@@ -1309,11 +1310,27 @@ async function openProfile(){
   </div>`;
 }
 
+/* foto profil di-crop kotak dari tengah agar rapi di lingkaran */
+function cropSquareImage(file, size = 384){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const sq = Math.min(img.width, img.height);
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      c.getContext('2d').drawImage(img, (img.width - sq) / 2, (img.height - sq) / 2, sq, sq, 0, 0, size, size);
+      URL.revokeObjectURL(img.src);
+      resolve(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => reject(new Error('File bukan gambar yang valid'));
+    img.src = URL.createObjectURL(file);
+  });
+}
 async function onAvatar(e){
   const f = e.target.files[0];
   if (!f) return;
   try {
-    const img = await compressImage(f);
+    const img = await cropSquareImage(f);
     const r = await api('/me/avatar', { method:'POST', body:{ img } });
     user.avatar = r.avatar; store.set('user', user);
     renderAuthSlot(); openProfile();
@@ -2022,6 +2039,14 @@ async function complain(orderId){
   } catch (e) { toast(e.message); }
 }
 
+async function cancelOrder(orderId){
+  if (!confirm('Batalkan pesanan ini?')) return;
+  try {
+    await api('/orders/' + orderId + '/cancel', { method:'POST' });
+    await refreshBadges(); renderOrders();
+    toast('Pesanan dibatalkan — bisa dihapus dari riwayat');
+  } catch (e) { toast(e.message); }
+}
 async function hideOrder(orderId){
   if (!confirm('Hapus transaksi ini dari riwayatmu? (pihak lain masih bisa melihat miliknya)')) return;
   try {
@@ -2068,6 +2093,7 @@ function orderCard(o, asSeller){
     </div>
     <div class="order-btns">
       ${!asSeller && ['Menunggu Pembayaran','Menunggu Verifikasi'].includes(o.status) ? `<button class="btn btn-yellow btn-sm" onclick='openPayment(${JSON.stringify({id:o.id, method:o.method, method_id:o.method_id, total:o.total, status:o.status})})'>${o.status==='Menunggu Verifikasi'?'Lihat Status Bayar':'Bayar Sekarang'}</button>` : ''}
+      ${!asSeller && o.status === 'Menunggu Pembayaran' ? `<button class="btn btn-sm" onclick="cancelOrder('${o.id}')">Batalkan</button>` : ''}
       ${shippable ? `<button class="btn btn-mint btn-sm" onclick="shipOrder('${o.id}')">${o.mode==='driver' ? 'Serahkan ke Driver' : isJasa ? 'Kirim Hasil Kerja' : 'Tandai Dikirim'}</button>` : ''}
       ${asSeller && o.status === 'Menunggu Pembayaran' ? `<span class="live-pill"><i></i> menunggu pembeli bayar</span>` : ''}
       ${!asSeller && CONFIRMABLE.includes(o.status) ? `
