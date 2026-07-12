@@ -238,6 +238,12 @@ header{
 #radiusChips{display:contents}
 .radius-row .chip{flex:none}
 
+.filter-bar{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:2px 0}
+.filter-bar .loc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;font-weight:600;color:var(--muted)}
+#filterBtn{flex:none}
+#filterBtn .count{min-width:17px;height:17px;border-radius:999px;background:var(--green);color:#fff;font-size:10.5px;font-weight:700;display:inline-grid;place-items:center;padding:0 4px}
+.chip-wrap{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+
 /* ============ LAYOUT 3 KOLOM (ala Facebook) ============ */
 .main-grid{
   display:grid;grid-template-columns:270px minmax(0,1fr) 300px;gap:20px;
@@ -757,12 +763,12 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 
 <!-- ============ CATEGORY + RADIUS ============ -->
 <div class="cat-bar" id="catBar">
-  <div class="wrap">
-    <div class="cat-scroll" id="catScroll"></div>
-    <div class="radius-row">
-      <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink);cursor:pointer" onclick="openLocPicker()" title="Klik untuk atur lokasi">Mendeteksi lokasi…</b> · Radius:</span>
-      <span id="radiusChips"></span>
-    </div>
+  <div class="wrap filter-bar">
+    <span class="loc">Lokasimu: <b id="locLabel" style="color:var(--ink);cursor:pointer" onclick="openLocPicker()" title="Atur lokasi">Mendeteksi lokasi…</b></span>
+    <button class="chip" id="filterBtn" onclick="openFilter()">
+      <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Filter<span id="filterCount" class="count hidden" style="position:static;margin-left:2px"></span>
+    </button>
   </div>
 </div>
 
@@ -1432,15 +1438,38 @@ function setJelajah(tab){ jelajahTab = tab; showView('kuliner'); }
 
 /* ---------- BARS & STORIES ---------- */
 function renderCats(){
-  document.getElementById('catScroll').innerHTML = CATS.map(c =>
-    `<button class="chip ${activeCat===c.id?'active':''}" onclick="setCat('${c.id}')">${c.label}</button>`
-  ).join('');
-  document.getElementById('radiusChips').innerHTML = RADII.map(r =>
-    `<button class="chip mini ${radiusKm===r.v?'active':''}" onclick="setRadius(${r.v === Infinity ? 'Infinity' : r.v})">${r.l}</button>`
-  ).join('');
+  const n = (activeCat !== 'all' ? 1 : 0) + (radiusKm !== Infinity ? 1 : 0);
+  const el = document.getElementById('filterCount');
+  el.textContent = n; el.classList.toggle('hidden', !n);
 }
-function setCat(id){ activeCat = id; renderCats(); loadFeed(); }
-function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); toast(v===Infinity ? 'Menampilkan semua jarak' : 'Hanya penjual dalam ' + v + ' km'); }
+/* Filter terpadu: kategori + radius + lokasi dalam satu tempat */
+function openFilter(){
+  const catLbl = CATS.find(c => c.id === activeCat)?.label || 'Semua';
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="filterModal">
+      <div class="modal-head"><h3>Filter</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <label class="f" style="margin-top:0">Kategori</label>
+        <div class="chip-wrap">${CATS.map(c =>
+          `<button class="chip ${activeCat===c.id?'active':''}" onclick="setCat('${c.id}')">${c.label}</button>`).join('')}</div>
+        <label class="f">Radius dari lokasimu</label>
+        <div class="chip-wrap">${RADII.map(r =>
+          `<button class="chip ${radiusKm===r.v?'active':''}" onclick="setRadius(${r.v === Infinity ? 'Infinity' : r.v})">${r.l}</button>`).join('')}</div>
+        <label class="f">Lokasi</label>
+        <button class="btn btn-sm" onclick="closeModal();openLocPicker()">Atur lokasi (GPS / manual)</button>
+        <div style="display:flex;gap:9px;margin-top:20px">
+          <button class="btn" style="flex:1" onclick="resetFilter()">Reset</button>
+          <button class="btn btn-coral" style="flex:2" onclick="closeModal()">Tampilkan Hasil</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function refreshFilterModal(){ if (document.getElementById('filterModal')) openFilter(); }
+function resetFilter(){ activeCat = 'all'; radiusKm = Infinity; renderCats(); loadFeed(); refreshFilterModal(); }
+function setCat(id){ activeCat = id; renderCats(); loadFeed(); refreshFilterModal(); }
+function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); refreshFilterModal(); }
 
 function renderStories(){
   const el = document.getElementById('stories');
