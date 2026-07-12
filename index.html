@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lebak.market — Marketplace Warga Lebak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="description" content="Marketplace lokal Kabupaten Lebak: jual-beli aman dengan rekber, COD terdekat, driver lokal, dan direktori kuliner lengkap dengan menu.">
 <style>
 /* ================================================================
@@ -14,24 +17,24 @@
    ================================================================ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#f0f2f5;
+  --bg:#ededed;
   --card:#ffffff;
-  --ink:#1c1e21;
-  --muted:#65676b;
-  --line:#e4e6eb;
-  --hover:#f2f2f2;
-  --icon-bg:#e4e6eb;
-  --green:#0b8f4d;
-  --green-2:#087a40;
-  --tint:#e7f6ee;
-  --tint-line:#c6e8d5;
-  --amber:#b45309;
-  --amber-tint:#fff4e0;
-  --price:#1c1e21;
-  --radius:10px;
-  --shadow:0 1px 2px rgba(0,0,0,.1);
-  --shadow-lg:0 12px 28px rgba(0,0,0,.18);
-  --font:'Inter','Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',sans-serif;
+  --ink:#121316;
+  --muted:#8b8f95;
+  --line:#e9eaec;
+  --hover:#f4f4f5;
+  --icon-bg:#f1f1f2;
+  --green:#121316;          /* primer = hitam (tombol, chip aktif) */
+  --green-2:#000000;
+  --tint:#f4f4f5;
+  --tint-line:#e4e5e7;
+  --amber:#ff8a00;          /* aksen oranye: badge, rating, notifikasi */
+  --amber-tint:#fff4e6;
+  --price:#121316;
+  --radius:16px;
+  --shadow:0 1px 2px rgba(0,0,0,.05);
+  --shadow-lg:0 18px 44px rgba(0,0,0,.13);
+  --font:'Plus Jakarta Sans','Inter','Segoe UI',system-ui,-apple-system,sans-serif;
 }
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6;overflow-x:hidden;font-size:15px}
@@ -44,7 +47,7 @@ h1,h2,h3,h4{line-height:1.25;font-weight:700;letter-spacing:-.01em}
 /* ============ ELEMEN DASAR ============ */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:11px 22px;border-radius:10px;font-weight:600;font-size:14px;
+  padding:11px 22px;border-radius:999px;font-weight:700;font-size:14px;
   border:1px solid var(--line);background:var(--card);color:var(--ink);
   transition:background .15s,border-color .15s,color .15s;
 }
@@ -56,7 +59,7 @@ h1,h2,h3,h4{line-height:1.25;font-weight:700;letter-spacing:-.01em}
 .btn-yellow:hover{border-color:var(--green);color:var(--green);background:var(--card)}
 .btn-mint{background:var(--tint);border-color:var(--tint-line);color:var(--green)}
 .btn-mint:hover{background:#dcecdf;border-color:var(--green)}
-.btn-sm{padding:8px 15px;font-size:13px;border-radius:9px}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:999px}
 .chip{
   display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:999px;
   border:1px solid var(--line);background:var(--card);font-weight:600;font-size:13.5px;
@@ -107,7 +110,7 @@ header{
 .icon-btn:hover{filter:brightness(.94)}
 .icon-btn .count{
   position:absolute;top:3px;right:3px;min-width:17px;height:17px;border-radius:999px;
-  background:var(--green);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;
+  background:var(--amber);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;
   padding:0 4px;
 }
 .ava-btn{
@@ -117,8 +120,8 @@ header{
 }
 .ava-btn:hover{box-shadow:0 0 0 3px var(--tint)}
 .login-btn{
-  padding:9px 20px;border-radius:10px;border:none;background:var(--green);color:#fff;
-  font-weight:600;font-size:13.5px;transition:background .15s;margin-left:4px;
+  padding:9px 22px;border-radius:999px;border:none;background:var(--green);color:#fff;
+  font-weight:700;font-size:13.5px;transition:background .15s;margin-left:4px;
 }
 .login-btn:hover{background:var(--green-2)}
 @media(max-width:680px){.logo .word{display:none}}
@@ -241,7 +244,7 @@ header{
 .filter-bar{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:2px 0}
 .filter-bar .loc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;font-weight:600;color:var(--muted)}
 #filterBtn{flex:none}
-#filterBtn .count{min-width:17px;height:17px;border-radius:999px;background:var(--green);color:#fff;font-size:10.5px;font-weight:700;display:inline-grid;place-items:center;padding:0 4px}
+#filterBtn .count{min-width:17px;height:17px;border-radius:999px;background:var(--amber);color:#fff;font-size:10.5px;font-weight:700;display:inline-grid;place-items:center;padding:0 4px}
 .chip-wrap{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
 
 /* ============ LAYOUT 3 KOLOM (ala Facebook) ============ */
@@ -295,7 +298,7 @@ header{
 }
 .post-head .who{flex:1;min-width:0}
 .post-head .who b{display:flex;align-items:center;gap:5px;font-size:14.5px;flex-wrap:wrap;font-weight:700}
-.verif{color:var(--green);font-size:12px}
+.verif{color:var(--amber);font-size:12px}
 .post-head .who span{font-size:12.5px;color:var(--muted);display:block}
 .post-text{padding:8px 16px 10px}
 .post-price{font-size:19px;font-weight:800;color:var(--price)}
@@ -423,7 +426,7 @@ header{
   display:grid;place-items:center;padding:18px;overflow-y:auto;
 }
 .modal{
-  background:var(--card);border-radius:16px;width:min(540px,100%);
+  background:var(--card);border-radius:20px;width:min(540px,100%);
   box-shadow:var(--shadow-lg);max-height:92vh;overflow-y:auto;position:relative;
   animation:pop .2s ease;margin:auto;
 }
@@ -431,7 +434,7 @@ header{
 .modal-head{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:16px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:5;
-  border-radius:16px 16px 0 0;
+  border-radius:20px 20px 0 0;
 }
 .modal-head h3{font-size:16px}
 .modal-body{padding:20px 22px 24px}
@@ -474,7 +477,7 @@ header{
 /* ============ FORM ============ */
 label.f{display:block;font-size:12.5px;font-weight:600;margin:13px 0 5px;color:var(--ink)}
 input.f,select.f,textarea.f{
-  width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-family:inherit;
+  width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-family:inherit;
   font-size:14px;background:var(--card);color:var(--ink);outline:none;transition:border-color .15s;
 }
 textarea.f{resize:vertical;min-height:76px}
@@ -639,7 +642,7 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
 .seg-tabs button.active{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
 .seg-tabs button .count{
   position:absolute;top:-4px;right:2px;min-width:17px;height:17px;border-radius:999px;
-  background:var(--green);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;
+  background:var(--amber);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;
 }
 
 /* indikator */
@@ -673,6 +676,32 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .photo-prev img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
 .photo-prev .x-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.95)}
 
+/* ============ INTERAKTIVITAS ============ */
+.btn,.chip,.act,.fbact,.icon-btn,.lnav-item,.pay-opt,.login-btn,.ava-btn,.x-btn,.trend-card,.resto-card,.composer .ask{
+  transition:transform .15s ease,box-shadow .2s ease,background .15s ease,border-color .15s ease,color .15s ease,filter .15s ease;
+}
+.btn:active,.chip:active,.fbact:active,.icon-btn:active,.login-btn:active,.act:active,.composer .ask:active{transform:scale(.96)}
+.btn-coral:hover{box-shadow:0 8px 20px rgba(0,0,0,.22)}
+.post{transition:box-shadow .25s ease,transform .25s ease}
+@media(hover:hover){
+  .post:hover{box-shadow:var(--shadow-lg)}
+  .resto-card:hover{transform:translateY(-3px)}
+  .trend-card:hover{transform:translateY(-2px)}
+}
+.post-media img,.pd-media img,.resto-media img{animation:imgIn .45s ease}
+@keyframes imgIn{from{opacity:0;transform:scale(1.015)}to{opacity:1;transform:none}}
+.fbact.liked svg{animation:likePop .4s cubic-bezier(.2,2.2,.4,1)}
+.fbact.faved svg{animation:likePop .4s cubic-bezier(.2,2.2,.4,1)}
+@keyframes likePop{0%{transform:scale(.3)}65%{transform:scale(1.3)}100%{transform:scale(1)}}
+/* skeleton shimmer saat feed dimuat */
+.skel{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);padding-bottom:14px}
+.skel .s{background:linear-gradient(90deg,#ececec 25%,#f8f8f8 50%,#ececec 75%);background-size:200% 100%;animation:shimmer 1.1s infinite;border-radius:8px}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.skel .s-head{width:45%;height:14px;margin:16px 16px 8px}
+.skel .s-line{width:70%;height:12px;margin:0 16px 14px}
+.skel .s-media{height:230px;border-radius:0;margin:0}
+.skel .s-foot{width:88%;height:34px;margin:14px 16px 0;border-radius:999px}
+
 /* ============ MOBILE ============ */
 @media(max-width:680px){
   body{padding-bottom:72px}
@@ -689,7 +718,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   }
   .bn-item .count{
     position:absolute;top:-4px;right:1px;min-width:16px;height:16px;border-radius:999px;
-    background:var(--green);color:#fff;font-size:9.5px;font-weight:700;display:grid;place-items:center;padding:0 4px;
+    background:var(--amber);color:#fff;font-size:9.5px;font-weight:700;display:grid;place-items:center;padding:0 4px;
   }
   .bn-sell{
     width:48px;height:48px;border-radius:50%;background:var(--green);border:none;
@@ -1553,7 +1582,10 @@ function perks(p){
 let searchTimer = null;
 function searchInput(){ clearTimeout(searchTimer); searchTimer = setTimeout(loadFeed, 280); }
 
+const SKEL = `<article class="skel"><div class="s s-head"></div><div class="s s-line"></div><div class="s s-media"></div><div class="s s-foot"></div></article>`;
 async function loadFeed(){
+  const feedEl = document.getElementById('feed');
+  if (!products.length && !feedEl.children.length) feedEl.innerHTML = SKEL + SKEL;
   const q = document.getElementById('searchInput').value.trim();
   const params = new URLSearchParams();
   if (activeCat !== 'all') params.set('cat', activeCat);
