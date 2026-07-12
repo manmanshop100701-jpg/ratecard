@@ -147,83 +147,6 @@ header{
 }
 .composer .cam:hover{background:var(--hover)}
 
-/* ============ STORIES (kartu penjual aktif ala FB) ============ */
-.stories{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;margin-bottom:16px}
-.stories::-webkit-scrollbar{display:none}
-.story{
-  flex:none;width:105px;height:170px;border-radius:12px;overflow:hidden;position:relative;
-  cursor:pointer;box-shadow:var(--shadow);border:none;padding:0;text-align:left;
-  transition:transform .15s;
-}
-.story:hover{transform:scale(1.02)}
-.story .ring{
-  position:absolute;left:9px;top:9px;width:42px;height:42px;border-radius:50%;
-  border:3.5px solid var(--green);background:var(--card);padding:2px;z-index:2;
-}
-.story .ava{
-  width:100%;height:100%;border-radius:50%;background:var(--tint);color:var(--green);
-  display:grid;place-items:center;font-weight:700;font-size:15px;
-}
-.story .letter{position:absolute;inset:0;display:grid;place-items:center;font-size:40px}
-.story::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.02) 55%,rgba(0,0,0,.42))}
-.story span{
-  position:absolute;left:9px;right:9px;bottom:8px;z-index:2;font-size:12px;font-weight:700;color:#fff;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.5);
-}
-
-/* ============ STORY VIEWER (layar penuh ala FB) ============ */
-.overlay.story-ov{background:rgba(0,0,0,.93)}
-.sv{
-  position:relative;width:min(430px,94vw);height:min(86vh,760px);border-radius:16px;
-  overflow:hidden;background:#15181c;animation:pop .2s ease;
-}
-.sv-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#15181c}
-.sv-letter{position:absolute;inset:0;display:grid;place-items:center;font-size:110px}
-.sv-shade{
-  position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:linear-gradient(180deg,rgba(0,0,0,.5),transparent 22%,transparent 58%,rgba(0,0,0,.72));
-}
-.sv-nav{position:absolute;top:70px;bottom:96px;width:50%;z-index:2;border:none;background:transparent;cursor:pointer}
-.sv-nav.left{left:0}.sv-nav.right{right:0}
-.sv-top{position:absolute;left:0;right:0;top:0;z-index:3;padding:11px 13px 0}
-.sv-bars{display:flex;gap:4px}
-.sv-bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.32)}
-.sv-bars i.done{background:#fff}
-.sv-bars i.now{background:#fff;animation:pulse 1.6s infinite}
-.sv-head{display:flex;align-items:center;gap:9px;margin-top:11px;color:#fff}
-.sv-head .ava{
-  width:37px;height:37px;border-radius:50%;display:grid;place-items:center;flex:none;
-  color:var(--green);font-weight:700;font-size:15px;
-}
-.sv-head b{font-size:13.5px;display:block;line-height:1.3}
-.sv-head small{font-size:11.5px;color:rgba(255,255,255,.75);display:block}
-.sv-x{
-  margin-left:auto;width:33px;height:33px;border-radius:50%;border:none;flex:none;
-  background:rgba(255,255,255,.16);color:#fff;font-size:14px;display:grid;place-items:center;
-}
-.sv-cap{position:absolute;left:0;right:0;bottom:82px;z-index:3;padding:0 18px;color:#fff;pointer-events:none}
-.sv-cap b{font-size:17.5px;display:block;text-shadow:0 1px 6px rgba(0,0,0,.5)}
-.sv-cap span{font-size:15px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5)}
-.sv-foot{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;gap:9px;padding:13px 15px}
-.sv-foot .btn{flex:1;border:none}
-.sv-foot .btn-ghost{background:rgba(255,255,255,.93);color:var(--ink)}
-
-/* ============ AVATAR FOTO & GALERI ============ */
-.ava img,.ava-btn img,.sv-head .ava img,.story .ava img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.post-head .ava,.composer .ava,.chat-list-row .ava,.seller-row .ava,.sv-head .ava,.story .ava{overflow:hidden}
-.ava-btn{overflow:hidden;padding:0}
-.pf-ava{width:78px;height:78px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--tint);color:var(--green);font-weight:800;font-size:30px;margin:0 auto 8px}
-.pf-ava img{width:100%;height:100%;object-fit:cover}
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.photo-grid .ph{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.photo-grid .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.photo-grid .ph .x-btn{position:absolute;top:4px;right:4px;width:24px;height:24px;font-size:11px;background:rgba(255,255,255,.95)}
-.photo-grid .add{display:grid;place-items:center;cursor:pointer;background:var(--bg);border:1px dashed #c9ced4;color:var(--muted);font-size:24px;border-radius:10px;aspect-ratio:1/1}
-.imgs-count{position:absolute;left:12px;bottom:10px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:3px 9px;font-weight:600;font-size:11.5px}
-.pd-thumbs{display:flex;gap:7px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none}
-.pd-thumbs img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer;flex:none}
-.pd-thumbs img.on{border-color:var(--green)}
-
 /* ============ KATEGORI + RADIUS ============ */
 .cat-bar{
   position:sticky;top:56px;z-index:80;background:rgba(255,255,255,.96);
@@ -674,22 +597,23 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 
 /* ============ LAYOUT TOKO (ala referensi Stuffsus) ============ */
 .top-nav{display:flex;gap:4px;margin:0 auto}
-.top-nav button{border:none;background:transparent;font:inherit;font-weight:600;font-size:14px;color:var(--muted);padding:8px 14px;border-radius:999px;transition:all .15s}
+.top-nav button{border:none;background:transparent;font:inherit;font-weight:600;font-size:13.5px;color:var(--muted);padding:8px 14px;border-radius:999px;transition:all .15s}
 .top-nav button:hover{color:var(--ink);background:var(--hover)}
 .top-nav button.on{color:var(--ink);font-weight:800}
-.hero{position:relative;border-radius:18px;overflow:hidden;height:230px;background:#d9d9d9;margin-bottom:18px}
-.hero img{width:100%;height:100%;object-fit:cover;display:block}
-.hero-word{
-  position:absolute;inset:0;display:grid;place-items:center;color:#fff;
-  font-size:clamp(64px,14vw,150px);font-weight:800;letter-spacing:-.04em;
-  mix-blend-mode:overlay;opacity:.95;pointer-events:none;
+.hero{position:relative;border-radius:16px;overflow:hidden;height:168px;background:linear-gradient(120deg,#191a1d,#3a3d42);margin-bottom:14px}
+.hero img{width:100%;height:100%;object-fit:cover;display:block;opacity:.55}
+.hero-text{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;text-align:center;pointer-events:none;padding:0 14px;
 }
-.shop-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
-.shop-head h2{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.hw-big{font-size:clamp(30px,6vw,54px);font-weight:800;letter-spacing:-.03em;text-shadow:0 2px 18px rgba(0,0,0,.4)}
+.hw-sub{font-size:clamp(12px,2vw,15.5px);font-weight:600;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-top:4px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.shop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.shop-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
 .shop-search{max-width:360px;flex:1;min-width:230px;background:var(--card);border:1px solid var(--line)}
 .go-cta{border:none;background:var(--ink);color:#fff;border-radius:999px;padding:8px 20px;font:inherit;font-weight:700;font-size:13px;flex:none}
 .shop-grid{display:grid;grid-template-columns:225px minmax(0,1fr);gap:24px;align-items:start}
-@media(max-width:900px){.shop-grid{grid-template-columns:minmax(0,1fr)}.filter-side{display:none}.hero{height:150px}}
+@media(max-width:900px){.shop-grid{grid-template-columns:minmax(0,1fr)}.filter-side{display:none}.hero{height:118px}}
 .filter-side{position:sticky;top:110px}
 .filter-side h4{font-size:14.5px;font-weight:800;margin-bottom:8px}
 .fs-item{
@@ -703,29 +627,29 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .fs-item svg{width:15px;height:15px;flex:none}
 
 /* kartu produk grid (ala referensi) */
-.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
-@media(max-width:680px){.feed{grid-template-columns:repeat(2,1fr);gap:11px}}
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:13px}
+@media(max-width:680px){.feed{grid-template-columns:repeat(2,1fr);gap:9px}}
 .pcard{display:flex;flex-direction:column;cursor:pointer}
 .pcard-media{
   position:relative;aspect-ratio:1/1;background:var(--tint);border-radius:14px;overflow:hidden;
-  display:grid;place-items:center;margin-bottom:10px;transition:transform .2s;
+  display:grid;place-items:center;margin-bottom:7px;transition:transform .2s;
 }
 @media(hover:hover){.pcard:hover .pcard-media{transform:translateY(-3px)}}
 .pcard-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pcard-media .cat-pill{
-  position:absolute;top:9px;right:9px;background:#fff;border-radius:999px;padding:4px 11px;
-  font-size:10.5px;font-weight:700;color:var(--muted);box-shadow:var(--shadow);
+  position:absolute;top:7px;right:7px;background:#fff;border-radius:999px;padding:3px 9px;
+  font-size:9.5px;font-weight:700;color:var(--muted);box-shadow:var(--shadow);
 }
 .pcard-media .n-pill{position:absolute;left:9px;bottom:9px;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:700}
 .pcard-row{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.pcard-name{font-size:13.5px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.pcard-price{font-size:13.5px;font-weight:800;flex:none}
-.pcard-rate{font-size:11.5px;color:var(--muted);margin:3px 0 1px}
+.pcard-name{font-size:12px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pcard-price{font-size:12px;font-weight:800;flex:none}
+.pcard-rate{font-size:10.5px;color:var(--muted);margin:2px 0 1px}
 .pcard-rate .st{color:var(--amber);font-weight:800}
-.pcard-seller{font-size:11.5px;color:var(--muted);margin-bottom:9px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pcard-seller{font-size:10.5px;color:var(--muted);margin-bottom:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .pcard-btns{display:flex;gap:7px;margin-top:auto}
 .pcard-btns button{
-  flex:1;border-radius:999px;font:inherit;font-weight:700;font-size:12px;padding:8px 4px;
+  flex:1;border-radius:999px;font:inherit;font-weight:700;font-size:11px;padding:7px 4px;
   transition:all .15s;cursor:pointer;
 }
 .pb-out{background:var(--card);border:1px solid var(--line);color:var(--ink)}
@@ -736,27 +660,27 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .pb-dark:disabled{opacity:.4}
 
 /* rekomendasi horizontal + panah */
-.reko{margin-top:34px}
+.reko{margin-top:26px}
 .reko-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.reko-head h2{font-size:21px;font-weight:800;letter-spacing:-.02em}
-.rk-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;transition:all .15s;margin-left:6px}
+.reko-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.rk-btn{width:31px;height:31px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;transition:all .15s;margin-left:6px}
 .rk-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
 .reko-row{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding-bottom:4px}
 .reko-row::-webkit-scrollbar{display:none}
-.reko-row .pcard{flex:none;width:200px}
+.reko-row .pcard{flex:none;width:158px}
 
 /* banner CTA gelap */
 .cta-banner{
-  margin-top:34px;background:var(--ink);color:#fff;border-radius:20px;padding:30px 32px;
+  margin-top:26px;background:var(--ink);color:#fff;border-radius:16px;padding:20px 24px;
   display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
 }
-.cta-banner h2{font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff}
+.cta-banner h2{font-size:18px;font-weight:800;letter-spacing:-.02em;color:#fff}
 .cta-banner p{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px;max-width:420px}
-.cta-btn{border:none;background:#fff;color:var(--ink);border-radius:999px;padding:12px 26px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:transform .15s}
+.cta-btn{border:none;background:#fff;color:var(--ink);border-radius:999px;padding:10px 20px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:transform .15s}
 .cta-btn:active{transform:scale(.96)}
 
 /* footer */
-.foot{margin-top:34px;border-top:1px solid var(--line);padding:26px 4px 10px}
+.foot{margin-top:26px;border-top:1px solid var(--line);padding:26px 4px 10px}
 .foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:560px}
 .foot b{font-size:13.5px;display:block;margin-bottom:10px}
 .foot a,.foot span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;cursor:pointer}
@@ -765,9 +689,6 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .foot-bot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:18px;padding-top:14px;font-size:11.5px;color:var(--muted)}
 
 /* stories versi kecil monokrom */
-.stories{margin-bottom:20px}
-.story{width:92px;height:130px;border-radius:14px}
-
 /* ============ INTERAKTIVITAS ============ */
 .btn,.chip,.act,.fbact,.icon-btn,.lnav-item,.pay-opt,.login-btn,.ava-btn,.x-btn,.trend-card,.resto-card,.composer .ask{
   transition:transform .15s ease,box-shadow .2s ease,background .15s ease,border-color .15s ease,color .15s ease,filter .15s ease;
@@ -826,8 +747,6 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   .main-grid{padding:12px 0 84px;gap:12px}
   .composer{padding:10px 12px;margin-bottom:12px}
   .composer .cam span{display:none}
-  .stories{margin-bottom:12px}
-  .story{width:92px;height:150px}
   .feed{gap:12px}
   .post-price{font-size:17px}
   .fbact{font-size:12.5px;gap:5px;padding:8px 2px}
@@ -898,7 +817,10 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
     <div id="view-feed">
       <div class="hero">
         <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=60" alt="" onerror="this.remove()">
-        <span class="hero-word">Belanja</span>
+        <div class="hero-text">
+          <span class="hw-big">Lebak Market.</span>
+          <span class="hw-sub">Marketplacena Urang Lebak</span>
+        </div>
       </div>
       <div class="shop-head">
         <h2>Semua Kebutuhan Warga Lebak</h2>
@@ -907,7 +829,6 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
           <button class="go-cta" onclick="loadFeed()">Cari</button>
         </div>
       </div>
-      <div class="stories" id="stories"></div>
       <div class="shop-grid">
         <aside class="filter-side">
           <h4>Kategori</h4>
@@ -1442,7 +1363,10 @@ function cropSquareImage(file, size = 384){
       const sq = Math.min(img.width, img.height);
       const c = document.createElement('canvas');
       c.width = c.height = size;
-      c.getContext('2d').drawImage(img, (img.width - sq) / 2, (img.height - sq) / 2, sq, sq, 0, 0, size, size);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, (img.width - sq) / 2, (img.height - sq) / 2, sq, sq, 0, 0, size, size);
       URL.revokeObjectURL(img.src);
       resolve(c.toDataURL('image/jpeg', 0.85));
     };
@@ -1607,66 +1531,6 @@ function resetFilter(){ activeCat = 'all'; radiusKm = Infinity; renderCats(); lo
 function setCat(id){ activeCat = id; renderCats(); loadFeed(); refreshFilterModal(); }
 function setRadius(v){ radiusKm = v; renderCats(); loadFeed(); refreshFilterModal(); }
 
-function renderStories(){
-  const el = document.getElementById('stories');
-  const sellers = [...new Map(products.map(p => [p.seller_id, p])).values()].slice(0, 10);
-  if (!sellers.length){ el.innerHTML = ''; el.style.display = 'none'; return; }
-  el.style.display = '';
-  el.innerHTML = sellers.map(p => `
-    <button class="story ${p.g}" title="Lihat story ${esc(p.seller_name)}" onclick="openStory(${p.seller_id})">
-      ${p.img ? `<img src="${esc(p.img)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : `<span class="letter">${initOf(p.seller_name)}</span>`}
-      <span class="ring"><span class="ava" style="background:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span></span>
-      <span>${esc(p.seller_name)}</span>
-    </button>`).join('');
-}
-
-/* ---------- STORY VIEWER (jualan penjual sebagai story ala FB) ---------- */
-let storyState = null, storyTimer = null;
-function endStory(){ clearTimeout(storyTimer); storyState = null; }
-function openStory(sellerId){
-  const items = products.filter(p => p.seller_id === sellerId);
-  if (!items.length) return toast('Penjual ini belum punya postingan tayang');
-  storyState = { items, idx: 0 };
-  renderStoryView();
-}
-function storyNav(d){
-  if (!storyState) return;
-  const next = storyState.idx + d;
-  if (next < 0) { renderStoryView(); return; }
-  if (next >= storyState.items.length) return closeModal();
-  storyState.idx = next;
-  renderStoryView();
-}
-function renderStoryView(){
-  clearTimeout(storyTimer);
-  const { items, idx } = storyState;
-  const p = items[idx];
-  const mine = user && p.seller_id === user.id;
-  document.getElementById('modalRoot').innerHTML = `
-  <div class="overlay story-ov" onclick="if(event.target===this)closeModal()">
-    <div class="sv ${p.img ? '' : p.g}">
-      ${p.img ? `<img class="sv-img" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter sv-letter">${initOf(p.name)}</span>`}
-      <div class="sv-shade"></div>
-      <button class="sv-nav left" onclick="storyNav(-1)" aria-label="Sebelumnya"></button>
-      <button class="sv-nav right" onclick="storyNav(1)" aria-label="Berikutnya"></button>
-      <div class="sv-top">
-        <div class="sv-bars">${items.map((_, i) => `<i class="${i < idx ? 'done' : i === idx ? 'now' : ''}"></i>`).join('')}</div>
-        <div class="sv-head">
-          <span class="ava" style="background:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span>
-          <div><b>${esc(p.seller_name)} <span class="verif">✓</span></b><small>${esc(p.seller_kec)} · ${km(p.dist)} · ${ago(p.created_at)}</small></div>
-          <button class="sv-x" onclick="closeModal()">✕</button>
-        </div>
-      </div>
-      <div class="sv-cap"><b>${esc(p.name)}</b><span>${rupiah(p.price)}${p.stock <= 0 ? ' · HABIS' : ''}</span></div>
-      <div class="sv-foot">
-        <button class="btn btn-coral" onclick="endStory();openProduct(${p.id})">Lihat Produk</button>
-        ${mine ? '' : `<button class="btn btn-ghost" onclick="endStory();openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat</button>`}
-      </div>
-    </div>
-  </div>`;
-  storyTimer = setTimeout(() => storyNav(1), 5000); // auto-lanjut ala FB
-}
-
 /* ---------- FEED ---------- */
 /* jasa = pengerjaan online: tanpa ongkir, tanpa COD/driver */
 const isJasaP = p => p.cat === 'jasa' || p.dist === 0;
@@ -1706,7 +1570,7 @@ async function loadFeed(){
       try { p.imgs = p.imgs ? JSON.parse(p.imgs) : (p.img ? [p.img] : []); }
       catch { p.imgs = p.img ? [p.img] : []; }
     });
-    renderFeed(); renderStories(); renderTrending(); renderSideFilter();
+    renderFeed(); renderTrending(); renderSideFilter();
   } catch (e) {
     document.getElementById('feed').innerHTML =
       `<div class="empty-feed"><h3>Backend belum jalan</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)}</p></div>`;
@@ -1887,7 +1751,6 @@ function openFavs(){
 function closeModal(){
   openThread = null;
   clearInterval(chatPoll); chatPoll = null;
-  clearTimeout(storyTimer); storyState = null;
   document.getElementById('modalRoot').innerHTML = '';
 }
 
@@ -2521,7 +2384,10 @@ function compressImage(file){
       const c = document.createElement('canvas');
       c.width = Math.round(img.width * scale);
       c.height = Math.round(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; // PNG transparan (screenshot) → tanpa ini jadi hitam saat ke JPEG
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
       URL.revokeObjectURL(img.src);
       resolve(c.toDataURL('image/jpeg', 0.72));
     };
