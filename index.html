@@ -229,6 +229,8 @@ header{
   position:sticky;top:56px;z-index:80;background:rgba(255,255,255,.96);
   backdrop-filter:blur(8px);padding:9px 0 8px;border-bottom:1px solid var(--line);
 }
+@media(min-width:901px){.cat-bar .filter-bar #filterBtn{display:none}}
+
 .cat-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:1px 2px}
 .cat-scroll::-webkit-scrollbar{display:none}
 .radius-row{
@@ -248,10 +250,7 @@ header{
 .chip-wrap{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
 
 /* ============ LAYOUT 3 KOLOM (ala Facebook) ============ */
-.main-grid{
-  display:grid;grid-template-columns:270px minmax(0,1fr) 300px;gap:20px;
-  padding:16px 0 90px;align-items:start;max-width:1180px;margin:0 auto;
-}
+.main-grid{display:block;padding:18px 0 90px;max-width:1180px;margin:0 auto}
 
 /* menu kiri */
 .lnav{position:sticky;top:152px;display:flex;flex-direction:column;gap:2px}
@@ -284,9 +283,6 @@ header{
 .trend-card span{font-size:11.5px;color:var(--muted);white-space:nowrap}
 .trend-card>div{min-width:0;flex:1}
 
-/* responsif: sembunyikan sidebar bertahap (harus SETELAH definisi di atas) */
-@media(max-width:1080px){.main-grid{grid-template-columns:250px minmax(0,1fr)}.rightbar{display:none}}
-@media(max-width:860px){.main-grid{grid-template-columns:minmax(0,1fr)}.lnav{display:none}}
 
 /* ============ FEED POST (kartu ala Facebook) ============ */
 .feed{display:flex;flex-direction:column;gap:16px}
@@ -676,6 +672,102 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .photo-prev img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
 .photo-prev .x-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.95)}
 
+/* ============ LAYOUT TOKO (ala referensi Stuffsus) ============ */
+.top-nav{display:flex;gap:4px;margin:0 auto}
+.top-nav button{border:none;background:transparent;font:inherit;font-weight:600;font-size:14px;color:var(--muted);padding:8px 14px;border-radius:999px;transition:all .15s}
+.top-nav button:hover{color:var(--ink);background:var(--hover)}
+.top-nav button.on{color:var(--ink);font-weight:800}
+.hero{position:relative;border-radius:18px;overflow:hidden;height:230px;background:#d9d9d9;margin-bottom:18px}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-word{
+  position:absolute;inset:0;display:grid;place-items:center;color:#fff;
+  font-size:clamp(64px,14vw,150px);font-weight:800;letter-spacing:-.04em;
+  mix-blend-mode:overlay;opacity:.95;pointer-events:none;
+}
+.shop-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.shop-head h2{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.shop-search{max-width:360px;flex:1;min-width:230px;background:var(--card);border:1px solid var(--line)}
+.go-cta{border:none;background:var(--ink);color:#fff;border-radius:999px;padding:8px 20px;font:inherit;font-weight:700;font-size:13px;flex:none}
+.shop-grid{display:grid;grid-template-columns:225px minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:900px){.shop-grid{grid-template-columns:minmax(0,1fr)}.filter-side{display:none}.hero{height:150px}}
+.filter-side{position:sticky;top:110px}
+.filter-side h4{font-size:14.5px;font-weight:800;margin-bottom:8px}
+.fs-item{
+  display:flex;align-items:center;gap:9px;width:100%;border:none;background:transparent;
+  font:inherit;font-weight:600;font-size:13.5px;color:var(--muted);padding:8px 12px;
+  border-radius:10px;text-align:left;transition:all .13s;
+}
+.fs-item:hover{background:var(--hover);color:var(--ink)}
+.fs-item.on{background:var(--tint);color:var(--ink);font-weight:700}
+.fs-item .fc{margin-left:auto;background:var(--amber);color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;min-width:20px;height:18px;display:grid;place-items:center;padding:0 6px}
+.fs-item svg{width:15px;height:15px;flex:none}
+
+/* kartu produk grid (ala referensi) */
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
+@media(max-width:680px){.feed{grid-template-columns:repeat(2,1fr);gap:11px}}
+.pcard{display:flex;flex-direction:column;cursor:pointer}
+.pcard-media{
+  position:relative;aspect-ratio:1/1;background:var(--tint);border-radius:14px;overflow:hidden;
+  display:grid;place-items:center;margin-bottom:10px;transition:transform .2s;
+}
+@media(hover:hover){.pcard:hover .pcard-media{transform:translateY(-3px)}}
+.pcard-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pcard-media .cat-pill{
+  position:absolute;top:9px;right:9px;background:#fff;border-radius:999px;padding:4px 11px;
+  font-size:10.5px;font-weight:700;color:var(--muted);box-shadow:var(--shadow);
+}
+.pcard-media .n-pill{position:absolute;left:9px;bottom:9px;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:700}
+.pcard-row{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.pcard-name{font-size:13.5px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pcard-price{font-size:13.5px;font-weight:800;flex:none}
+.pcard-rate{font-size:11.5px;color:var(--muted);margin:3px 0 1px}
+.pcard-rate .st{color:var(--amber);font-weight:800}
+.pcard-seller{font-size:11.5px;color:var(--muted);margin-bottom:9px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pcard-btns{display:flex;gap:7px;margin-top:auto}
+.pcard-btns button{
+  flex:1;border-radius:999px;font:inherit;font-weight:700;font-size:12px;padding:8px 4px;
+  transition:all .15s;cursor:pointer;
+}
+.pb-out{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.pb-out:hover{border-color:var(--ink)}
+.pb-out.on{background:var(--amber-tint);border-color:var(--amber);color:var(--amber)}
+.pb-dark{background:var(--ink);border:1px solid var(--ink);color:#fff}
+.pb-dark:hover{background:#000}
+.pb-dark:disabled{opacity:.4}
+
+/* rekomendasi horizontal + panah */
+.reko{margin-top:34px}
+.reko-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.reko-head h2{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.rk-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;transition:all .15s;margin-left:6px}
+.rk-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.reko-row{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding-bottom:4px}
+.reko-row::-webkit-scrollbar{display:none}
+.reko-row .pcard{flex:none;width:200px}
+
+/* banner CTA gelap */
+.cta-banner{
+  margin-top:34px;background:var(--ink);color:#fff;border-radius:20px;padding:30px 32px;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+}
+.cta-banner h2{font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff}
+.cta-banner p{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px;max-width:420px}
+.cta-btn{border:none;background:#fff;color:var(--ink);border-radius:999px;padding:12px 26px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:transform .15s}
+.cta-btn:active{transform:scale(.96)}
+
+/* footer */
+.foot{margin-top:34px;border-top:1px solid var(--line);padding:26px 4px 10px}
+.foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:560px}
+.foot b{font-size:13.5px;display:block;margin-bottom:10px}
+.foot a,.foot span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;cursor:pointer}
+.foot a:hover{color:var(--ink)}
+.foot span{cursor:default}
+.foot-bot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:18px;padding-top:14px;font-size:11.5px;color:var(--muted)}
+
+/* stories versi kecil monokrom */
+.stories{margin-bottom:20px}
+.story{width:92px;height:130px;border-radius:14px}
+
 /* ============ INTERAKTIVITAS ============ */
 .btn,.chip,.act,.fbact,.icon-btn,.lnav-item,.pay-opt,.login-btn,.ava-btn,.x-btn,.trend-card,.resto-card,.composer .ask{
   transition:transform .15s ease,box-shadow .2s ease,background .15s ease,border-color .15s ease,color .15s ease,filter .15s ease;
@@ -763,15 +855,14 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <span class="mark">L</span>
       <span class="word">Lebak<em>.</em>market</span>
     </a>
-    <div class="search">
-      <input id="searchInput" type="text" placeholder="Cari barang, jasa, atau penjual di Lebak...">
-      <button class="go" onclick="loadFeed()" title="Cari">
-        <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      </button>
-    </div>
+    <nav class="top-nav hide-mobile">
+      <button id="tn-feed" class="on" onclick="showView('feed')">Beranda</button>
+      <button id="tn-kuliner" onclick="showView('kuliner')">Jelajah</button>
+      <button id="tn-orders" onclick="showView('orders')">Transaksi</button>
+    </nav>
     <div class="head-actions">
-      <button class="icon-btn hide-mobile" onclick="showView('kuliner')" title="Kuliner Lebak">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg>
+      <button class="icon-btn hide-mobile" onclick="showView('feed');setTimeout(()=>document.getElementById('searchInput').focus(),150)" title="Cari">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
       <button class="icon-btn hide-mobile" onclick="openChatList()" title="Chat">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg>
@@ -801,54 +892,71 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
   </div>
 </div>
 
-<!-- ============ MAIN: 3 KOLOM ALA FACEBOOK ============ -->
+<!-- ============ MAIN: LAYOUT TOKO (ala referensi) ============ -->
 <div class="wrap main-grid">
-  <!-- MENU KIRI (desktop) -->
-  <aside class="lnav">
-    <button class="lnav-item" id="ln-feed" onclick="showView('feed')">
-      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>
-      Beranda
-    </button>
-    <button class="lnav-item" id="ln-kuliner" onclick="setJelajah('kuliner')">
-      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a2 2 0 0 0 4 0V3"/><path d="M6 12v9"/><path d="M18 3a3 3 0 0 1 3 3v5h-5V6a3 3 0 0 1 2-3z"/><path d="M18 11v10"/></svg></span>
-      Kuliner Sekitarmu
-    </button>
-    <button class="lnav-item" onclick="setJelajah('wisata')">
-      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg></span>
-      Wisata Lebak
-    </button>
-    <button class="lnav-item" id="ln-orders" onclick="showView('orders')">
-      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
-      Transaksi Saya
-    </button>
-    <button class="lnav-item" onclick="openChatList()">
-      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.7-.9L3 20l1-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg></span>
-      Chat
-    </button>
-    <button class="lnav-item" onclick="openFavs()">
-      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></span>
-      Favorit
-    </button>
-    <button class="lnav-item" onclick="openInfoBiaya()">
-      <span class="lic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg></span>
-      Biaya &amp; Komisi
-    </button>
-    <button class="btn btn-coral" onclick="openSell()">+ Jual Barang</button>
-    <div class="lnav-foot">© Lebak.market — marketplace warga Kabupaten Lebak</div>
-  </aside>
-
   <main>
     <div id="view-feed">
-      <div class="composer" id="composer">
-        <span class="ava" id="composerAva">?</span>
-        <button class="ask" onclick="openSell()" id="composerAsk">Mau jual apa hari ini?</button>
-        <button class="cam" onclick="openSell()">
-          <svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <span>Foto</span>
-        </button>
+      <div class="hero">
+        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=60" alt="" onerror="this.remove()">
+        <span class="hero-word">Belanja</span>
+      </div>
+      <div class="shop-head">
+        <h2>Semua Kebutuhan Warga Lebak</h2>
+        <div class="search shop-search">
+          <input id="searchInput" type="text" placeholder="Cari di Lebak.market...">
+          <button class="go-cta" onclick="loadFeed()">Cari</button>
+        </div>
       </div>
       <div class="stories" id="stories"></div>
-      <div class="feed" id="feed"></div>
+      <div class="shop-grid">
+        <aside class="filter-side">
+          <h4>Kategori</h4>
+          <div id="sideCats"></div>
+          <h4 style="margin-top:18px">Radius</h4>
+          <div id="sideRadius"></div>
+          <button class="btn btn-sm" style="width:100%;margin-top:16px" onclick="openLocPicker()">Atur Lokasi</button>
+        </aside>
+        <div class="shop-main">
+          <div class="feed" id="feed"></div>
+          <section id="trendWrap" class="reko hidden">
+            <div class="reko-head">
+              <h2>Rekomendasi untukmu</h2>
+              <div class="reko-nav">
+                <button class="rk-btn" onclick="rekoScroll(-1)" aria-label="Sebelumnya">←</button>
+                <button class="rk-btn" onclick="rekoScroll(1)" aria-label="Berikutnya">→</button>
+              </div>
+            </div>
+            <div class="reko-row" id="trending"></div>
+          </section>
+          <div class="cta-banner">
+            <div>
+              <h2>Siap Jualan di Lebak.market?</h2>
+              <p>Gratis posting, jangkau warga se-Kabupaten Lebak — dana aman lewat rekber.</p>
+            </div>
+            <button class="cta-btn" onclick="openSell()">+ Mulai Jualan</button>
+          </div>
+          <footer class="foot">
+            <div class="foot-grid">
+              <div>
+                <b>Tentang</b>
+                <a onclick="openInfoBiaya()">Biaya &amp; Komisi</a>
+                <a onclick="setJelajah('kuliner')">Kuliner Sekitar</a>
+                <a onclick="setJelajah('wisata')">Wisata Lebak</a>
+              </div>
+              <div>
+                <b>Belanja Aman</b>
+                <span>Dana ditahan rekber sampai barang sesuai</span>
+                <span>COD di tempat ramai, cek dulu baru bayar</span>
+                <span>Bermasalah? Komplain — dana tertahan</span>
+              </div>
+            </div>
+            <div class="foot-bot">
+              <span>© 2026 Lebak.market. All Rights Reserved.</span>
+              <span>Marketplace warga Kabupaten Lebak</span>
+            </div>
+          </footer>
+        </div>
+      </div>
     </div>
     <div id="view-orders" class="hidden">
       <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
@@ -862,32 +970,13 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       <h2 id="jelajahTitle" style="margin-bottom:6px">Jelajah Lebak</h2>
       <p id="jelajahDesc" style="color:var(--muted);font-size:14px;margin-bottom:14px"></p>
       <div class="seg-tabs" style="max-width:340px">
-        <button id="jt-kuliner" onclick="setJelajah('kuliner')">🍜 Kuliner Sekitar</button>
-        <button id="jt-wisata" onclick="setJelajah('wisata')">🏝 Wisata Lebak</button>
+        <button id="jt-kuliner" onclick="setJelajah('kuliner')">Kuliner Sekitar</button>
+        <button id="jt-wisata" onclick="setJelajah('wisata')">Wisata Lebak</button>
       </div>
       <div id="wisataChips" class="view-tabs hidden" style="margin-bottom:14px"></div>
       <div class="resto-grid" id="restoGrid"></div>
     </div>
   </main>
-
-  <!-- SIDEBAR KANAN (desktop) -->
-  <aside class="rightbar">
-    <div class="side-card hidden" id="trendWrap">
-      <h3>Lagi banyak dicari</h3>
-      <div id="trending"></div>
-    </div>
-    <div class="side-card">
-      <h3>Cara kerja rekber</h3>
-      <div class="how-step"><span class="n">1</span><span>Bayar → dana <b>ditahan sistem</b> (rekber)</span></div>
-      <div class="how-step"><span class="n">2</span><span>Penjual kirim / driver antar / COD ketemuan</span></div>
-      <div class="how-step"><span class="n">3</span><span>Cek barang → konfirmasi → dana cair</span></div>
-      <div class="how-step"><span class="n">4</span><span>Bermasalah? Komplain — dana tertahan</span></div>
-    </div>
-    <div class="side-card">
-      <h3>Penjual Lokal</h3>
-      <p style="font-size:13px;color:var(--muted)">Penjual terdekat diprioritaskan di feed — jarak dihitung dari lokasimu.</p>
-    </div>
-  </aside>
 </div>
 
 <button class="fab" onclick="openSell()">
@@ -1455,8 +1544,8 @@ async function openInfoBiaya(){
 function showView(v){
   ['feed','orders','kuliner'].forEach(x => {
     document.getElementById('view-'+x).classList.toggle('hidden', v !== x);
-    const ln = document.getElementById('ln-'+x);
-    if (ln) ln.classList.toggle('on', v === x);
+    const tn = document.getElementById('tn-'+x);
+    if (tn) tn.classList.toggle('on', v === x);
   });
   document.getElementById('catBar').style.display = v === 'feed' ? '' : 'none';
   if (v === 'orders') renderOrders();
@@ -1470,6 +1559,24 @@ function renderCats(){
   const n = (activeCat !== 'all' ? 1 : 0) + (radiusKm !== Infinity ? 1 : 0);
   const el = document.getElementById('filterCount');
   el.textContent = n; el.classList.toggle('hidden', !n);
+  renderSideFilter();
+}
+/* sidebar kategori + radius (desktop, ala referensi) */
+function renderSideFilter(){
+  const sc = document.getElementById('sideCats');
+  if (!sc) return;
+  sc.innerHTML = CATS.map(c => {
+    const count = c.id === 'all' ? products.length : products.filter(p => p.cat === c.id).length;
+    return `<button class="fs-item ${activeCat === c.id ? 'on' : ''}" onclick="setCat('${c.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/></svg>
+      ${c.label}${activeCat === c.id && count ? `<span class="fc">${count}</span>` : ''}
+    </button>`;
+  }).join('');
+  document.getElementById('sideRadius').innerHTML = RADII.map(r =>
+    `<button class="fs-item ${radiusKm === r.v ? 'on' : ''}" onclick="setRadius(${r.v === Infinity ? 'Infinity' : r.v})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/></svg>
+      ${r.l}
+    </button>`).join('');
 }
 /* Filter terpadu: kategori + radius + lokasi dalam satu tempat */
 function openFilter(){
@@ -1599,7 +1706,7 @@ async function loadFeed(){
       try { p.imgs = p.imgs ? JSON.parse(p.imgs) : (p.img ? [p.img] : []); }
       catch { p.imgs = p.img ? [p.img] : []; }
     });
-    renderFeed(); renderStories(); renderTrending();
+    renderFeed(); renderStories(); renderTrending(); renderSideFilter();
   } catch (e) {
     document.getElementById('feed').innerHTML =
       `<div class="empty-feed"><h3>Backend belum jalan</h3><p style="color:var(--muted);font-size:14px">${esc(e.message)}</p></div>`;
@@ -1618,56 +1725,31 @@ function renderFeed(){
         </div>`;
     return;
   }
-  feed.innerHTML = products.map(p => {
-    const mine = user && p.seller_id === user.id;
-    const faved = favs.has(p.id);
-    const out = p.stock <= 0;
-    return `
-    <article class="post">
-      <div class="post-head">
-        <span class="ava" style="--ac:${acOf(p.seller_id)}">${avaEl(p.seller_name, p.seller_avatar)}</span>
-        <div class="who">
-          <b>${esc(p.seller_name)} <span class="verif">✓</span> ${mine?'<span class="ptag pt-amber">Postinganmu</span>':''}</b>
-          <span>${ago(p.created_at)} · ${esc(p.seller_kec)} · ${km(p.dist)} darimu · ${CAT_LABEL[p.cat]||p.cat}</span>
-        </div>
-      </div>
-      <div class="post-text">
-        <div class="post-price">${rupiah(p.price)}</div>
-        <div class="post-title">${esc(p.name)}</div>
-        <div class="post-desc">${esc(p.descr)}</div>
-        <div class="post-tags">
-          ${isJasaP(p) ? '<span class="ptag pt-green">Jasa Online — Tanpa Ongkir</span><span class="ptag">Rekber</span>' : `
-            ${p.freeship?'<span class="ptag pt-green">Gratis Ongkir</span>':''}
-            ${p.cod && p.dist <= COD_MAX_KM ? '<span class="ptag">Bisa COD</span>':''}
-            <span class="ptag">Rekber</span>
-            ${p.dist <= DRIVER_MAX_KM ? '<span class="ptag">Driver mulai 10rb</span>':''}
-          `}
-          ${p.lebak?'<span class="ptag pt-green">Lokal Lebak</span>':''}
-        </div>
-      </div>
-      <div class="post-media ${p.g}" onclick="openProduct(${p.id})" title="Lihat detail">
-        ${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
-        ${p.imgs && p.imgs.length > 1 ? `<span class="imgs-count">${p.imgs.length} foto</span>` : ''}
-        <span class="cond-tag badge ${p.cond==='bekas'?'b-bekas':'b-baru'}">${p.cond==='bekas'?'Bekas':'Baru'}</span>
-        <span class="dist-tag">${km(p.dist)}</span>
-        ${out?'<div class="sold-out"><b>HABIS</b></div>':''}
-      </div>
-      <div class="engage">
-        <span>👍 ${p.likes} suka</span>
-        <span>Stok ${p.stock}</span>
-      </div>
-      <div class="act-row">
-        <button class="fbact ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">${IC.like} Suka</button>
-        ${mine ? `<button class="fbact" onclick="openProduct(${p.id})">${IC.share} Detail</button>`
-               : `<button class="fbact" onclick="openChatWith(${p.seller_id}, '${esc(p.seller_name)}')">${IC.chat} Chat Penjual</button>`}
-        <button class="fbact ${faved?'faved':''}" onclick="toggleFav(${p.id})">${faved?IC.heartF:IC.heart} ${faved?'Tersimpan':'Favorit'}</button>
-      </div>
-      <div class="buy-row">
-        ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>`
-               : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli — ${rupiah(p.price)}</button>`}
-      </div>
-    </article>`;
-  }).join('');
+  feed.innerHTML = products.map(p => pcardHTML(p)).join('');
+}
+
+/* kartu produk ala referensi: media abu, tag kategori, nama+harga, rating oranye, 2 tombol pill */
+function pcardHTML(p){
+  const mine = user && p.seller_id === user.id;
+  const faved = favs.has(p.id);
+  const out = p.stock <= 0;
+  return `
+  <article class="pcard" onclick="openProduct(${p.id})">
+    <div class="pcard-media">
+      ${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="${esc(p.name)}">` : `<span class="letter">${initOf(p.name)}</span>`}
+      <span class="cat-pill">${CAT_LABEL[p.cat] || p.cat}</span>
+      ${p.imgs && p.imgs.length > 1 ? `<span class="n-pill">${p.imgs.length} foto</span>` : ''}
+      ${out ? '<div class="sold-out"><b>HABIS</b></div>' : ''}
+    </div>
+    <div class="pcard-row"><span class="pcard-name">${esc(p.name)}</span><span class="pcard-price">${rupiah(p.price)}</span></div>
+    <div class="pcard-rate"><span class="st">★</span> ${p.likes} suka · ${km(p.dist)}${p.cond === 'bekas' ? ' · Bekas' : ''}</div>
+    <div class="pcard-seller">oleh ${esc(p.seller_name)} <span class="verif">✓</span>${mine ? ' (kamu)' : ''}</div>
+    <div class="pcard-btns">
+      <button class="pb-out ${faved ? 'on' : ''}" onclick="event.stopPropagation();toggleFav(${p.id})">${faved ? '♥ Tersimpan' : '♡ Favorit'}</button>
+      ${mine ? `<button class="pb-dark" disabled>Stok ${p.stock}</button>`
+             : `<button class="pb-dark" ${out ? 'disabled' : ''} onclick="event.stopPropagation();openBuy(${p.id})">Beli</button>`}
+    </div>
+  </article>`;
 }
 
 /* ---------- DETAIL PRODUK (modal ala e-commerce) ---------- */
@@ -1747,14 +1829,14 @@ function toggleFav(id){
 function renderTrending(){
   const wrap = document.getElementById('trendWrap');
   const el = document.getElementById('trending');
-  const top = [...products].sort((a,b) => b.likes - a.likes).slice(0,8);
-  wrap.classList.toggle('hidden', !top.length);
-  el.innerHTML = top.map(p => `
-    <div class="trend-card" onclick="openProduct(${p.id})">
-      <span class="em ${p.g}">${thumb(p.img, p.name)}</span>
-      <div><b>${esc(p.name)}</b><span>${rupiah(p.price)} · ${km(p.dist)} · ${p.likes} suka</span></div>
-    </div>`).join('');
+  const top = [...products].sort((a, b) => b.likes - a.likes).slice(0, 8);
+  wrap.classList.toggle('hidden', top.length < 2);
+  el.innerHTML = top.map(p => pcardHTML(p)).join('');
 }
+function rekoScroll(dir){
+  document.getElementById('trending').scrollBy({ left: dir * 240, behavior: 'smooth' });
+}
+
 
 function updateBadges(){
   const fc = document.getElementById('favCount');
