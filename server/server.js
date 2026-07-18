@@ -66,8 +66,13 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '8mb' })); // foto dikirim sebagai data URL terkompresi
 app.use(express.urlencoded({ extended: false })); // callback Duitku berbentuk form-urlencoded
-app.use('/uploads', express.static(UPLOAD_DIR));
-app.use(express.static(path.join(__dirname, '..')));
+app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '30d', immutable: true }));
+app.use(express.static(path.join(__dirname, '..'), {
+  setHeaders: (res, fp) => {
+    // HTML tidak boleh di-cache browser — agar setiap update langsung sampai ke semua HP
+    if (fp.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  },
+}));
 
 /* ================= KONSTANTA BISNIS ================= */
 const APP_FEE = 1000;

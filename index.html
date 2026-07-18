@@ -890,7 +890,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
             </div>
             <div class="foot-bot">
               <span>© 2026 Lebak.market. All Rights Reserved.</span>
-              <span>Marketplace warga Kabupaten Lebak</span>
+              <span>Marketplace warga Kabupaten Lebak · <span id="appVer"></span></span>
             </div>
           </footer>
         </div>
@@ -956,6 +956,14 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
    avatar inisial. 100% postingan pengguna asli + realtime (SSE).
    Jalankan:  cd server && npm install && npm start
    ================================================================ */
+
+/* Versi build — tampil di footer & console utk memastikan HP memuat kode terbaru */
+const APP_VER = 'v1.1 (18 Jul 2026)';
+console.log('Lebak-Market ' + APP_VER);
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('appVer');
+  if (el) el.textContent = APP_VER;
+});
 
 /* ---------- IKON SVG (pengganti emoji) ---------- */
 const icon = (p, s = 15) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -1372,24 +1380,36 @@ async function openProfile(){
   </div>`;
 }
 
+/* Decode file gambar dengan andal. createImageBitmap men-decode penuh sebelum
+ * digambar ke canvas — mencegah hasil blank di beberapa browser Android yang
+ * memicu onload sebelum data piksel siap. Fallback: Image + await decode(). */
+async function decodeImageFile(file){
+  if (window.createImageBitmap){
+    try { return await createImageBitmap(file); } catch {}
+  }
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+  try { await img.decode(); }
+  catch { URL.revokeObjectURL(img.src); throw new Error('File bukan gambar yang valid'); }
+  return img;
+}
+function releaseImg(img){
+  if (img.close) img.close();
+  else if (img.src) URL.revokeObjectURL(img.src);
+}
+
 /* foto profil di-crop kotak dari tengah agar rapi di lingkaran */
-function cropSquareImage(file, size = 384){
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const sq = Math.min(img.width, img.height);
-      const c = document.createElement('canvas');
-      c.width = c.height = size;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, size, size);
-      ctx.drawImage(img, (img.width - sq) / 2, (img.height - sq) / 2, sq, sq, 0, 0, size, size);
-      URL.revokeObjectURL(img.src);
-      resolve(c.toDataURL('image/jpeg', 0.85));
-    };
-    img.onerror = () => reject(new Error('File bukan gambar yang valid'));
-    img.src = URL.createObjectURL(file);
-  });
+async function cropSquareImage(file, size = 384){
+  const img = await decodeImageFile(file);
+  const sq = Math.min(img.width, img.height);
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+  ctx.drawImage(img, (img.width - sq) / 2, (img.height - sq) / 2, sq, sq, 0, 0, size, size);
+  releaseImg(img);
+  return c.toDataURL('image/jpeg', 0.85);
 }
 async function onAvatar(e){
   const f = e.target.files[0];
@@ -2401,25 +2421,21 @@ function onSellCat(){
   document.getElementById('rowFreeship').classList.toggle('hidden', jasa);
   document.getElementById('rowShipCost').classList.toggle('hidden', cat !== 'ternak');
 }
-function compressImage(file){
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const MAX = 900;
-      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
-      const c = document.createElement('canvas');
-      c.width = Math.round(img.width * scale);
-      c.height = Math.round(img.height * scale);
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#ffffff'; // PNG transparan (screenshot) → tanpa ini jadi hitam saat ke JPEG
-      ctx.fillRect(0, 0, c.width, c.height);
-      ctx.drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(img.src);
-      resolve(c.toDataURL('image/jpeg', 0.72));
-    };
-    img.onerror = () => reject(new Error('File bukan gambar yang valid'));
-    img.src = URL.createObjectURL(file);
-  });
+async function compressImage(file){
+  const img = await decodeImageFile(file);
+  const MAX = 900;
+  const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale);
+  c.height = Math.round(img.height * scale);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff'; // PNG transparan (screenshot) → tanpa ini jadi hitam saat ke JPEG
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  releaseImg(img);
+  const out = c.toDataURL('image/jpeg', 0.72);
+  if (out.length < 200) throw new Error('Gagal memproses gambar — coba pilih ulang fotonya');
+  return out;
 }
 function renderPhotoBox(){
   const box = document.getElementById('photoBox');
