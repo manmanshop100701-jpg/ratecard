@@ -992,7 +992,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
    ================================================================ */
 
 /* Versi build — tampil di footer & console utk memastikan HP memuat kode terbaru */
-const APP_VER = 'v1.2 (18 Jul 2026)';
+const APP_VER = 'v1.3 (18 Jul 2026)';
 console.log('Lebak-Market ' + APP_VER);
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('appVer');
@@ -1483,14 +1483,18 @@ async function openWallet(){
         </div>
         <label class="f">Jumlah penarikan (min ${rupiah(w.minWithdraw)})</label>
         <input class="f" id="wAmount" type="number" min="${w.minWithdraw}" max="${w.balance}" placeholder="cth: 50000">
-        <label class="f">Tujuan (bank/e-wallet · nomor · atas nama)</label>
-        <input class="f" id="wDest" placeholder="cth: BRI 1234567890 a.n. Mongg / DANA 08xxxx">
+        <label class="f">Bank / E-wallet tujuan</label>
+        <input class="f" id="wBank" placeholder="cth: BRI, BANK JAGO, DANA, GOPAY">
+        <label class="f">Nomor rekening / No. HP</label>
+        <input class="f" id="wNum" inputmode="numeric" placeholder="cth: 1234567890 / 08xxxxxxxxxx">
+        <label class="f">Atas nama</label>
+        <input class="f" id="wName" placeholder="Nama pemilik rekening" value="${esc(user?.name || '')}">
         <button class="btn btn-coral" style="width:100%;margin-top:16px" ${w.balance < w.minWithdraw ? 'disabled' : ''} onclick="doWithdraw()">Tarik Saldo</button>
         <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">Diproses maks 1×24 jam.</p>
         <div class="menu-mini" style="margin-top:16px">
           <div class="mtitle">Riwayat saldo</div>
           ${w.txns.length ? w.txns.map(t => `
-            <div class="menu-line"><span>${kindLbl[t.kind] || t.kind}<br><small style="color:var(--muted)">${esc(t.note)} · ${new Date(t.at).toLocaleDateString('id-ID')}</small></span>
+            <div class="menu-line"><span>${kindLbl[t.kind] || t.kind}${t.kind === 'withdraw' && t.status ? (t.status === 'Sukses' ? ' <span class="q-badge ok">Sukses ✓</span>' : ' <span class="q-badge wait">Diproses</span>') : ''}<br><small style="color:var(--muted)">${esc(t.note)} · ${new Date(t.at).toLocaleDateString('id-ID')}</small></span>
             <b style="color:${t.amount >= 0 ? 'var(--green)' : 'var(--amber)'};white-space:nowrap">${t.amount >= 0 ? '+' : '−'}${rupiah(Math.abs(t.amount))}</b></div>`).join('')
           : '<div class="menu-line"><span>Belum ada transaksi saldo</span><b>—</b></div>'}
         </div>
@@ -1500,9 +1504,11 @@ async function openWallet(){
 }
 async function doWithdraw(){
   const amount = document.getElementById('wAmount').value;
-  const dest = document.getElementById('wDest').value.trim();
+  const bank = document.getElementById('wBank').value.trim();
+  const number = document.getElementById('wNum').value.trim();
+  const name = document.getElementById('wName').value.trim();
   try {
-    const r = await api('/wallet/withdraw', { method:'POST', body:{ amount, dest } });
+    const r = await api('/wallet/withdraw', { method:'POST', body:{ amount, bank, number, name } });
     await refreshMe();
     toast(r.message);
     openWallet();
@@ -2044,6 +2050,7 @@ function renderBuy(){
       <input class="f" id="bName" value="${esc(buy.name)}">
       <label class="f">${buy.mode==='driver' ? 'Alamat antar (driver)' : isJasa ? 'Kontak (email/WA) untuk hasil kerja' : 'Alamat lengkap'}</label>
       <textarea class="f" id="bAddr" placeholder="${isJasa ? 'cth: email / 08xx' : 'Jalan, kampung/perum, kecamatan, kode pos...'}">${esc(buy.addr)}</textarea>
+      ${buy.mode==='driver' && myLoc ? '<p style="font-size:11.5px;color:var(--muted);margin-top:6px">📍 Titik GPS-mu saat ini ikut disertakan agar driver mudah menemukan alamatmu.</p>' : ''}
       ${buy.mode==='driver' ? `<div class="safe-note"><b>Tarif resmi Driver Lebak:</b> Rp10.000 (0–3 km) + Rp2.500/km berikutnya. Jarak ${km(p.dist)} = <b>${rupiah(driverFee(p.dist))}</b>, tiba hari ini. Dana tetap lewat rekber.</div>` : ''}
       <button class="btn btn-coral" style="width:100%;margin-top:18px" onclick="buyNext()">Pilih pembayaran →</button>`;
   }
@@ -2241,7 +2248,7 @@ function orderCard(o, asSeller){
       <button class="btn btn-sm" onclick="openChatWith(${asSeller ? o.buyer_id : o.seller_id}, '${esc(asSeller ? o.buyer_name : o.seller_name)}')">Chat</button>
     </div>
     ${o.mode==='cod' ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Titik temu: ${esc(o.meet_point)} · ${esc(o.meet_time)}</p>` : ''}
-    ${asSeller && o.recv_addr ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Kirim ke: ${esc(o.recv_name)} — ${esc(o.recv_addr)}</p>` : ''}
+    ${asSeller && o.recv_addr ? `<p style="font-size:12.5px;color:var(--muted);margin-top:6px">Kirim ke: ${esc(o.recv_name)} — ${esc(o.recv_addr)}${o.buyer_lat ? ` · <a href="https://maps.google.com/?q=${o.buyer_lat},${o.buyer_lng}" target="_blank" rel="noopener" style="color:var(--amber);font-weight:700">📍 Lokasi GPS pembeli</a>` : ''}</p>` : ''}
     <div class="sum-row total" style="margin-top:10px"><span>Total (${o.method})</span><span>${rupiah(o.total)}</span></div>
     <div class="status-line" style="margin-top:16px">
       ${o.events.map((tl,i) => `

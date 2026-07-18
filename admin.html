@@ -108,18 +108,37 @@ async function load(){
       </div>`).join('') : '<div class="card muted">Tidak ada pembayaran menunggu.</div>';
     $('withdrawals').innerHTML = wd.withdrawals.length ? wd.withdrawals.map(w => `
       <div class="card">
-        <div class="row" style="margin:0;justify-content:space-between"><span class="amount">${rupiah(w.amount)}</span><span class="muted">${esc(w.tanggal)}</span></div>
-        <div class="muted" style="margin-top:4px">${esc(w.name)} · ${esc(w.email)} · ${esc(w.phone)}<br>${esc(w.note)}</div>
+        <div class="row" style="margin:0;justify-content:space-between">
+          <span class="amount">${rupiah(w.amount)}</span>
+          <span class="tag" style="${w.status === 'Sukses' ? 'background:#e6f6ec;color:#0b8f4d' : ''}">${esc(w.status || 'Diproses')}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">${esc(w.name)} · ${esc(w.email)} · ${esc(w.phone)} · ${esc(w.tanggal)}<br>${esc(w.note)}</div>
+        ${w.status !== 'Sukses' ? `<div class="row"><button class="btn-g" onclick="wdSuccess(${w.id})">✓ Success — Sudah Ditransfer</button></div>` : ''}
       </div>`).join('') : '<div class="card muted">Belum ada permintaan penarikan.</div>';
-    $('orders').innerHTML = ords.orders.length ? ords.orders.map(o => `
+    $('orders').innerHTML = ords.orders.length ? ords.orders.map(o => {
+      const maps = o.buyer_lat ? `https://maps.google.com/?q=${o.buyer_lat},${o.buyer_lng}` : '';
+      const waText = encodeURIComponent(
+        `*Orderan antar Lebak-Market* 🛵\n` +
+        `Barang: ${o.pname}\nOngkir driver: ${rupiah(o.ship)}\n\n` +
+        `AMBIL dari penjual: ${o.seller} (WA/HP: ${o.seller_phone})\n\n` +
+        `ANTAR ke: ${o.recv_name || o.buyer}${o.recv_addr ? '\nAlamat: ' + o.recv_addr : ''}\nHP penerima: ${o.buyer_phone}` +
+        (maps ? `\nTitik lokasi: ${maps}` : ''));
+      return `
       <div class="card">
         <div class="row" style="margin:0;justify-content:space-between">
           <span class="amount">${rupiah(o.total)}</span>
           <span class="tag">${esc(o.status)}</span>
         </div>
-        <div class="muted" style="margin-top:4px">${esc(o.id)} · ${esc(o.pname)} · ${esc(o.method || o.mode)}<br>
-        Pembeli: ${esc(o.buyer)} → Penjual: ${esc(o.seller)} · ${new Date(o.created_at).toLocaleString('id-ID')}</div>
-      </div>`).join('') : '<div class="card muted">Belum ada transaksi.</div>';
+        <div class="muted" style="margin-top:4px">${esc(o.id)} · ${esc(o.pname)} · ${esc(o.method || o.mode)}${o.mode === 'driver' ? ' · 🛵 DRIVER' : ''}<br>
+        Pembeli: ${esc(o.buyer)} (${esc(o.buyer_phone)}) → Penjual: ${esc(o.seller)} (${esc(o.seller_phone)}) · ${new Date(o.created_at).toLocaleString('id-ID')}
+        ${o.recv_addr ? `<br>Alamat kirim: ${esc(o.recv_name)} — ${esc(o.recv_addr)}` : ''}
+        ${o.meet_point ? `<br>Titik temu COD: ${esc(o.meet_point)} · ${esc(o.meet_time)}` : ''}</div>
+        ${maps ? `<div class="row">
+          <a href="${maps}" target="_blank" rel="noopener"><button class="btn-o">📍 Lokasi GPS Pembeli</button></a>
+          ${o.mode === 'driver' ? `<a href="https://api.whatsapp.com/send?text=${waText}" target="_blank" rel="noopener"><button class="btn-g">🛵 Kirim Detail ke Driver via WA</button></a>` : ''}
+        </div>` : ''}
+      </div>`;
+    }).join('') : '<div class="card muted">Belum ada transaksi.</div>';
     $('questSubs').innerHTML = qs.subs.length ? qs.subs.map(s => `
       <div class="card">
         <div class="row" style="margin:0;justify-content:space-between">
@@ -150,6 +169,10 @@ async function load(){
 }
 async function act(id, what){
   try { await api('/admin/payments/' + id + '/' + what, { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function wdSuccess(id){
+  try { await api('/admin/withdrawals/' + id + '/success', { method:'POST' }); load(); }
   catch (e) { alert(e.message); }
 }
 async function questAct(pathTail){

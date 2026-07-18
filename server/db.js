@@ -166,5 +166,8 @@ try { db.exec('ALTER TABLE products ADD COLUMN imgs TEXT'); } catch {} // galeri
 try { db.exec('ALTER TABLE orders ADD COLUMN buyer_hide INTEGER NOT NULL DEFAULT 0'); } catch {} // sembunyikan dari riwayat pembeli
 try { db.exec('ALTER TABLE orders ADD COLUMN seller_hide INTEGER NOT NULL DEFAULT 0'); } catch {} // sembunyikan dari riwayat penjual
 try { db.exec('ALTER TABLE products ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0'); } catch {} // soft-delete produk oleh penjual
+try { db.exec('ALTER TABLE orders ADD COLUMN buyer_lat REAL'); } catch {} // titik GPS pembeli saat checkout (utk share-loc ke driver)
+try { db.exec('ALTER TABLE orders ADD COLUMN buyer_lng REAL'); } catch {}
+try { db.exec('ALTER TABLE wallet_txns ADD COLUMN status TEXT'); } catch {} // status penarikan: Diproses | Sukses
 
 module.exports = db;

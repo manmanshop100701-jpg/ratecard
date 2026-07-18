@@ -300,10 +300,10 @@ function markPaid(o){
 /* ---- SALDO pengguna (wallet internal) ----
  * Dana escrow yang cair masuk ke saldo penjual; saldo bisa ditarik
  * (diproses admin) atau dipakai belanja lagi. */
-function walletTxn(userId, kind, amount, note, orderId = null){
+function walletTxn(userId, kind, amount, note, orderId = null, status = null){
   db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(amount, userId);
-  db.prepare('INSERT INTO wallet_txns (user_id, kind, amount, note, order_id, at) VALUES (?,?,?,?,?,?)')
-    .run(userId, kind, amount, note, orderId, now());
+  db.prepare('INSERT INTO wallet_txns (user_id, kind, amount, note, order_id, status, at) VALUES (?,?,?,?,?,?,?)')
+    .run(userId, kind, amount, note, orderId, status, now());
 }
 
 /* ================= CONFIG ================= */
@@ -536,17 +536,20 @@ app.post('/api/orders', auth, async (req, res) => {
   if (p.stock < 1) return bad(res, 409, 'Stok habis');
   // jasa = pengerjaan online: TANPA ongkir, tanpa COD/driver
   const isJasa = p.cat === 'jasa' || p.dist === 0;
-  // jarak nyata pembeli→penjual: GPS live pembeli, fallback pusat kecamatannya
-  const buyerPos = parseCoords(req.body.buyerLat, req.body.buyerLng) || KEC_COORDS[req.user.kec] || KEC_COORDS.Rangkasbitung;
+  // jarak nyata pembeli→penjual: GPS live pembeli, fallback pusat kecamatannya.
+  // Titik GPS asli (bukan fallback) juga DISIMPAN di order → admin/penjual bisa
+  // share-loc detail ke driver via Google Maps.
+  const gpsPos = parseCoords(req.body.buyerLat, req.body.buyerLng);
+  const buyerPos = gpsPos || KEC_COORDS[req.user.kec] || KEC_COORDS.Rangkasbitung;
   p.dist = Math.max(0.01, +havKm(buyerPos, prodCoords(p)).toFixed(2));
 
   if (mode === 'cod') {
     if (!p.cod || isJasa || p.dist > COD_MAX_KM) return bad(res, 400, 'COD tidak tersedia untuk produk ini');
     if (!meetPoint || !meetTime) return bad(res, 400, 'Isi titik temu & waktu janjian');
     const id = uid();
-    db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, price, ship, app_fee, gateway_fee, total, status, meet_point, meet_time, created_at)
-      VALUES (?,?,?,?,?,?,?,0,0,0,?,?,?,?,?)`)
-      .run(id, req.user.id, p.seller_id, p.id, 'cod', 'Bayar di tempat', p.price, p.price, 'Janjian COD', meetPoint, meetTime, now());
+    db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, price, ship, app_fee, gateway_fee, total, status, meet_point, meet_time, buyer_lat, buyer_lng, created_at)
+      VALUES (?,?,?,?,?,?,?,0,0,0,?,?,?,?,?,?,?)`)
+      .run(id, req.user.id, p.seller_id, p.id, 'cod', 'Bayar di tempat', p.price, p.price, 'Janjian COD', meetPoint, meetTime, gpsPos?.lat ?? null, gpsPos?.lng ?? null, now());
     addEvent(id, 'Janjian COD', `${meetPoint} · ${meetTime}. Bayar setelah cek barang.`);
     db.prepare('UPDATE products SET stock = stock - 1 WHERE id = ?').run(p.id);
     return res.json({ ok: true, order: getOrder(id) });
@@ -572,10 +575,10 @@ app.post('/api/orders', auth, async (req, res) => {
     const bal = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id)?.balance || 0;
     if (bal < total) return bad(res, 402, `Saldo tidak cukup (saldo Rp${bal.toLocaleString('id-ID')}, butuh Rp${total.toLocaleString('id-ID')})`);
     const id = uid();
-    db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, created_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, buyer_lat, buyer_lng, created_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
       .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'saldo', p.price, ship, APP_FEE, 0, total,
-           'Menunggu Pembayaran', recvName, recvAddr, now());
+           'Menunggu Pembayaran', recvName, recvAddr, gpsPos?.lat ?? null, gpsPos?.lng ?? null, now());
     walletTxn(req.user.id, 'purchase', -total, 'Bayar ' + p.name.slice(0, 40) + ' (rekber)', id);
     db.prepare('UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?').run(p.id);
     addEvent(id, 'Menunggu Pembayaran', 'Invoice diterbitkan', false);
@@ -586,10 +589,10 @@ app.post('/api/orders', auth, async (req, res) => {
 
   const id = uid();
   // ---- TRANSFER/QRIS MANUAL: bayar ke rekening/QRIS pemilik, verifikasi admin ----
-  db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, created_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+  db.prepare(`INSERT INTO orders (id, buyer_id, seller_id, product_id, mode, method, method_id, price, ship, app_fee, gateway_fee, total, status, recv_name, recv_addr, buyer_lat, buyer_lng, created_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .run(id, req.user.id, p.seller_id, p.id, mode, gw.name, 'manual', p.price, ship, APP_FEE, gatewayFee, total,
-         'Menunggu Pembayaran', recvName, recvAddr, now());
+         'Menunggu Pembayaran', recvName, recvAddr, gpsPos?.lat ?? null, gpsPos?.lng ?? null, now());
   addEvent(id, 'Menunggu Pembayaran', 'Transfer PERSIS sejumlah total (termasuk kode unik) lalu unggah bukti pembayaran.');
   res.json({ ok: true, order: getOrder(id), payment: { manual: true } });
 });
@@ -660,7 +663,8 @@ app.get('/api/admin/orders', (req, res) => {
   if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
   const rows = db.prepare(`
     SELECT o.id, o.total, o.status, o.method, o.mode, o.created_at, p.name pname,
-           bu.name buyer, su.name seller
+           o.recv_name, o.recv_addr, o.meet_point, o.meet_time, o.buyer_lat, o.buyer_lng, o.ship,
+           bu.name buyer, bu.phone buyer_phone, su.name seller, su.phone seller_phone
     FROM orders o
     JOIN products p ON p.id = o.product_id
     JOIN users bu ON bu.id = o.buyer_id
@@ -749,17 +753,22 @@ app.post('/api/orders/:id/confirm', auth, (req, res) => {
 /* ================= SALDO & PENARIKAN ================= */
 app.get('/api/wallet', auth, (req, res) => {
   const balance = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id).balance;
-  const txns = db.prepare('SELECT kind, amount, note, order_id, at FROM wallet_txns WHERE user_id = ? ORDER BY at DESC LIMIT 50').all(req.user.id);
+  const txns = db.prepare('SELECT kind, amount, note, order_id, status, at FROM wallet_txns WHERE user_id = ? ORDER BY at DESC LIMIT 50').all(req.user.id);
   res.json({ balance, minWithdraw: MIN_WITHDRAW, txns });
 });
 app.post('/api/wallet/withdraw', auth, (req, res) => {
   const amount = parseInt(req.body.amount, 10);
-  const dest = String(req.body.dest || '').trim().slice(0, 120);
+  const bank = String(req.body.bank || '').trim().slice(0, 40);
+  const number = String(req.body.number || '').trim().slice(0, 40);
+  const name = String(req.body.name || '').trim().slice(0, 60);
   if (!amount || amount < MIN_WITHDRAW) return bad(res, 400, 'Penarikan minimal Rp' + MIN_WITHDRAW.toLocaleString('id-ID'));
-  if (!dest || dest.length < 8) return bad(res, 400, 'Isi tujuan penarikan (bank/e-wallet + nomor + atas nama)');
+  if (bank.length < 2) return bad(res, 400, 'Isi nama bank / e-wallet tujuan (cth: BRI, DANA)');
+  if (!/^[0-9 +-]{6,}$/.test(number)) return bad(res, 400, 'Nomor rekening / HP tujuan tidak valid (minimal 6 digit angka)');
+  if (name.length < 3) return bad(res, 400, 'Isi nama pemilik rekening (atas nama)');
   const balance = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id).balance;
   if (amount > balance) return bad(res, 400, 'Saldo tidak cukup (saldo Rp' + balance.toLocaleString('id-ID') + ')');
-  walletTxn(req.user.id, 'withdraw', -amount, 'Penarikan ke ' + dest + ' · diproses admin maks 1×24 jam');
+  const dest = `${bank.toUpperCase()} ${number} a.n. ${name}`;
+  walletTxn(req.user.id, 'withdraw', -amount, 'Penarikan ke ' + dest, null, 'Diproses');
   console.log(`[withdraw] ${req.user.name} (${req.user.email}) menarik Rp${amount.toLocaleString('id-ID')} → ${dest}`);
   res.json({ ok: true, balance: balance - amount, message: 'Permintaan penarikan dicatat — dana dikirim admin maks 1×24 jam' });
 });
@@ -925,10 +934,18 @@ app.get('/api/admin/withdrawals', (req, res) => {
   const key = process.env.ADMIN_KEY;
   if (!key || req.query.key !== key) return bad(res, 403, 'Akses admin ditolak — set env ADMIN_KEY dan sertakan ?key=');
   const rows = db.prepare(`
-    SELECT w.id, -w.amount amount, w.note, w.at, u.name, u.email, u.phone
+    SELECT w.id, -w.amount amount, w.note, w.status, w.at, u.name, u.email, u.phone
     FROM wallet_txns w JOIN users u ON u.id = w.user_id
     WHERE w.kind = 'withdraw' ORDER BY w.at DESC LIMIT 200`).all();
   res.json({ withdrawals: rows.map(r => ({ ...r, tanggal: new Date(r.at).toLocaleString('id-ID') })) });
+});
+/* Admin menandai penarikan sudah ditransfer → status Sukses (tampil ke pengguna) */
+app.post('/api/admin/withdrawals/:id/success', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const w = db.prepare("SELECT id, status FROM wallet_txns WHERE id = ? AND kind = 'withdraw'").get(req.params.id);
+  if (!w) return bad(res, 404, 'Penarikan tidak ditemukan');
+  db.prepare("UPDATE wallet_txns SET status = 'Sukses' WHERE id = ?").run(w.id);
+  res.json({ ok: true });
 });
 
 /* ================= REVENUE =================
