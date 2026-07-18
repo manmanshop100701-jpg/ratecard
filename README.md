@@ -59,6 +59,10 @@ Tanpa payment gateway — pembeli membayar ke **QRIS/rekening milik pemilik plat
 
 Integrasi gateway (Duitku/Midtrans) telah dihapus dari kode — lihat riwayat git bila ingin dipasang kembali.
 
+## 💼 Side Quest (misi berhadiah saldo)
+
+Fitur pemberdayaan: admin membuat misi di `/admin.html` (judul, instruksi, hadiah Rp, kuota opsional) — mis. bantu promosi, komen sosmed, survei. Pengguna membuka menu **Misi**, mengerjakan, lalu mengirim bukti (keterangan/link + screenshot). Admin meninjau bukti dan sekali klik **ACC** → hadiah langsung masuk ke saldo pengguna (bisa ditarik tunai atau dipakai belanja). Anti-curang: satu akun hanya bisa menyelesaikan tiap misi sekali, kuota dihitung dari yang di-ACC, dan bukti ditolak boleh dicoba ulang.
+
 ## ☁️ Deploy ke Cloud (Railway / Render)
 
 Repo sudah siap deploy: ada `package.json` root (install & start otomatis), `Procfile`, dan `render.yaml`.

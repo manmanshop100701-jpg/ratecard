@@ -43,6 +43,22 @@ img.qris{width:180px;border:1px solid #e4e6eb;border-radius:8px;margin-top:8px;d
     <h2>Permintaan Penarikan Saldo</h2>
     <div id="withdrawals"></div>
 
+    <h2>Side Quest — Bukti Menunggu ACC</h2>
+    <div id="questSubs"></div>
+
+    <h2>Side Quest — Kelola Misi</h2>
+    <div class="card">
+      <b>Tambah misi baru</b>
+      <input id="qTitle" placeholder="Judul misi (cth: Komen di postingan IG Lebak-Market)">
+      <textarea id="qDescr" rows="3" placeholder="Instruksi lengkap untuk pengerja (link, apa yang harus dilakukan, bukti apa yang diminta)"></textarea>
+      <div class="row" style="margin-top:6px">
+        <input id="qReward" type="number" min="100" placeholder="Hadiah (Rp), cth: 2000" style="width:180px;margin-top:0">
+        <input id="qSlots" type="number" min="0" placeholder="Kuota orang (0 = tanpa batas)" style="width:220px;margin-top:0">
+        <button class="btn-g" onclick="addQuest()">+ Tambah Misi</button>
+      </div>
+    </div>
+    <div id="quests"></div>
+
     <h2>Semua Transaksi Terbaru</h2>
     <div id="orders"></div>
 
@@ -75,7 +91,7 @@ async function api(path, opt = {}){
 
 async function load(){
   try {
-    const [pay, wd, ords, cfg] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), api('/admin/orders'), fetch('/api/paycfg').then(r => r.json())]);
+    const [pay, wd, ords, qs, cfg] = await Promise.all([api('/admin/payments'), api('/admin/withdrawals'), api('/admin/orders'), api('/admin/quests'), fetch('/api/paycfg').then(r => r.json())]);
     $('panel').style.display = '';
     $('payments').innerHTML = pay.payments.length ? pay.payments.map(p => `
       <div class="card">
@@ -104,6 +120,30 @@ async function load(){
         <div class="muted" style="margin-top:4px">${esc(o.id)} · ${esc(o.pname)} · ${esc(o.method || o.mode)}<br>
         Pembeli: ${esc(o.buyer)} → Penjual: ${esc(o.seller)} · ${new Date(o.created_at).toLocaleString('id-ID')}</div>
       </div>`).join('') : '<div class="card muted">Belum ada transaksi.</div>';
+    $('questSubs').innerHTML = qs.subs.length ? qs.subs.map(s => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <span class="amount">${rupiah(s.reward)}</span>
+          <span class="tag">${esc(s.title)}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">Pengerja: ${esc(s.name)} · ${esc(s.email)} · ${esc(s.phone)} · ${new Date(s.at).toLocaleString('id-ID')}</div>
+        ${s.note ? `<p style="margin-top:8px;white-space:pre-wrap">${esc(s.note)}</p>` : ''}
+        ${s.proof ? `<img class="proof" src="${esc(s.proof)}" alt="bukti misi">` : '<p class="muted" style="margin-top:8px">Tanpa screenshot — hanya keterangan.</p>'}
+        <div class="row">
+          <button class="btn-g" onclick="questAct('quest-subs/${s.id}/approve')">✓ ACC — Kirim Hadiah ke Saldo</button>
+          <button class="btn-r" onclick="if(confirm('Tolak bukti ini?'))questAct('quest-subs/${s.id}/reject')">Tolak</button>
+        </div>
+      </div>`).join('') : '<div class="card muted">Tidak ada bukti misi menunggu ACC.</div>';
+    $('quests').innerHTML = qs.quests.length ? qs.quests.map(q => `
+      <div class="card">
+        <div class="row" style="margin:0;justify-content:space-between">
+          <b>${esc(q.title)}</b>
+          <span class="tag" style="${q.active ? '' : 'background:#fdecec;color:#c0392b'}">${q.active ? 'AKTIF' : 'DITUTUP'}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">Hadiah ${rupiah(q.reward)}/orang · ${q.slots ? 'kuota ' + q.slots : 'tanpa batas'} · ${q.done || 0} di-ACC · ${q.pending || 0} menunggu</div>
+        ${q.descr ? `<p class="muted" style="margin-top:6px;white-space:pre-wrap">${esc(q.descr)}</p>` : ''}
+        <div class="row"><button class="btn-o" onclick="questAct('quests/${q.id}/toggle')">${q.active ? 'Tutup Misi' : 'Buka Lagi'}</button></div>
+      </div>`).join('') : '<div class="card muted">Belum ada misi — tambahkan lewat form di atas.</div>';
     $('qrisNow').innerHTML = cfg.qris ? `<img class="qris" src="${esc(cfg.qris)}" alt="QRIS">` : '<p class="muted" style="margin-top:6px">Belum ada QRIS terpasang.</p>';
     if (cfg.info) $('payInfo').value = cfg.info;
   } catch (e) { alert(e.message); }
@@ -111,6 +151,20 @@ async function load(){
 async function act(id, what){
   try { await api('/admin/payments/' + id + '/' + what, { method:'POST' }); load(); }
   catch (e) { alert(e.message); }
+}
+async function questAct(pathTail){
+  try { await api('/admin/' + pathTail, { method:'POST' }); load(); }
+  catch (e) { alert(e.message); }
+}
+async function addQuest(){
+  try {
+    await api('/admin/quests', { method:'POST', body:{
+      title: $('qTitle').value, descr: $('qDescr').value,
+      reward: $('qReward').value, slots: $('qSlots').value,
+    }});
+    $('qTitle').value = $('qDescr').value = $('qReward').value = $('qSlots').value = '';
+    load();
+  } catch (e) { alert(e.message); }
 }
 async function saveCfg(){
   try {

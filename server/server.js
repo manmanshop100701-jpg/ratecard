@@ -764,6 +764,90 @@ app.post('/api/wallet/withdraw', auth, (req, res) => {
   res.json({ ok: true, balance: balance - amount, message: 'Permintaan penarikan dicatat — dana dikirim admin maks 1×24 jam' });
 });
 
+/* ================= SIDE QUEST (misi berhadiah saldo) =================
+ * Admin membuat misi di /admin.html (mis. bantu promosi, komen, survei).
+ * Pengguna mengerjakan → kirim bukti → admin ACC → hadiah masuk saldo. */
+const questCounts = qid => db.prepare(
+  "SELECT SUM(status='Disetujui') done, SUM(status='Menunggu ACC') pending FROM quest_subs WHERE quest_id = ?").get(qid);
+
+app.get('/api/quests', optionalAuth, (req, res) => {
+  const quests = db.prepare('SELECT * FROM quests WHERE active = 1 ORDER BY created_at DESC LIMIT 100').all()
+    .map(q => {
+      const c = questCounts(q.id);
+      const done = c.done || 0;
+      const mine = req.userId
+        ? db.prepare('SELECT status, at FROM quest_subs WHERE quest_id = ? AND user_id = ? ORDER BY at DESC LIMIT 1').get(q.id, req.userId)
+        : null;
+      return { id: q.id, title: q.title, descr: q.descr, reward: q.reward, slots: q.slots,
+               done, full: q.slots > 0 && done >= q.slots, mine: mine || null };
+    });
+  res.json({ quests });
+});
+
+app.post('/api/quests/:id/submit', auth, (req, res) => {
+  const q = db.prepare('SELECT * FROM quests WHERE id = ? AND active = 1').get(req.params.id);
+  if (!q) return bad(res, 404, 'Misi tidak ditemukan / sudah ditutup');
+  const c = questCounts(q.id);
+  if (q.slots > 0 && (c.done || 0) >= q.slots) return bad(res, 409, 'Kuota misi sudah penuh');
+  const last = db.prepare('SELECT status FROM quest_subs WHERE quest_id = ? AND user_id = ? ORDER BY at DESC LIMIT 1').get(q.id, req.user.id);
+  if (last && last.status !== 'Ditolak') return bad(res, 409, last.status === 'Disetujui' ? 'Misi ini sudah kamu selesaikan' : 'Buktimu masih menunggu ACC admin');
+  const note = String(req.body.note || '').trim().slice(0, 500);
+  const proof = req.body.img ? saveImage(req.body.img) : null;
+  if (!note && !proof) return bad(res, 400, 'Sertakan bukti: screenshot atau keterangan/link hasil kerjamu');
+  if (req.body.img && !proof) return bad(res, 400, 'Screenshot bukti tidak valid (maks 5MB, JPG/PNG/WebP)');
+  db.prepare('INSERT INTO quest_subs (quest_id, user_id, proof, note, at) VALUES (?,?,?,?,?)')
+    .run(q.id, req.user.id, proof, note, now());
+  res.json({ ok: true, message: 'Bukti terkirim — hadiah masuk ke saldo setelah di-ACC admin' });
+});
+
+/* --- ADMIN: kelola misi & ACC bukti --- */
+app.get('/api/admin/quests', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const quests = db.prepare('SELECT * FROM quests ORDER BY created_at DESC LIMIT 200').all()
+    .map(q => ({ ...q, ...questCounts(q.id) }));
+  const subs = db.prepare(`
+    SELECT s.id, s.note, s.proof, s.status, s.at, q.title, q.reward, u.name, u.email, u.phone
+    FROM quest_subs s JOIN quests q ON q.id = s.quest_id JOIN users u ON u.id = s.user_id
+    WHERE s.status = 'Menunggu ACC' ORDER BY s.at ASC LIMIT 200`).all();
+  res.json({ quests, subs });
+});
+app.post('/api/admin/quests', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const title = String(req.body.title || '').trim().slice(0, 120);
+  const descr = String(req.body.descr || '').trim().slice(0, 1500);
+  const reward = parseInt(req.body.reward, 10);
+  const slots = Math.max(0, parseInt(req.body.slots, 10) || 0);
+  if (!title || title.length < 4) return bad(res, 400, 'Judul misi minimal 4 karakter');
+  if (!reward || reward < 100) return bad(res, 400, 'Hadiah minimal Rp100');
+  db.prepare('INSERT INTO quests (title, descr, reward, slots, created_at) VALUES (?,?,?,?,?)')
+    .run(title, descr, reward, slots, now());
+  res.json({ ok: true });
+});
+app.post('/api/admin/quests/:id/toggle', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const q = db.prepare('SELECT id, active FROM quests WHERE id = ?').get(req.params.id);
+  if (!q) return bad(res, 404, 'Misi tidak ditemukan');
+  db.prepare('UPDATE quests SET active = ? WHERE id = ?').run(q.active ? 0 : 1, q.id);
+  res.json({ ok: true, active: q.active ? 0 : 1 });
+});
+app.post('/api/admin/quest-subs/:id/approve', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const s = db.prepare('SELECT s.*, q.title, q.reward FROM quest_subs s JOIN quests q ON q.id = s.quest_id WHERE s.id = ?').get(req.params.id);
+  if (!s) return bad(res, 404, 'Bukti tidak ditemukan');
+  if (s.status !== 'Menunggu ACC') return res.json({ ok: true, note: 'sudah diproses' });
+  db.prepare("UPDATE quest_subs SET status = 'Disetujui' WHERE id = ?").run(s.id);
+  walletTxn(s.user_id, 'quest', s.reward, 'Hadiah misi: ' + s.title.slice(0, 60));
+  res.json({ ok: true });
+});
+app.post('/api/admin/quest-subs/:id/reject', (req, res) => {
+  if (!adminOk(req)) return bad(res, 403, 'Akses admin ditolak');
+  const s = db.prepare('SELECT * FROM quest_subs WHERE id = ?').get(req.params.id);
+  if (!s) return bad(res, 404, 'Bukti tidak ditemukan');
+  if (s.status !== 'Menunggu ACC') return res.json({ ok: true, note: 'sudah diproses' });
+  db.prepare("UPDATE quest_subs SET status = 'Ditolak' WHERE id = ?").run(s.id);
+  res.json({ ok: true });
+});
+
 app.post('/api/orders/:id/complain', auth, (req, res) => {
   const o = getOrder(req.params.id);
   if (!o || o.buyer_id !== req.user.id) return bad(res, 404, 'Pesanan tidak ditemukan');

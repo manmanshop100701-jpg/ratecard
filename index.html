@@ -551,6 +551,26 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--green)}
 .resto-body{padding:15px 17px 17px;display:flex;flex-direction:column;flex:1}
 .resto-body h4{font-size:15.5px;margin-bottom:2px}
 .resto-meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+/* --- SIDE QUEST (misi berhadiah saldo) --- */
+.quest-banner{display:flex;align-items:center;gap:12px;background:var(--green);color:#fff;border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;cursor:pointer;transition:transform .15s}
+.quest-banner:hover{transform:translateY(-1px)}
+.quest-banner:active{transform:scale(.98)}
+.quest-banner b{font-size:14.5px}
+.quest-banner p{font-size:12px;opacity:.75;margin-top:2px}
+.quest-banner .q-go{margin-left:auto;background:var(--amber);color:#fff;border:none;border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
+.q-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.q-top b{font-size:15px}
+.q-reward{color:var(--amber);font-weight:800;white-space:nowrap}
+.q-desc{font-size:13px;color:var(--muted);margin-top:6px;white-space:pre-wrap}
+.q-foot{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.q-foot .btn{margin-left:auto}
+.q-badge{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px}
+.q-badge.ok{background:#e6f6ec;color:#0b8f4d}
+.q-badge.wait{background:#fff4e0;color:#b45309}
+.q-badge.no{background:#fdecec;color:#c0392b}
+.q-badge.full{background:var(--hover);color:var(--muted)}
+
 .menu-mini{border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:12px;background:var(--bg)}
 .menu-mini .mtitle{font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .menu-line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted var(--line)}
@@ -618,6 +638,8 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 .top-nav button{border:none;background:transparent;font:inherit;font-weight:600;font-size:13.5px;color:var(--muted);padding:8px 14px;border-radius:999px;transition:all .15s}
 .top-nav button:hover{color:var(--ink);background:var(--hover)}
 .top-nav button.on{color:var(--ink);font-weight:800}
+/* tablet: nav 4 tombol harus tetap muat satu baris */
+@media(max-width:880px){.top-nav button{padding:8px 7px;font-size:13px}.head-actions{gap:6px}}
 .hero{position:relative;border-radius:16px;overflow:hidden;height:168px;background:linear-gradient(120deg,#191a1d,#3a3d42);margin-bottom:14px}
 .hero img{width:100%;height:100%;object-fit:cover;display:block;opacity:.55}
 .hero-text{
@@ -794,6 +816,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
     <nav class="top-nav hide-mobile">
       <button id="tn-feed" class="on" onclick="showView('feed')">Beranda</button>
       <button id="tn-kuliner" onclick="showView('kuliner')">Jelajah</button>
+      <button id="tn-misi" onclick="showView('misi')">Misi</button>
       <button id="tn-orders" onclick="showView('orders')">Transaksi</button>
     </nav>
     <div class="head-actions">
@@ -846,6 +869,10 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
           <button class="go-cta" onclick="loadFeed()">Cari</button>
         </div>
       </div>
+      <div class="quest-banner" onclick="showView('misi')">
+        <div><b>Side Quest 💼</b><p>Kerjakan misi ringan dari Lebak.market — hadiahnya masuk saldo, bisa ditarik tunai.</p></div>
+        <button class="q-go">Lihat Misi →</button>
+      </div>
       <div class="shop-grid">
         <aside class="filter-side">
           <h4>Kategori</h4>
@@ -877,6 +904,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
             <div class="foot-grid">
               <div>
                 <b>Tentang</b>
+                <a onclick="showView('misi')">Side Quest</a>
                 <a onclick="openInfoBiaya()">Biaya &amp; Komisi</a>
                 <a onclick="setJelajah('kuliner')">Kuliner Sekitar</a>
                 <a onclick="setJelajah('wisata')">Wisata Lebak</a>
@@ -913,6 +941,12 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
       </div>
       <div id="wisataChips" class="view-tabs hidden" style="margin-bottom:14px"></div>
       <div class="resto-grid" id="restoGrid"></div>
+    </div>
+    <div id="view-misi" class="hidden">
+      <div class="view-tabs"><button class="chip" onclick="showView('feed')">← Kembali belanja</button></div>
+      <h2 style="margin-bottom:6px">Side Quest</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px">Kerjakan misi, kirim bukti, hadiah langsung masuk ke saldomu setelah di-ACC admin — bisa ditarik tunai atau dipakai belanja.</p>
+      <div id="questList" style="max-width:640px"></div>
     </div>
   </main>
 </div>
@@ -958,7 +992,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
    ================================================================ */
 
 /* Versi build — tampil di footer & console utk memastikan HP memuat kode terbaru */
-const APP_VER = 'v1.1 (18 Jul 2026)';
+const APP_VER = 'v1.2 (18 Jul 2026)';
 console.log('Lebak-Market ' + APP_VER);
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('appVer');
@@ -1373,6 +1407,7 @@ async function openProfile(){
         ${user.cod_debt ? `<div class="warn-note" style="margin-bottom:12px"><b>Tagihan komisi COD: ${rupiah(user.cod_debt)}</b> — dipotong otomatis dari pencairan rekber berikutnya.</div>` : ''}
         <div class="mini-row"><span class="em g-1"><span class="letter-s">J</span></span><div><b>Posting jualanku</b><span>${myPosts} produk tayang</span></div></div>
         <div class="mini-row"><span class="em g-3"><span class="letter-s">T</span></span><div><b>Transaksiku</b><span>${lastOrders.length} pembelian · ${lastSales.length} penjualan</span></div></div>
+        <div class="mini-row" style="cursor:pointer" onclick="closeModal();showView('misi')"><span class="em g-5"><span class="letter-s">M</span></span><div><b>Side Quest</b><span>Kerjakan misi, hadiahnya masuk saldo</span></div></div>
         <button class="btn btn-yellow" style="width:100%;margin-top:18px" onclick="closeModal();openSell()">+ Posting Jualan Baru</button>
         <button class="btn" style="width:100%;margin-top:10px" onclick="doLogout()">Keluar Akun</button>
       </div>
@@ -1435,7 +1470,7 @@ async function openWallet(){
   if (needLogin('membuka saldo')) return;
   let w;
   try { w = await api('/wallet'); } catch (e) { return toast(e.message); }
-  const kindLbl = { escrow_in:'Dana cair masuk', withdraw:'Penarikan', purchase:'Belanja pakai saldo' };
+  const kindLbl = { escrow_in:'Dana cair masuk', withdraw:'Penarikan', purchase:'Belanja pakai saldo', quest:'Hadiah misi' };
   document.getElementById('modalRoot').innerHTML = `
   <div class="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
@@ -1474,6 +1509,77 @@ async function doWithdraw(){
   } catch (e) { toast(e.message); }
 }
 
+/* ---------- SIDE QUEST (misi berhadiah saldo) ---------- */
+let questCache = [], questImg = null;
+async function renderMisi(){
+  const box = document.getElementById('questList');
+  box.innerHTML = '<div class="qcard" style="color:var(--muted)">Memuat misi…</div>';
+  let d;
+  try { d = await api('/quests'); } catch (e) { box.innerHTML = `<div class="qcard">${esc(e.message)}</div>`; return; }
+  questCache = d.quests;
+  if (!d.quests.length){
+    box.innerHTML = '<div class="qcard" style="text-align:center;color:var(--muted)">Belum ada misi aktif — cek lagi nanti ya.</div>';
+    return;
+  }
+  box.innerHTML = d.quests.map(q => {
+    const st = q.mine?.status;
+    const badge = st === 'Disetujui' ? '<span class="q-badge ok">Selesai ✓ hadiah masuk saldo</span>'
+      : st === 'Menunggu ACC' ? '<span class="q-badge wait">Bukti dikirim — menunggu ACC</span>'
+      : st === 'Ditolak' ? '<span class="q-badge no">Bukti ditolak</span>'
+      : q.full ? '<span class="q-badge full">Kuota penuh</span>' : '';
+    const btn = (!st || st === 'Ditolak') && !q.full
+      ? `<button class="btn btn-coral btn-sm" onclick="openQuestSubmit(${q.id})">${st === 'Ditolak' ? 'Coba Lagi' : 'Kerjakan Misi'}</button>` : '';
+    return `
+    <div class="qcard">
+      <div class="q-top"><b>${esc(q.title)}</b><span class="q-reward">+${rupiah(q.reward)}</span></div>
+      ${q.descr ? `<p class="q-desc">${esc(q.descr)}</p>` : ''}
+      <div class="q-foot">
+        <span style="color:var(--muted);font-size:12px">${q.slots ? `${q.done}/${q.slots} slot terisi` : `${q.done} orang selesai`}</span>
+        ${badge}${btn}
+      </div>
+    </div>`;
+  }).join('');
+}
+function openQuestSubmit(id){
+  if (needLogin('mengerjakan misi')) return;
+  const q = questCache.find(x => x.id === id);
+  if (!q) return;
+  questImg = null;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3>Kerjakan Misi</h3><button class="x-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="auth-hero">
+          <b>${esc(q.title)}</b>
+          <p>Hadiah <b style="color:var(--amber)">${rupiah(q.reward)}</b> masuk ke saldomu setelah bukti di-ACC admin.</p>
+        </div>
+        ${q.descr ? `<div class="menu-mini"><div class="mtitle">Instruksi</div><p style="font-size:13px;white-space:pre-wrap">${esc(q.descr)}</p></div>` : ''}
+        <label class="f">Keterangan / link hasil kerja</label>
+        <textarea class="f" id="qNote" rows="3" placeholder="cth: sudah komen pakai akun @punyaku — link: https://..."></textarea>
+        <label class="f">Screenshot bukti (disarankan)</label>
+        <input class="f" type="file" id="qFile" accept="image/*" onchange="onQuestImg(event)">
+        <div id="qPrev"></div>
+        <button class="btn btn-coral" style="width:100%;margin-top:16px" onclick="sendQuestProof(${q.id})">Kirim Bukti</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function onQuestImg(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    questImg = await compressImage(f);
+    document.getElementById('qPrev').innerHTML = `<img src="${questImg}" alt="bukti" style="max-width:140px;border-radius:10px;margin-top:8px;border:1px solid var(--line)">`;
+  } catch (err) { questImg = null; toast(err.message); }
+}
+async function sendQuestProof(id){
+  try {
+    const r = await api('/quests/' + id + '/submit', { method:'POST', body:{ note: document.getElementById('qNote').value, img: questImg } });
+    closeModal(); toast(r.message); renderMisi();
+  } catch (e) { toast(e.message); }
+}
+
 /* ---------- INFO BIAYA ---------- */
 async function openInfoBiaya(){
   let rev = { total: 0, byKind: [] };
@@ -1503,7 +1609,7 @@ async function openInfoBiaya(){
 
 /* ---------- VIEWS ---------- */
 function showView(v){
-  ['feed','orders','kuliner'].forEach(x => {
+  ['feed','orders','kuliner','misi'].forEach(x => {
     document.getElementById('view-'+x).classList.toggle('hidden', v !== x);
     const tn = document.getElementById('tn-'+x);
     if (tn) tn.classList.toggle('on', v === x);
@@ -1511,6 +1617,7 @@ function showView(v){
   document.getElementById('catBar').style.display = v === 'feed' ? '' : 'none';
   if (v === 'orders') renderOrders();
   if (v === 'kuliner') renderJelajah();
+  if (v === 'misi') renderMisi();
   window.scrollTo({ top: 0 });
 }
 function setJelajah(tab){ jelajahTab = tab; showView('kuliner'); }

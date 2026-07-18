@@ -119,6 +119,26 @@ db.exec(`
     v TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS quests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    descr TEXT NOT NULL DEFAULT '',
+    reward INTEGER NOT NULL,         -- hadiah saldo (Rp) per orang yang di-ACC
+    slots INTEGER NOT NULL DEFAULT 0,-- kuota peserta; 0 = tanpa batas
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS quest_subs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quest_id INTEGER NOT NULL REFERENCES quests(id),
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    proof TEXT,                      -- path screenshot bukti (opsional)
+    note TEXT NOT NULL DEFAULT '',   -- keterangan/link dari pengerja
+    status TEXT NOT NULL DEFAULT 'Menunggu ACC', -- Menunggu ACC | Disetujui | Ditolak
+    at INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS wallet_txns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id),
