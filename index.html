@@ -6,7 +6,7 @@
 <title>Lebak.market — Marketplace Warga Lebak</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <meta name="description" content="Marketplace lokal Kabupaten Lebak: jual-beli aman dengan rekber, COD terdekat, driver lokal, dan direktori kuliner lengkap dengan menu.">
 <style>
 /* ================================================================
@@ -85,12 +85,9 @@ header{
   border-bottom:1px solid var(--line);
 }
 .head-inner{display:flex;align-items:center;gap:12px;height:56px}
-.logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:9px;flex:none;letter-spacing:-.01em}
-.logo .mark{
-  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
-  background:var(--green);color:#fff;font-weight:700;font-size:19px;font-family:Georgia,serif;
-}
-.logo .word em{font-style:normal;color:var(--green)}
+.logo{flex:none;display:flex;align-items:center}
+.logo .word{font-family:'Poppins',var(--font);font-weight:800;font-size:19px;letter-spacing:-.02em;white-space:nowrap}
+.logo .word em{font-style:normal;color:var(--amber)}
 .search{
   flex:1;max-width:320px;display:flex;align-items:center;gap:8px;background:#f0f2f5;border:none;
   border-radius:999px;padding:9px 9px 9px 16px;min-width:0;color:var(--muted);transition:box-shadow .15s;
@@ -124,7 +121,7 @@ header{
   font-weight:700;font-size:13.5px;transition:background .15s;margin-left:4px;
 }
 .login-btn:hover{background:var(--green-2)}
-@media(max-width:680px){.logo .word{display:none}}
+@media(max-width:680px){.logo .word{font-size:16px}}
 
 /* ============ COMPOSER "mau jual apa?" (ala status box FB) ============ */
 .composer{
@@ -146,6 +143,22 @@ header{
   align-items:center;gap:7px;font-weight:600;font-size:13px;color:var(--green);flex:none;
 }
 .composer .cam:hover{background:var(--hover)}
+
+/* ============ AVATAR FOTO & GALERI ============ */
+.ava img,.ava-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ava-btn{overflow:hidden;padding:0}
+.chat-list-row .ava,.seller-row .ava{overflow:hidden}
+.pf-ava{width:78px;height:78px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--tint);color:var(--ink);font-weight:800;font-size:30px;margin:0 auto 8px}
+.pf-ava img{width:100%;height:100%;object-fit:cover}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo-grid .ph{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.photo-grid .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-grid .ph .x-btn{position:absolute;top:4px;right:4px;width:24px;height:24px;font-size:11px;background:rgba(255,255,255,.95)}
+.photo-grid .add{display:grid;place-items:center;cursor:pointer;background:var(--bg);border:1px dashed #c9ced4;color:var(--muted);font-size:24px;border-radius:10px;aspect-ratio:1/1}
+.imgs-count{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:2px 8px;font-weight:700;font-size:10px}
+.pd-thumbs{display:flex;gap:7px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none}
+.pd-thumbs img{width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer;flex:none}
+.pd-thumbs img.on{border-color:var(--ink)}
 
 /* ============ KATEGORI + RADIUS ============ */
 .cat-bar{
@@ -771,8 +784,7 @@ svg.ic{display:block;flex:none;width:16px;height:16px}
 <header>
   <div class="wrap head-inner">
     <a href="#" class="logo" onclick="showView('feed');return false">
-      <span class="mark">L</span>
-      <span class="word">Lebak<em>.</em>market</span>
+      <span class="word">Lebak-Market<em>.</em></span>
     </a>
     <nav class="top-nav hide-mobile">
       <button id="tn-feed" class="on" onclick="showView('feed')">Beranda</button>
@@ -1655,12 +1667,21 @@ function openProduct(id, imgIdx = 0){
           <button class="act" onclick="toast('Link produk disalin')">${IC.share} Bagikan</button>
         </div>
         <div class="post-cta">
-          ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>`
+          ${mine ? `<button class="btn" disabled>Jualanmu — stok ${p.stock}</button>
+                    <button class="btn" style="color:#c0392b;border-color:#efc7c2" onclick="deleteProduct(${p.id})">Hapus Produk</button>`
                  : `<button class="btn btn-coral" ${out?'disabled':''} onclick="openBuy(${p.id})">${IC.bolt} Beli Sekarang</button>`}
         </div>
       </div>
     </div>
   </div>`;
+}
+async function deleteProduct(id){
+  if (!confirm('Hapus produk ini dari toko? Transaksi lama tetap tersimpan.')) return;
+  try {
+    await api('/products/' + id + '/delete', { method:'POST' });
+    closeModal(); await loadFeed();
+    toast('Produk dihapus');
+  } catch (e) { toast(e.message); }
 }
 async function likeFromDetail(id){
   if (needLogin('menyukai postingan')) return;

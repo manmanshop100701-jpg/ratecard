@@ -442,7 +442,7 @@ app.get('/api/products', optionalAuth, (req, res) => {
     viewer = me ? KEC_COORDS[me.kec] : null;
   }
   viewer = viewer || KEC_COORDS.Rangkasbitung;
-  let rows = db.prepare(PRODUCT_SELECT).all();
+  let rows = db.prepare(PRODUCT_SELECT + ' WHERE p.deleted = 0').all();
   rows.forEach(p => {
     const c = prodCoords(p);
     p.lat = c.lat; p.lng = c.lng;
@@ -502,6 +502,15 @@ app.post('/api/products', auth, (req, res) => {
   res.json({ ok: true, product: prod });
 });
 
+/* Penjual menghapus produknya (soft-delete: hilang dari feed, riwayat order aman) */
+app.post('/api/products/:id/delete', auth, (req, res) => {
+  const pid = parseInt(req.params.id, 10);
+  const pr = db.prepare('SELECT id, seller_id FROM products WHERE id = ?').get(pid);
+  if (!pr || pr.seller_id !== req.user.id) return bad(res, 404, 'Produk tidak ditemukan');
+  db.prepare('UPDATE products SET deleted = 1 WHERE id = ?').run(pid);
+  res.json({ ok: true });
+});
+
 app.post('/api/products/:id/like', auth, (req, res) => {
   const pid = parseInt(req.params.id, 10);
   if (!db.prepare('SELECT id FROM products WHERE id = ?').get(pid)) return bad(res, 404, 'Produk tidak ditemukan');
@@ -517,6 +526,7 @@ app.post('/api/orders', auth, async (req, res) => {
   const { productId, mode, payMethod, recvName, recvAddr, meetPoint, meetTime } = req.body;
   const p = db.prepare(PRODUCT_SELECT + ' WHERE p.id = ?').get(parseInt(productId, 10));
   if (!p) return bad(res, 404, 'Produk tidak ditemukan');
+  if (p.deleted) return bad(res, 410, 'Produk sudah dihapus penjual');
   if (p.seller_id === req.user.id) return bad(res, 400, 'Tidak bisa membeli produk sendiri');
   if (p.stock < 1) return bad(res, 409, 'Stok habis');
   // jasa = pengerjaan online: TANPA ongkir, tanpa COD/driver

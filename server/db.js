@@ -145,5 +145,6 @@ try { db.exec('ALTER TABLE users ADD COLUMN avatar TEXT'); } catch {} // foto pr
 try { db.exec('ALTER TABLE products ADD COLUMN imgs TEXT'); } catch {} // galeri foto produk (JSON array path)
 try { db.exec('ALTER TABLE orders ADD COLUMN buyer_hide INTEGER NOT NULL DEFAULT 0'); } catch {} // sembunyikan dari riwayat pembeli
 try { db.exec('ALTER TABLE orders ADD COLUMN seller_hide INTEGER NOT NULL DEFAULT 0'); } catch {} // sembunyikan dari riwayat penjual
+try { db.exec('ALTER TABLE products ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0'); } catch {} // soft-delete produk oleh penjual
 
 module.exports = db;
